@@ -20,6 +20,8 @@ __recovery/
 *.tmp
 
 # Sonstiges
+cgi-config/config.ini
 .DS_Store
 .vscode/
 .idea/
+*.rsm
