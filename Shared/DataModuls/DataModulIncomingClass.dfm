@@ -1,0 +1,2 @@
+inherited DataModulIncoming: TDataModulIncoming
+end

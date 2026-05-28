@@ -1,0 +1,2 @@
+inherited DataModulPrint: TDataModulPrint
+end

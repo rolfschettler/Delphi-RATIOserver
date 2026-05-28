@@ -1,0 +1,25 @@
+# Delphi IDE
+__history/
+__recovery/
+*.local
+*.identcache
+*.cbk
+
+# Kompilierte Dateien
+*.dcu
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+*.dll
+
+# Backup
+*.~*
+*.bak
+*.tmp
+
+# Sonstiges
+.DS_Store
+.vscode/
+.idea/

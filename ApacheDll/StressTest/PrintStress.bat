@@ -1,0 +1,5 @@
+
+C:\DataHub\apache\bin\ab -n 100 -c 2 -p body.json -T "application/json" -H "Authorization: Bearer 
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJJbnRlcmJhc2Utd2VibW9kdWxlIiwic3ViIjoiU1VQRVJWSVNPUiIsImlhdCI6MTc3MTU3ODkxNywiZXhwIjoxNzcyMDEwOTE3LCJyb2xlIjoie1wibG9naW5uYW1lXCI6XCJTVVBFUlZJU09SXCIsXCJ1c2VybmFtZVwiOlwiU1VQRVJWSVNPUlwiLFwicGFzc3dvcnRcIjpcIlwiLFwiZ3J1cHBlXCI6XCJcIixcInp1Z3J1cHBlXCI6XCJcIixcImFnZW50dXJjb2RlXCI6XCJcIixcImtlbm56aWZmZXJcIjpcIlwiLFwiZmlsaWFsZVwiOlwiXCIsXCJhYnRlaWx1bmdcIjpcIlwifSJ9.9TgGV-9PsfHhcnv5kewh80Jup2bKZcLN1rsWeOXyKOo" http://localhost/ibapi/print?bereich=ANMIET&art=RECHNUNG&formularname=Test3&VORGANG=R1
+
+

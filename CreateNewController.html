@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Routing &amp; Endpunkte — Entwicklerleitfaden</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue:    #1a56db;
+    --blue-lt: #e8f0fe;
+    --green:   #0e7c50;
+    --green-lt:#e6f5ee;
+    --red:     #c0392b;
+    --red-lt:  #fdf0ef;
+    --gray:    #374151;
+    --gray-lt: #f3f4f6;
+    --border:  #d1d5db;
+    --shadow:  0 1px 3px rgba(0,0,0,.08);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #111827;
+    background: #fff;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 20mm 18mm;
+  }
+
+  /* ── Cover band ── */
+  .cover {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1a56db 100%);
+    color: #fff;
+    border-radius: 8px;
+    padding: 28px 32px 24px;
+    margin-bottom: 36px;
+  }
+  .cover h1 { font-size: 22pt; font-weight: 700; margin-bottom: 4px; }
+  .cover .subtitle { font-size: 11pt; opacity: .85; }
+  .cover .meta { margin-top: 16px; font-size: 9.5pt; opacity: .7; display: flex; gap: 24px; }
+
+  /* ── Section headings ── */
+  h2 {
+    font-size: 14pt; font-weight: 700; color: #1e3a8a;
+    border-bottom: 2px solid #1a56db;
+    padding-bottom: 5px; margin: 30px 0 14px;
+    break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt; font-weight: 600; color: #111827;
+    margin: 20px 0 10px;
+    break-after: avoid;
+  }
+  h4 { font-size: 10.5pt; font-weight: 600; margin: 14px 0 6px; color: #374151; }
+
+  p { margin-bottom: 10px; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 12px 0 18px; font-size: 10pt;
+    break-inside: avoid;
+  }
+  thead tr { background: #1e3a8a; color: #fff; }
+  thead th { padding: 7px 10px; text-align: left; font-weight: 600; }
+  tbody tr:nth-child(even) { background: #f8faff; }
+  tbody tr:hover { background: #eef3ff; }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  td:first-child { font-weight: 500; }
+
+  /* ── Code ── */
+  code {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 9pt;
+    background: var(--gray-lt);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 4px;
+  }
+  pre {
+    background: #0f1117;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 10px 0 16px;
+    overflow-x: auto;
+    font-size: 9pt;
+    line-height: 1.55;
+    break-inside: avoid;
+  }
+  pre code {
+    background: none; border: none; padding: 0; color: inherit;
+  }
+
+  /* syntax highlight tokens */
+  .kw  { color: #93c5fd; }   /* keyword */
+  .ty  { color: #6ee7b7; }   /* type */
+  .cm  { color: #94a3b8; font-style: italic; } /* comment */
+  .st  { color: #fcd34d; }   /* string */
+  .fn  { color: #c4b5fd; }   /* function/proc name */
+  .nu  { color: #fb923c; }   /* number/bool */
+
+  /* ── Call-out boxes ── */
+  .box {
+    border-left: 4px solid;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    margin: 14px 0;
+    font-size: 10pt;
+    break-inside: avoid;
+  }
+  .box-info  { border-color: var(--blue);  background: var(--blue-lt);  }
+  .box-ok    { border-color: var(--green); background: var(--green-lt); }
+  .box-warn  { border-color: #d97706;      background: #fffbeb;         }
+  .box-danger{ border-color: var(--red);   background: var(--red-lt);   }
+  .box strong { display: block; margin-bottom: 3px; }
+
+  /* ── Checklist ── */
+  .checklist { list-style: none; padding: 0; margin: 10px 0 16px; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 5px 0; border-bottom: 1px solid var(--gray-lt);
+    font-size: 10pt;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .num {
+    background: #1a56db; color: #fff;
+    border-radius: 50%; width: 20px; height: 20px; min-width: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8.5pt; font-weight: 700;
+  }
+
+  /* ── Badge pills ── */
+  .badge {
+    display: inline-block; font-size: 8.5pt; font-weight: 600;
+    border-radius: 20px; padding: 2px 8px; margin: 0 2px;
+  }
+  .b-auth    { background: #fef3c7; color: #92400e; }
+  .b-local   { background: #dbeafe; color: #1e40af; }
+  .b-public  { background: #dcfce7; color: #166534; }
+
+  /* ── HR / divider ── */
+  hr { border: none; border-top: 1.5px solid var(--border); margin: 24px 0; }
+
+  /* ── Print overrides ── */
+  @media print {
+    body { padding: 12mm 14mm; font-size: 10.5pt; }
+    .cover { border-radius: 4px; }
+    pre { border: 1px solid #374151; }
+    a { color: inherit; text-decoration: none; }
+    h2 { break-before: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ COVER ══════════════ -->
+<div class="cover">
+  <h1>Routing &amp; Endpunkte</h1>
+  <div class="subtitle">Entwicklerleitfaden — CGIStandAlone / ApacheDll / IBApiTest</div>
+  <div class="meta">
+    <span>Projekt: RATIOserver</span>
+    <span>Stack: Delphi · FireDAC · InterBase · JWT</span>
+    <span>Stand: April 2026</span>
+  </div>
+</div>
+
+<!-- ══════════════ 1. KONZEPT ══════════════ -->
+<h2>1 · Konzept</h2>
+<p>Jede HTTP-Route besteht aus <strong>drei Bestandteilen</strong>, die zusammen eine vollständige Route ergeben:</p>
+
+<table>
+  <thead><tr><th>Bestandteil</th><th>Wo</th><th>Beschreibung</th></tr></thead>
+  <tbody>
+    <tr><td>Handler-Methode</td><td><code>Shared/DataModuls/*.pas</code></td><td>Enthält die eigentliche Logik</td></tr>
+    <tr><td>Route-Kommentar</td><td>Direkt über der Methode</td><td>Dokumentiert Route, Auth, LocalOnly</td></tr>
+    <tr><td>Route-Registrierung</td><td><code>WebModuleUnit1.pas → WebModuleCreate</code></td><td>Verbindet URL mit Handler</td></tr>
+  </tbody>
+</table>
+
+<div class="box box-danger">
+  <strong>⚠ Achtung</strong>
+  Ohne Eintrag in <code>WebModuleCreate</code> ist eine Methode <em>nicht erreichbar</em> — auch wenn sie vollständig implementiert ist.
+</div>
+
+<!-- ══════════════ 2. KOMMENTAR-KONVENTION ══════════════ -->
+<h2>2 · Kommentar-Konvention (Pflicht)</h2>
+<p>Jede öffentliche Handler-Methode muss genau diese Zeile direkt vor der <code>procedure</code>-Deklaration tragen:</p>
+
+<pre><code><span class="cm">// Route: /meinroute  |  Auth: true  |  LocalOnly: true</span>
+<span class="kw">procedure</span> <span class="ty">TDataModulXxx</span>.<span class="fn">MeineMethode</span>;</code></pre>
+
+<table>
+  <thead><tr><th>Feld</th><th>Bedeutung</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>Route:</code></td>
+      <td>URL-Pfad, wie er in <code>AddRoute</code> registriert wird.<br>Bei mehreren Pfaden kommagetrennt.</td>
+    </tr>
+    <tr>
+      <td><code>Auth:</code></td>
+      <td><span class="badge b-auth">true</span> JWT-Token erforderlich &nbsp;|&nbsp; <span class="badge b-public">false</span> öffentlich ohne Login</td>
+    </tr>
+    <tr>
+      <td><code>LocalOnly:</code></td>
+      <td><span class="badge b-local">true</span> Nur vom Server selbst erreichbar &nbsp;|&nbsp; <span class="badge b-public">false</span> auch von außen</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ══════════════ 3. NEUE ROUTE ══════════════ -->
+<h2>3 · Neue Route hinzufügen — Schritt für Schritt</h2>
+
+<h3>Schritt 1 — Handler-Methode implementieren</h3>
+<p>Wähle das passende DataModul (oder lege ein neues an — siehe Abschnitt&nbsp;5):</p>
+
+<table>
+  <thead><tr><th>DataModul</th><th>Zweck</th></tr></thead>
+  <tbody>
+    <tr><td><code>DataModulSQLClass</code></td><td>Generische SQL-Operationen (select, insert, update, delete)</td></tr>
+    <tr><td><code>DataModulAddOnClass</code></td><td>Zusatzfunktionen (Geo, KI, CSV-Import, Demos)</td></tr>
+    <tr><td><code>DataModulPrintClass</code></td><td>FastReport-Druck → PDF</td></tr>
+    <tr><td><code>DataModulPublicApiClass</code></td><td><strong>Public API</strong> — von Angular/Remote erreichbar</td></tr>
+    <tr><td><code>DataModulLoginClass</code></td><td>Authentifizierung (intern, nicht direkt über Router)</td></tr>
+  </tbody>
+</table>
+
+<p>Methode im Interface-Abschnitt deklarieren:</p>
+<pre><code><span class="kw">type</span>
+  <span class="ty">TDataModulXxx</span> = <span class="kw">class</span>(<span class="ty">TDataModulBaseClass</span>)
+  <span class="kw">public</span>
+    <span class="kw">procedure</span> <span class="fn">MeineMethode</span>();
+  <span class="kw">end</span>;</code></pre>
+
+<p>Methode im Implementation-Abschnitt implementieren:</p>
+<pre><code><span class="cm">// Route: /meinroute  |  Auth: true  |  LocalOnly: true</span>
+<span class="kw">procedure</span> <span class="ty">TDataModulXxx</span>.<span class="fn">MeineMethode</span>;
+<span class="kw">begin</span>
+  Response.ContentType := <span class="st">'application/json'</span>;
+  Response.StatusCode  := <span class="nu">200</span>;
+  Response.Content     := <span class="st">'{"status":"OK"}'</span>;
+<span class="kw">end</span>;</code></pre>
+
+<h3>Schritt 2 — Route registrieren</h3>
+<p>In <code>Shared/WebModuleUnit1.pas</code>, Methode <code>WebModuleCreate</code>:</p>
+
+<pre><code>FRouter.AddRoute(<span class="st">'/meinroute'</span>, CreateDataModulXxx,
+  TDataModulXxx(<span class="kw">nil</span>).MeineMethode,
+  {AuthRequired=} <span class="nu">true</span>,
+  {LocalOnly=}    <span class="nu">true</span>);</code></pre>
+
+<table>
+  <thead><tr><th>Parameter</th><th>Typ</th><th>Default</th><th>Bedeutung</th></tr></thead>
+  <tbody>
+    <tr><td>Route</td><td><code>string</code></td><td>—</td><td>URL-Pfad, z.&nbsp;B. <code>/meinroute</code>. Wildcard: <code>/prefix/*</code> fängt alle Unterpfade ab.</td></tr>
+    <tr><td>Factory</td><td><code>TInstanceFactory</code></td><td>—</td><td>Die globale <code>CreateXxx</code>-Funktion der Unit (erzeugt das DataModul)</td></tr>
+    <tr><td>Methode</td><td><code>TRouteHandler</code></td><td>—</td><td>Methode des DataModuls — wird über Code-Pointer gebunden</td></tr>
+    <tr><td>AuthRequired</td><td><code>boolean</code></td><td><code>true</code></td><td>JWT-Prüfung vor Aufruf</td></tr>
+    <tr><td>LocalOnly</td><td><code>boolean</code></td><td><code>false</code></td><td>Nur von <code>127.0.0.1</code> / <code>::1</code> erreichbar</td></tr>
+  </tbody>
+</table>
+
+<!-- ══════════════ 4. ZUGRIFFSSTRATEGIE ══════════════ -->
+<h2>4 · Zugriffsstrategie: LocalOnly vs. Public API</h2>
+
+<table>
+  <thead><tr><th>Typ</th><th>LocalOnly</th><th>Wer hat Zugriff?</th><th>Geeignet für</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="badge b-local">Intern</span> Standard</td>
+      <td><code>true</code></td>
+      <td>Nur Server (<code>127.0.0.1</code>, <code>::1</code>)</td>
+      <td>Admin, Datenbankzugriffe, Druck, Entwicklungstools</td>
+    </tr>
+    <tr>
+      <td><span class="badge b-public">Public API</span></td>
+      <td><code>false</code></td>
+      <td>Angular-Frontend, externe Clients</td>
+      <td>Sichere, whitelistbasierte Endpunkte in <code>DataModulPublicApiClass</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="box box-info">
+  <strong>Faustregel</strong>
+  Neuer Endpunkt für das Angular-Frontend? → In <code>DataModulPublicApiClass</code>, mit <code>LocalOnly: false</code>.<br>
+  Alles andere? → <code>LocalOnly: true</code>.
+</div>
+
+<div class="box box-warn">
+  <strong>Sicherheitshinweis</strong>
+  <code>DataModulPublicApiClass</code>: Jedes Feld wird gegen eine <code>ALLOWED</code>-Konstante validiert — kein unkontrollierter SQL-Zugriff.
+</div>
+
+<!-- ══════════════ 5. ROUTEN-ÜBERSICHT ══════════════ -->
+<h2>5 · Registrierte Routen (Übersicht)</h2>
+
+<h3>Interne Routen <span class="badge b-local">LocalOnly: true</span></h3>
+
+<table>
+  <thead><tr><th>Route</th><th>Handler</th><th>Auth</th></tr></thead>
+  <tbody>
+    <tr><td><code>/getparams*</code>, <code>/getparams/dbonly</code></td><td><code>TDataModulSQL.getparams</code></td><td><span class="badge b-public">false</span></td></tr>
+    <tr><td><code>/select</code>, <code>/select/withblob</code>, <code>/execsql</code></td><td><code>TDataModulSQL.Select</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/insert</code></td><td><code>TDataModulSQL.Insert</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/update</code></td><td><code>TDataModulSQL.Update</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/delete</code></td><td><code>TDataModulSQL.Delete</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/execute</code></td><td><code>TDataModulSQL.execute</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/filetoblob</code></td><td><code>TDataModulSQL.FileToBlob</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/base64toblob</code></td><td><code>TDataModulSQL.base64ToBlob</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/tablestructure</code></td><td><code>TDataModulSQL.TableStructure</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/print</code></td><td><code>TDataModulPrint.Print</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/adddemo</code></td><td><code>TDataModulAddOn.adddemo</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/getjson</code></td><td><code>TDataModulAddOn.readjson</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/showroute</code></td><td><code>TDataModulAddOn.showhtml</code></td><td><span class="badge b-public">false</span></td></tr>
+    <tr><td><code>/calculatedistance</code></td><td><code>TDataModulAddOn.calculatedistance</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/travelroute</code></td><td><code>TDataModulAddOn.travelroute</code></td><td><span class="badge b-public">false</span></td></tr>
+    <tr><td><code>/calculateroute</code></td><td><code>TDataModulAddOn.calculateroute</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/ki_getteilnehmer</code></td><td><code>TDataModulAddOn.KI_GetTeilnehmer</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/readteilnehmer</code></td><td><code>TDataModulAddOn.ReadTeilnehmer</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/teilnehmerfromcsv</code></td><td><code>TDataModulAddOn.teilnehmerformcsv</code></td><td><span class="badge b-auth">true</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Public API <span class="badge b-public">LocalOnly: false</span> — Angular-Zugriff erlaubt</h3>
+
+<table>
+  <thead><tr><th>Route</th><th>Handler</th><th>Auth</th></tr></thead>
+  <tbody>
+    <tr><td><code>/getadressen</code></td><td><code>TDataModulPublicApi.getAdressen</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/getadresse</code></td><td><code>TDataModulPublicApi.getAdresse</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/getnextkennziffer</code></td><td><code>TDataModulPublicApi.getNextKennziffer</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/getkategorien</code></td><td><code>TDataModulPublicApi.getKategorien</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/insertadresse</code></td><td><code>TDataModulPublicApi.insertAdresse</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/updateadresse</code></td><td><code>TDataModulPublicApi.updateAdresse</code></td><td><span class="badge b-auth">true</span></td></tr>
+    <tr><td><code>/deleteadresse</code></td><td><code>TDataModulPublicApi.deleteAdresse</code></td><td><span class="badge b-auth">true</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ══════════════ 6. NEUEN CONTROLLER ANLEGEN ══════════════ -->
+<h2>6 · Neuen DataModul-Controller anlegen</h2>
+
+<div class="box box-warn">
+  <strong>Warum das nicht trivial ist</strong>
+  Jeder Controller besteht aus zwei Dateien (<code>.pas</code> + <code>.dfm</code>) und muss an <strong>vier Stellen</strong> registriert werden — drei davon liegen außerhalb der neuen Datei. Wer eine Stelle vergisst, bekommt einen Laufzeitfehler oder eine nicht erreichbare Route.
+</div>
+
+<h3>Schritt 1 — In Delphi IDE: Neues DataModule anlegen</h3>
+<p><strong>File → New → Other → DataModule</strong></p>
+<p>Delphi erzeugt <code>DataModulXxxClass.pas</code> und <code>DataModulXxxClass.dfm</code>. Danach Schritte 2–6 manuell durchführen.</p>
+
+<h3>Schritt 2 — <code>.pas</code> Vorlage</h3>
+<pre><code><span class="kw">unit</span> DataModulXxxClass;
+
+<span class="kw">interface</span>
+
+<span class="kw">uses</span>
+  Web.HTTPApp, System.JSON, System.SysUtils, System.Classes,
+  DataModulBaseClass,
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+  FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+  FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
+  FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Phys.IB, FireDAC.Phys.IBDef,
+  FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client, FireDAC.Comp.DataSet;
+
+<span class="kw">type</span>
+  <span class="ty">TDataModulXxx</span> = <span class="kw">class</span>(<span class="ty">TDataModulBaseClass</span>)   <span class="cm">// NICHT TDataModule!</span>
+  <span class="kw">public</span>
+    <span class="kw">procedure</span> <span class="fn">MeineMethode</span>;
+  <span class="kw">end</span>;
+
+<span class="kw">function</span> <span class="fn">CreateDataModulXxx</span>(Request: <span class="ty">TWebRequest</span>; Response: <span class="ty">TWebResponse</span>): <span class="ty">TObject</span>;
+
+<span class="kw">implementation</span>
+
+<span class="kw">uses</span> webUtils;
+
+<span class="kw">function</span> <span class="fn">CreateDataModulXxx</span>(Request: <span class="ty">TWebRequest</span>; Response: <span class="ty">TWebResponse</span>): <span class="ty">TObject</span>;
+<span class="kw">begin</span>
+  Result := <span class="ty">TDataModulXxx</span>.Create(Request, Response);
+<span class="kw">end</span>;
+
+{%CLASSGROUP <span class="st">'Vcl.Controls.TControl'</span>}
+{$R *.dfm}
+
+<span class="cm">// Route: /meineroute  |  Auth: true  |  LocalOnly: true</span>
+<span class="kw">procedure</span> <span class="ty">TDataModulXxx</span>.<span class="fn">MeineMethode</span>;
+<span class="kw">var</span>
+  Body:  <span class="ty">TJSONObject</span>;
+  Param: <span class="ty">string</span>;
+<span class="kw">begin</span>
+  <span class="cm">// URL-Parameter lesen (z.B. ?id=42):</span>
+  Param := Request.QueryFields.Values[<span class="st">'id'</span>];
+
+  <span class="cm">// JSON Request-Body lesen:</span>
+  Body := <span class="ty">TJSONObject</span>.ParseJSONValue(Request.Content) <span class="kw">as</span> <span class="ty">TJSONObject</span>;
+  <span class="kw">if not</span> Assigned(Body) <span class="kw">then</span>
+    <span class="kw">raise</span> Exception.Create(<span class="st">'Kein gültiges JSON.'</span>);
+  <span class="kw">try</span>
+    <span class="cm">// Body.GetValue&lt;string&gt;('feldname')</span>
+  <span class="kw">finally</span>
+    Body.Free;
+  <span class="kw">end</span>;
+
+  Response.ContentType := <span class="st">'application/json'</span>;
+  Response.StatusCode  := <span class="nu">200</span>;
+  Response.Content     := <span class="st">'{"status":"OK"}'</span>;
+<span class="kw">end</span>;
+
+<span class="kw">end</span>.</code></pre>
+
+<h3>Schritt 3 — <code>.dfm</code> Inhalt</h3>
+<div class="box box-danger">
+  <strong>Pflicht: <code>inherited</code> statt <code>object</code></strong>
+  Die Komponenten (<code>Query</code>, <code>Connection</code>) kommen von der Basisklasse — daher <code>inherited</code> verwenden.
+</div>
+<pre><code>inherited DataModulXxx: TDataModulXxx
+end</code></pre>
+
+<h3>Schritt 4 — In BEIDEN <code>.dpr</code>-Dateien eintragen</h3>
+<p>In <code>CGIStandalone/IBApiTest.dpr</code> <strong>und</strong> <code>ApacheDll/mod_webbroker.dpr</code>:</p>
+<pre><code>DataModulXxxClass <span class="kw">in</span> <span class="st">'..\Shared\DataModuls\DataModulXxxClass.pas'</span>
+  {DataModulXxx: TDataModule},</code></pre>
+<div class="box box-info">
+  Bequemer über <strong>Project → Add to Project</strong> in der IDE — Delphi trägt die Zeile automatisch ein.
+</div>
+
+<h3>Schritt 5 — <code>uses</code> in <code>WebModuleUnit1.pas</code></h3>
+<pre><code><span class="kw">uses</span>
+  ...
+  DataModulXxxClass;</code></pre>
+
+<h3>Schritt 6 — Routen registrieren in <code>WebModuleCreate</code></h3>
+<pre><code>FRouter.AddRoute(<span class="st">'/meineroute'</span>, CreateDataModulXxx,
+  TDataModulXxx(<span class="kw">nil</span>).MeineMethode, <span class="nu">true</span>, <span class="nu">true</span>);</code></pre>
+
+<hr>
+
+<!-- ══════════════ CHECKLISTE ══════════════ -->
+<h2>7 · Checkliste — Vollständig?</h2>
+
+<ul class="checklist">
+  <li><span class="num">1</span><span>Basisklasse <code>TDataModulBaseClass</code> verwendet (nicht <code>TDataModule</code>) — in <code>.pas</code></span></li>
+  <li><span class="num">2</span><span><code>{%CLASSGROUP 'Vcl.Controls.TControl'}</code> + <code>{$R *.dfm}</code> vorhanden — in <code>.pas</code></span></li>
+  <li><span class="num">3</span><span>Factory-Funktion <code>CreateXxx</code> implementiert — in <code>.pas</code></span></li>
+  <li><span class="num">4</span><span>Route-Kommentar über jedem Handler — in <code>.pas</code></span></li>
+  <li><span class="num">5</span><span><code>.dfm</code> beginnt mit <code>inherited</code> (nicht <code>object</code>) — in <code>.dfm</code></span></li>
+  <li><span class="num">6</span><span>Unit in <code>IBApiTest.dpr</code> eingetragen — in <code>.dpr</code></span></li>
+  <li><span class="num">7</span><span>Unit in <code>mod_webbroker.dpr</code> eingetragen — in <code>.dpr</code></span></li>
+  <li><span class="num">8</span><span>Unit in <code>uses</code> von <code>WebModuleUnit1.pas</code> — in <code>.pas</code></span></li>
+  <li><span class="num">9</span><span>Routen in <code>WebModuleCreate</code> registriert — in <code>WebModuleUnit1.pas</code></span></li>
+</ul>
+
+<div class="box box-ok" style="margin-top:24px;">
+  <strong>Alle 9 Punkte erledigt? Route ist aktiv.</strong>
+  Starte <code>IBApiTest.exe</code> (Standalone) oder deploye die DLL — der neue Endpunkt ist sofort erreichbar.
+</div>
+
+</body>
+</html>

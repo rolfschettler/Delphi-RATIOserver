@@ -1,0 +1,2 @@
+inherited DataModulTouristik: TDataModulTouristik
+end

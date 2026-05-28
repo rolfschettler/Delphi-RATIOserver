@@ -1,0 +1,2 @@
+inherited DataModulTableBase: TDataModulTableBase
+end

@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{3E95E35A-8515-4673-93EC-2D0C9E8FC098}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="ApacheDll\mod_webbroker.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="CGIStandalone\IBApiTest.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="mod_webbroker">
+        <MSBuild Projects="ApacheDll\mod_webbroker.dproj"/>
+    </Target>
+    <Target Name="mod_webbroker:Clean">
+        <MSBuild Projects="ApacheDll\mod_webbroker.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mod_webbroker:Make">
+        <MSBuild Projects="ApacheDll\mod_webbroker.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="IBApiTest">
+        <MSBuild Projects="CGIStandalone\IBApiTest.dproj"/>
+    </Target>
+    <Target Name="IBApiTest:Clean">
+        <MSBuild Projects="CGIStandalone\IBApiTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="IBApiTest:Make">
+        <MSBuild Projects="CGIStandalone\IBApiTest.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="mod_webbroker;IBApiTest"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="mod_webbroker:Clean;IBApiTest:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="mod_webbroker:Make;IBApiTest:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

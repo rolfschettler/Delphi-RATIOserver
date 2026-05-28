@@ -1,0 +1,2 @@
+﻿inherited DataModulSQL: TDataModulSQL
+end

@@ -1,0 +1,2 @@
+﻿inherited DataModulAddOn: TDataModulAddOn
+end

@@ -1,0 +1,2 @@
+inherited DataModulAdressen: TDataModulAdressen
+end
