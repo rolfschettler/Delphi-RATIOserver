@@ -4,7 +4,7 @@
         <ProjectVersion>20.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">mod_webbroker</ProjectName>
         <TargetedPlatforms>3</TargetedPlatforms>
@@ -91,6 +91,13 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>(Ohne)</Manifest_File>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
+        <DCC_UnitSearchPath>..\Shared;..\Shared\JWT\Source;..\Shared\JWT\Source\Common;..\Shared\JWT\Source\JOSE;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <PostBuildEvent><![CDATA[net start Apache-Ratio
+$(PostBuildEvent)]]></PostBuildEvent>
+        <PreBuildEvent><![CDATA[net stop Apache-Ratio
+$(PreBuildEvent)]]></PreBuildEvent>
+        <PreBuildEventCancelOnError>false</PreBuildEventCancelOnError>
+        <PreLinkEventCancelOnError>false</PreLinkEventCancelOnError>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -111,10 +118,6 @@
         <DCC_UnitSearchPath>..\Shared;..\Shared\JWT\Source;..\Shared\JWT\Source\Common;..\Shared\JWT\Source\JOSE;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <PostBuildEvent><![CDATA[net start Apache-Ratio
-$(PostBuildEvent)]]></PostBuildEvent>
-        <PreBuildEvent><![CDATA[net stop Apache-Ratio
-$(PreBuildEvent)]]></PreBuildEvent>
         <DCC_ExeOutput>C:\Program Files (x86)\APACHESERVER\Apache24\modules</DCC_ExeOutput>
         <PreBuildEventCancelOnError>false</PreBuildEventCancelOnError>
         <PreLinkEventCancelOnError>false</PreLinkEventCancelOnError>
@@ -1111,11 +1114,19 @@ $(PreBuildEvent)]]></PreBuildEvent>
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>net stop Apache-Ratio</PreBuildEvent>
+        <PreBuildEvent>net stop Apache-Ratio</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>True</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>True</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>net start Apache-Ratio</PostBuildEvent>
+        <PostBuildEvent>net start Apache-Ratio</PostBuildEvent>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win64'">
+        <PreBuildEvent>net stop Apache-Ratio</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>True</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>True</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent>net start Apache-Ratio</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
 </Project>

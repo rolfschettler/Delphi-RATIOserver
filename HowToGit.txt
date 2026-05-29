@@ -1,0 +1,41 @@
+Tägliche Arbeit (einfach):
+Nach Änderungen im Delphi-Projekt:
+bash# 1. Status anschauen
+git status
+
+# 2. Änderungen hinzufügen
+git add .
+
+# 3. Committen (aussagekräftige Nachricht!)
+git commit -m "Feature: Beschreibung der Änderung"
+
+# 4. Zu GitHub pushen
+git push
+
+
+
+
+
+
+
+####################################################Wenn du mit anderen arbeitest:
+bash# Am Anfang des Tages: Updates runterladen
+git pull
+
+# ... deine Änderungen ...
+
+# Am Ende: Pushen
+git push
+
+
+
+
+
+
+
+
+######################################### Änderung verwerfen
+git restore datei.pas
+
+# Alle Änderungen verwerfen
+git restore .

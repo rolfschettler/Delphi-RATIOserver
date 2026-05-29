@@ -11,14 +11,14 @@ File_8=TSourceModule,'D:\Delphi\RATIOserver\Shared\Fastreport\Fastrep.pas',0,1,8
 File_9=TSourceModule,'D:\Delphi\RATIOserver\Shared\DataModuls\DataModulSQLClass.pas',0,1,1036,1,1040,0,0,,
 
 [Modules]
-Module0=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAnmietClass.pas
-Module1=D:\Delphi\RATIOserver\ApacheDll\mod_webbroker.dproj
-Module2=D:\Delphi\RATIOserver\CGIStandalone\IBApiTest.dproj
-Module3=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulTableBaseClass.pas
-Module4=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulBaseClass.pas
-Module5=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAddOnClass.pas
-Module6=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAdressenClass.pas
-Module7=D:\Delphi\RATIOserver\Shared\WebModuleUnit1.pas
+Module0=D:\Delphi\RATIOserver\CGIStandalone\IBApiTest.dproj
+Module1=D:\Delphi\RATIOserver\Shared\WebModuleUnit1.pas
+Module2=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAnmietClass.pas
+Module3=D:\Delphi\RATIOserver\ApacheDll\mod_webbroker.dproj
+Module4=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulTableBaseClass.pas
+Module5=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulBaseClass.pas
+Module6=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAddOnClass.pas
+Module7=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAdressenClass.pas
 Module8=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulIncomingClass.pas
 Module9=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulTouristikClass.pas
 Module10=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulPublicClass.pas
@@ -26,13 +26,16 @@ Module11=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulLoginClass.pas
 Count=12
 EditWindowCount=1
 
+[D:\Delphi\RATIOserver\CGIStandalone\IBApiTest.dproj]
+ModuleType=TBaseProject
+
+[D:\Delphi\RATIOserver\Shared\WebModuleUnit1.pas]
+ModuleType=TSourceModule
+
 [D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAnmietClass.pas]
 ModuleType=TSourceModule
 
 [D:\Delphi\RATIOserver\ApacheDll\mod_webbroker.dproj]
-ModuleType=TBaseProject
-
-[D:\Delphi\RATIOserver\CGIStandalone\IBApiTest.dproj]
 ModuleType=TBaseProject
 
 [D:\Delphi\RATIOserver\Shared\DataModuls\DataModulTableBaseClass.pas]
@@ -45,9 +48,6 @@ ModuleType=TSourceModule
 ModuleType=TSourceModule
 
 [D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAdressenClass.pas]
-ModuleType=TSourceModule
-
-[D:\Delphi\RATIOserver\Shared\WebModuleUnit1.pas]
 ModuleType=TSourceModule
 
 [D:\Delphi\RATIOserver\Shared\DataModuls\DataModulIncomingClass.pas]
@@ -64,7 +64,7 @@ ModuleType=TSourceModule
 
 [EditWindow0]
 ViewCount=13
-CurrentEditView=D:\Delphi\RATIOserver\Shared\DataModuls\DataModulAnmietClass.pas
+CurrentEditView=D:\Delphi\RATIOserver\CGIStandalone\IBApiTest.dpr
 View0=0
 View1=1
 View2=2
@@ -118,10 +118,10 @@ OTAEditViewType=WelcomePage.MainPage
 [View1]
 CustomEditViewType=TEditView
 Module=D:\Delphi\RATIOserver\Shared\WebModuleUnit1.pas
-CursorX=126
-CursorY=433
-TopLine=412
-LeftCol=2
+CursorX=15
+CursorY=9
+TopLine=1
+LeftCol=1
 Elisions=
 Bookmarks={1,368,68}
 EditViewName=D:\Delphi\RATIOserver\Shared\WebModuleUnit1.pas
@@ -794,5 +794,5 @@ ActiveTabID=PropertyInspector
 TabDockClients=PropertyInspector,StructureView
 
 [ActiveProject]
-ActiveProject=1
+ActiveProject=2
 
