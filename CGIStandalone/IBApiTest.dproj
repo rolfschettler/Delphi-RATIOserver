@@ -111,7 +111,6 @@
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <DCC_UnitSearchPath>..\Shared;..\Shared\JWT\Source;..\Shared\JWT\Source\JOSE;..\Shared\JWT\Source\Common;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -190,6 +189,11 @@
         <DCCReference Include="..\Shared\webUtils.pas"/>
         <DCCReference Include="..\Shared\DataModuls\DataModulPublicClass.pas">
             <Form>DataModulPublic</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="..\Shared\DataModuls\DataModulDispoClass.pas">
+            <Form>DataModulDispo</Form>
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>

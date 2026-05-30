@@ -28,10 +28,8 @@ uses
   plugin in '..\Shared\plugin.pas',
   Fastrep in '..\Shared\Fastreport\Fastrep.pas' {ReportForm},
   PHPSupport in '..\Shared\PHPSupport.pas',
-  KI_Support in '..\Shared\KI_Support.pas' ;
-
-
-
+  KI_Support in '..\Shared\KI_Support.pas',
+  DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule};
 
 {$R *.res}
 

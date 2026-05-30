@@ -25,7 +25,8 @@ uses
   PHPSupport in '..\Shared\PHPSupport.pas',
   KI_Support in '..\Shared\KI_Support.pas',
   webUtils in '..\Shared\webUtils.pas',
-  DataModulPublicClass in '..\Shared\DataModuls\DataModulPublicClass.pas' {DataModulPublic: TDataModule};
+  DataModulPublicClass in '..\Shared\DataModuls\DataModulPublicClass.pas' {DataModulPublic: TDataModule},
+  DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule};
 
 {$R *.res}
 

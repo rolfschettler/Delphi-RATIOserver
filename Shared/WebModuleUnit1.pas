@@ -86,6 +86,7 @@ DataModulPrintClass,
 DataModulAdressenClass,
 DataModulTouristikClass,
 DataModulAnmietClass,
+DataModulDispoClass,
 DataModulIncomingClass,
 DataModulPublicClass;
 
@@ -463,6 +464,16 @@ begin
 
   //ANMIET
   FRouter.AddRoute('/anmiet/demo', CreateDataModulAnmiet, TDataModulAnmiet(nil).Demo);
+
+  //DISPO
+  FRouter.AddRoute('/dispo/demo', CreateDataModulDispo, TDataModulDispo(nil).Demo);
+  FRouter.AddRoute('/dispo/geteinsatz', CreateDataModulDispo, TDataModulDispo(nil).getEinsatz,true,false);
+  FRouter.AddRoute('/dispo/geteinsatzfiltered', CreateDataModulDispo, TDataModulDispo(nil).getEinsatzFiltered,true,false);
+  FRouter.AddRoute('/dispo/geteinsatzbyid', CreateDataModulDispo, TDataModulDispo(nil).getEinsatzById,true,false);
+  FRouter.AddRoute('/dispo/getfahrergruppen', CreateDataModulDispo, TDataModulDispo(nil).getfahrergruppen,true,false);
+  FRouter.AddRoute('/dispo/getpersonalstamm', CreateDataModulDispo, TDataModulDispo(nil).getpersonalstamm,true,false);
+
+
 
   //INCOMING
   FRouter.AddRoute('/incoming/demo',           CreateDataModulIncoming, TDataModulIncoming(nil).Demo);
