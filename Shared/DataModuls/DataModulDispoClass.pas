@@ -112,6 +112,23 @@ VAR
   timemodeVal:  TJSONValue;
   timemode:   string;
   Filter:String;
+
+  function NormalizeVon(const AValue: string): string;
+  begin
+    if Length(AValue) <= 10 then
+      Result := AValue + ' 00:00:00'
+    else
+      Result := AValue;
+  end;
+
+  function NormalizeBis(const AValue: string): string;
+  begin
+    if Length(AValue) <= 10 then
+      Result := AValue + ' 23:59:59'
+    else
+      Result := AValue;
+  end;
+
 const
   ALLOWED: array[0..102] of string = (
     'nr','von','bis','bezeichnung','typ','hinweis','auftragnr',
@@ -138,9 +155,7 @@ const
   );
   FILTER_PARAMS: array[0..1] of string = ('von', 'bis');
 begin
-  FILTER := 'von >= :von AND bis <= :bis';
   timemode := Request.QueryFields.Values['timemode'];
-
   if timemode = '' then
   begin
     var Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
@@ -154,14 +169,17 @@ begin
     end;
   end;
 
-  if timemode = 'inside_range' then
-    FILTER := 'bis >= :von AND von < :bis'
+  if timemode = 'overlaps_range' then
+    FILTER := 'bis >= :von AND von <= :bis'
   else
-    FILTER := 'von >= :von AND von < :bis';
+    FILTER := 'von >= :von AND von <= :bis';  // Default: starts_in_range
+
+  // Normalisierung: reines Datum ohne Uhrzeit ergänzen
+  Request.QueryFields.Values['von'] := NormalizeVon(Request.QueryFields.Values['von']);
+  Request.QueryFields.Values['bis'] := NormalizeBis(Request.QueryFields.Values['bis']);
 
   DoSelectFiltered('EINSATZ', ALLOWED, FILTER, FILTER_PARAMS);
 end;
-
 procedure TDataModulDispo.getfahrergruppen;
 begin
 

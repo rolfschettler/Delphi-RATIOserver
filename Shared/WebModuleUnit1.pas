@@ -424,6 +424,9 @@ begin
   FRouter.AddRoute('/print', CreateDataModulPrint, TDataModulPrint(nil).Print,true,false);
 
   FRouter.AddRoute('/adddemo', CreateDataModulAddOn, TDataModulAddOn(nil).adddemo); // TODO: LocalOnly=true ergänzen
+  FRouter.AddRoute('/adddemopersonal', CreateDataModulAddOn, TDataModulAddOn(nil).adddemopersonal); // TODO: LocalOnly=true ergänzen
+
+
   FRouter.AddRoute('/getjson', CreateDataModulAddOn, TDataModulAddOn(nil).readjson); // TODO: LocalOnly=true ergänzen
 
   FRouter.AddRoute('/showroute', CreateDataModulAddOn, TDataModulAddOn(nil).showhtml, false); // TODO: LocalOnly=true ergänzen

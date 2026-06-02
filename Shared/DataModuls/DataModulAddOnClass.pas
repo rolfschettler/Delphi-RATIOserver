@@ -11,9 +11,11 @@ type
   TDataModulAddOn = class(TDataModulBaseClass)
   private
 
+
     { Private-Deklarationen }
   public
     { Public-Deklarationen }
+    procedure adddemopersonal();
     procedure adddemo();
     procedure readjson();
     procedure showhtml();
@@ -98,6 +100,81 @@ begin
   end;
 
 end;
+
+
+
+
+// Route: /adddemo  |  Auth: true  |  LocalOnly: TODO
+procedure TDataModulAddOn.adddemopersonal;
+var
+  Adresse: TAdresse;
+  IQ: TFDQuery;
+  Count: Integer;
+  _nr:integer;
+
+begin
+  Count := 1;
+  if not TrystrToInt(Request.QueryFields.Values['count'], Count) then
+    Count := 1;
+
+  IQ := TFDQuery.Create(self);
+
+  with query do begin
+    close;
+    sql.text:='select max(nr) as maxnr from personalstamm ';
+    open;
+    first;
+    _nr:=fieldbyname('maxnr').asinteger;
+
+  end;
+
+
+  try
+    for var I := 0 to Count do
+    begin
+      Adresse := GeneriereZufaelligeAdresse;
+      IQ.Connection := Connection;
+      IQ.SQL.Text := 'Insert into personalstamm (nr,anrede,name1,name2,strasse,plz,ort,zeichen) values(:nr,:anrede,:name1,:name2,:strasse,:plz,:ort,:zeichen)';
+      with IQ do
+      begin
+        _nr:=_nr+1;
+
+        ParamByName('nr').AsInteger :=_nr;
+        ParamByName('anrede').AsString := Adresse.Anrede;
+        ParamByName('name1').AsString := Adresse.Vorname;
+        ParamByName('name2').AsString := Adresse.Nachname;
+        ParamByName('strasse').AsString := Adresse.Strasse;
+        ParamByName('plz').AsString := Adresse.PLZ;
+        ParamByName('ort').AsString := Adresse.Ort;
+        ParamByName('zeichen').AsString := Copy(AnsiUppercase(Adresse.Nachname),1,2)+inttostr(_nr);
+        try
+          Connection.StartTransaction;
+          ExecSQL;
+          Connection.Commit;
+        except
+          on E: Exception do
+          begin
+            if Connection.InTransaction then
+              Connection.Rollback;
+            raise;
+          end;
+        end;
+
+      end;
+    end;
+
+    Response.ContentType := 'application/json';
+    Response.StatusCode := 200;
+    Response.Content := CreateJsonResponse('OK', 'es wurden ' + Inttostr(Count) + ' Adresse(n) zugefügt');
+
+  finally
+    IQ.Free;
+
+  end;
+
+end;
+
+
 
 
 
