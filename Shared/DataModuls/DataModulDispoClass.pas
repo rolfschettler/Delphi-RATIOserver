@@ -10,6 +10,7 @@ uses
 type
   TDataModulDispo = class(TDataModulTableBase)
   private
+
     { Private-Deklarationen }
   public
     { Public-Deklarationen }
@@ -19,6 +20,7 @@ type
     procedure getEinsatzById;
     procedure getfahrergruppen;
     procedure getpersonalstamm;
+    procedure geteinsatzarten;
   end;
 
 
@@ -107,28 +109,12 @@ end;
 
 // Route: /dispo/geteinsatzfiltered  |  Auth: true  |  LocalOnly: false
 procedure TDataModulDispo.getEinsatzFiltered;
-// Body: { "fields": [...] | "*", "von": "2024-01-01", "bis": "2024-12-31", "orderby": "von" }
-VAR
-  timemodeVal:  TJSONValue;
-  timemode:   string;
-  Filter:String;
-
-  function NormalizeVon(const AValue: string): string;
-  begin
-    if Length(AValue) <= 10 then
-      Result := AValue + ' 00:00:00'
-    else
-      Result := AValue;
-  end;
-
-  function NormalizeBis(const AValue: string): string;
-  begin
-    if Length(AValue) <= 10 then
-      Result := AValue + ' 23:59:59'
-    else
-      Result := AValue;
-  end;
-
+// Body: { "fields": [...] | "*", "von": "2024-01-01 00:00:00", "bis": "2024-12-31 23:59:59", "orderby": "von" }
+var
+  timemodeVal : TJSONValue;
+  timemode    : string;
+  Filter      : string;
+  Body        : TJSONObject;  // ← klassisch deklariert, nicht inline
 const
   ALLOWED: array[0..102] of string = (
     'nr','von','bis','bezeichnung','typ','hinweis','auftragnr',
@@ -155,31 +141,41 @@ const
   );
   FILTER_PARAMS: array[0..1] of string = ('von', 'bis');
 begin
+//  timemode := '';
+//  Body     := nil;
+//  timemodeVal := nil;
+
+  // 1. Erst aus QueryString versuchen
   timemode := Request.QueryFields.Values['timemode'];
+
+  // 2. Falls nicht im QueryString → aus JSON-Body lesen
   if timemode = '' then
   begin
-    var Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
-    if Assigned(Body) then
-    try
-      timemodeVal := Body.GetValue('timemode');
-      if Assigned(timemodeVal) and not timemodeVal.Null then
-        timemode := LowerCase(timemodeVal.Value);
-    finally
-      Body.Free;
+    if Request.Content <> '' then
+    begin
+      Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+      if Assigned(Body) then
+      try
+        timemodeVal := Body.GetValue('timemode');
+        if Assigned(timemodeVal) and not timemodeVal.Null then
+          timemode := LowerCase(timemodeVal.Value);
+      finally
+        Body.Free;  // ← wird IMMER freigegeben, auch bei Exception
+
+      end;
     end;
   end;
 
+  // 3. Filter bestimmen
   if timemode = 'overlaps_range' then
-    FILTER := 'bis >= :von AND von <= :bis'
+    Filter := 'bis >= :von AND von <= :bis'
   else
-    FILTER := 'von >= :von AND von <= :bis';  // Default: starts_in_range
+    Filter := 'von >= :von AND von <= :bis';
 
-  // Normalisierung: reines Datum ohne Uhrzeit ergänzen
-  Request.QueryFields.Values['von'] := NormalizeVon(Request.QueryFields.Values['von']);
-  Request.QueryFields.Values['bis'] := NormalizeBis(Request.QueryFields.Values['bis']);
-
-  DoSelectFiltered('EINSATZ', ALLOWED, FILTER, FILTER_PARAMS);
+  // 4. Query ausführen
+  DoSelectFiltered('EINSATZ', ALLOWED, Filter, FILTER_PARAMS);
 end;
+
 procedure TDataModulDispo.getfahrergruppen;
 begin
 
@@ -229,6 +225,33 @@ begin
     End;
   End;
 end;
+
+
+procedure TDataModulDispo.geteinsatzarten;
+begin
+
+  Try
+    Connection.StartTransaction;
+    with Query do
+    Begin
+      close;
+      sql.text:='Select nr,code,beschreibung,farbe from einsatzarten order by code';
+      open;
+
+      Response.ContentType := 'application/json';
+      Response.StatusCode  := 200;
+      Response.Content     := SerializeQuery(Query);
+      Connection.Commit;
+    End;
+  Except
+    on e:Exception do
+    Begin
+      Connection.Rollback;
+      raise;
+    End;
+  End;
+end;
+
 
 
 // Route: /dispo/geteinsatzbyid  |  Auth: true  |  LocalOnly: false

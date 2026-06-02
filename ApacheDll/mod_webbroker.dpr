@@ -63,6 +63,8 @@ exports
   GModuleData name 'webbroker_module';
 
 begin
+
+ IsMultiThread := True;
 {$IFDEF MSWINDOWS}
   CoInitFlags := COINIT_MULTITHREADED;
 {$ENDIF}
