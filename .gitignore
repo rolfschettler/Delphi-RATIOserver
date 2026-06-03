@@ -4,6 +4,7 @@ __recovery/
 *.local
 *.identcache
 *.cbk
+*.dsk
 
 # Kompilierte Dateien
 *.dcu
