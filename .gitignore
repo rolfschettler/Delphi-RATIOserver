@@ -5,6 +5,7 @@ __recovery/
 *.identcache
 *.cbk
 *.dsk
+*.tvsconfig
 
 # Kompilierte Dateien
 *.dcu
