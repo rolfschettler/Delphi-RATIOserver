@@ -444,7 +444,7 @@ var
   Params: TJSONObject;
 begin
   // Beispiel JSON-Body: {"start": "88487 Mietingen","zwischenstopps": ["Baltringen", "Ochsenhausen"],"ziel": "Biberach"}
-  Params := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Params := ParseJSONObject(Request.Content);
   if not Assigned(Params) then
     raise Exception.Create('calculatedistance: Es wurde kein gültiges JSON übergeben');
   try
@@ -699,10 +699,10 @@ begin
   //    "ziel": "Biberach"}
 
    beispiel:='{"startzeit":"10:00","haltezeit":5, "start": "Friedrichshafen","zwischenstopps": ["Bad Saulgau","Ravensburg", "Ochsenhausen","Bad Buchau"],"ziel": "Biberach"}';
-   Params := TJSONObject.ParseJSONValue(beispiel) as TJSONObject;
+   Params := ParseJSONObject(beispiel);
 
 //Opional, parameter aus Request lesen
-//  Params := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+//  Params := ParseJSONObject(Request.Content);
 
 
 
@@ -734,7 +734,7 @@ begin
   //   "zwischenstopps" : array   – Zwischenstopps (max. 8), Reihenfolge wird optimiert
   //   "startzeit"      : string  – Abfahrtszeit "HH:MM", Default: "00:00"
   //   "haltezeit"      : integer – Haltezeit in Minuten pro Stopp, Default: 0
-  Params := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Params := ParseJSONObject(Request.Content);
   if not Assigned(Params) then
     raise Exception.Create('calculateroute: Es wurde kein gültiges JSON übergeben');
   try

@@ -58,7 +58,7 @@ var
   procedure ReadFromJson;
   begin
     if Request.Content = '' then Exit;
-    JSONObject := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+    JSONObject := ParseJSONObject(Request.Content);
     if not Assigned(JSONObject) then Exit;
     try
       username := JSONObject.GetValue<string>('user', '');

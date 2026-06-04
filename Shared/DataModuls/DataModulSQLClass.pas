@@ -411,7 +411,7 @@ begin
 
   Result.Params := TDictionary<string, string>.Create;
   try
-    JSONObject := TJSONObject.ParseJSONValue(JsonStr) as TJSONObject;
+    JSONObject := ParseJSONObject(JsonStr);
     if JSONObject = nil then
       raise exception.Create('Die übergebenen JSON-Daten sind ungültig.');
     try
@@ -453,7 +453,7 @@ begin
     Query.SQL.Text := Parsed.SQL;
 
     // JSON nochmals parsen um NULL-Werte zu erkennen , also der value des Params wäre NULL
-    JSONObject := TJSONObject.ParseJSONValue(JsonStr) as TJSONObject;
+    JSONObject := ParseJSONObject(JsonStr);
     try
       ParamsObj := JSONObject.GetValue<TJSONObject>('params');
       // Parameter zuweisen
@@ -495,7 +495,7 @@ begin
     Raise exception.Create('INSERT: Der Parameter table fehlt');
 
   SQL := 'insert into ' + table + '(';
-  JSONObject := TJSONObject.ParseJSONValue(JSONText) as TJSONObject;
+  JSONObject := ParseJSONObject(JSONText);
   if JSONObject = nil then
     raise exception.Create('Die übergebenen JSON-Daten sind ungültig.');
 
@@ -583,7 +583,7 @@ begin
     Raise exception.Create('DELETE: Der Parameter table fehlt');
 
   SQL := 'delete from ' + table + ' where ';
-  JSONObject := TJSONObject.ParseJSONValue(JSONText) as TJSONObject;
+  JSONObject := ParseJSONObject(JSONText);
   if JSONObject = nil then
     raise exception.Create('Die übergebenen JSON-Daten sind ungültig.');
 
@@ -641,7 +641,7 @@ var
 begin
   Result := '';
   SQL := 'update ' + table + ' set ';
-  JSONObject := TJSONObject.ParseJSONValue(JSONText) as TJSONObject;
+  JSONObject := ParseJSONObject(JSONText);
   if JSONObject = nil then
     raise exception.Create('Die übergebenen JSON-Daten sind ungültig.');
 
@@ -717,7 +717,7 @@ begin
     if PList.count > 0 then
       keyfield := lowercase(PList[0]);
 
-    JSONObject := TJSONObject.ParseJSONValue(bodycontent) as TJSONObject;
+    JSONObject := ParseJSONObject(bodycontent);
     if JSONObject = nil then
       raise exception.Create('Die übergebenen JSON-Daten sind ungültig.');
 
@@ -806,7 +806,7 @@ begin
   try
     Q.Connection := Connection;
     ApplyParamsToFDQuery(Q, Request.Content);
-    if first_pathInfo = 'exexslq' then
+    if first_pathInfo = 'execsql' then
       Q.ExecSQL
     else
       Q.Open;

@@ -46,7 +46,7 @@ begin
 
   if Request.Content <> '' then
   begin
-    Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+    Body := ParseJSONObject(Request.Content);
     if Assigned(Body) then
     try
       Response.ContentType := 'application/json';

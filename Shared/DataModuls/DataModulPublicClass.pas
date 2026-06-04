@@ -49,7 +49,7 @@ begin
 
   try
     // === Body parsen ===
-    Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+    Body := ParseJSONObject(Request.Content);
     if not Assigned(Body) then
       raise Exception.Create('Kein gueltiges JSON im Request-Body.');
 

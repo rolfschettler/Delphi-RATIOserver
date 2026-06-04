@@ -37,6 +37,11 @@ function BlobToBase64(Field: TField): string;
 procedure SetBase64ToBlob(const Base64: string; AField: TField);
 function GetValueCaseInsensitive(JsonObj: TJSONObject; const key: string): TJSONValue;
 
+// Leak-sicherer Ersatz für: TJSONObject.ParseJSONValue(X) as TJSONObject
+// Liefert das TJSONObject (Aufrufer übernimmt Eigentum) oder nil, wenn der Inhalt
+// kein gültiges JSON-Objekt ist. Nicht-Objekt-Werte werden freigegeben (kein Leak).
+function ParseJSONObject(const AJson: string): TJSONObject;
+
 // Serialisiert ein geöffnetes Dataset als { "header": {...Feldtypen...}, "data": [...] }
 // WithBlob = True: BLOB-Felder als Base64, sonst als Platzhalter 'BLOB'
 function SerializeQuery(Dataset: TDataSet; WithBlob: Boolean = False): string;
@@ -92,7 +97,8 @@ begin
   Bytes  := TNetEncoding.Base64.DecodeStringToBytes(Base64);
   Stream := TMemoryStream.Create;
   try
-    Stream.WriteBuffer(Bytes, Length(Bytes));
+    if Length(Bytes) > 0 then
+      Stream.WriteBuffer(Bytes[0], Length(Bytes)); // Bytes[0]: Daten schreiben, nicht die Array-Variable
     Stream.Position := 0;
     TBlobField(AField).LoadFromStream(Stream);
   finally
@@ -111,6 +117,18 @@ begin
       Result := Pair.JsonValue;
       Exit;
     end;
+end;
+
+function ParseJSONObject(const AJson: string): TJSONObject;
+var
+  V: TJSONValue;
+begin
+  Result := nil;
+  V := TJSONObject.ParseJSONValue(AJson);
+  if V is TJSONObject then
+    Result := TJSONObject(V)
+  else
+    V.Free;   // nil-sicher; gibt geparste Nicht-Objekt-Werte frei
 end;
 
 // ---------------------------------------------------------------------------

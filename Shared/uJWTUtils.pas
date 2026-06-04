@@ -127,7 +127,10 @@ begin
       Result := True;
     except
       on e: Exception do
-        raise Exception.Create('fehlerhafter Token: ' + e.message)
+      begin
+        FreeAndNil(AClaims);   // verhindert Leck, falls nach erfolgreichem Verify geworfen wird
+        raise Exception.Create('fehlerhafter Token: ' + e.message);
+      end;
     end;
 
   finally

@@ -207,7 +207,7 @@ var
   Q:        TFDQuery;
   ParamKey: string;
 begin
-  Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
     Body := TJSONObject.Create;
   try
@@ -264,7 +264,7 @@ VAR
   ParamName: string;
   i:Integer;
 begin
-  Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Body := ParseJSONObject(Request.Content);
   try
   if not Assigned(Body) then
     raise Exception.Create('Kein gültiges JSON im Request-Body.');
@@ -320,7 +320,7 @@ var
   i:         Integer;
   CountParams: TDictionary<string, string>;
 begin
-  Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Body := ParseJSONObject(Request.Content);
 
   if not Assigned(Body) then
     raise Exception.Create('Kein gültiges JSON im Request-Body.');
@@ -403,7 +403,7 @@ var
   KeyValue: string;
   Q:        TFDQuery;
 begin
-  Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
     raise Exception.Create('Kein gültiges JSON im Request-Body.');
   try
@@ -441,7 +441,7 @@ var
   Count: Integer;
   Q:     TFDQuery;
 begin
-  Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
     raise Exception.Create('Kein gültiges JSON.');
   try
@@ -494,7 +494,7 @@ var
   Count:     Integer;
   Q:         TFDQuery;
 begin
-  Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
     raise Exception.Create('Kein gültiges JSON.');
   try
@@ -546,7 +546,7 @@ var
   KeyValue: TJSONValue;
   Q:        TFDQuery;
 begin
-  Body := TJSONObject.ParseJSONValue(Request.Content) as TJSONObject;
+  Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
     raise Exception.Create('Kein gültiges JSON.');
   try

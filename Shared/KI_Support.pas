@@ -7,7 +7,7 @@ uses
   System.Net.HttpClient, System.Net.mime, System.Net.HttpClientComponent, IdGlobal, IdCoderMIME,
   System.Net.URLClient, System.JSON, System.NetEncoding,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  System.IOUtils, DateUtils;
+  System.IOUtils, DateUtils, webUtils;
 
 
 function Analyze_File_V2(FStream: TStream; const FilePath, UserPrompt, ApiKey: string): String;
@@ -145,7 +145,9 @@ begin
         if Response.StatusCode <> 200 then
           raise Exception.Create('API Fehler: ' + Response.ContentAsString);
 
-        JsonResp := TJSONObject.ParseJSONValue(Response.ContentAsString) as TJSONObject;
+        JsonResp := ParseJSONObject(Response.ContentAsString);
+        if not Assigned(JsonResp) then
+          raise Exception.Create('Unerwartete API-Antwort (kein JSON-Objekt).');
         try
           OutputArray := JsonResp.GetValue<TJSONArray>('output');
           if Assigned(OutputArray) and (OutputArray.Count > 0) then
