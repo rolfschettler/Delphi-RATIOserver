@@ -475,8 +475,16 @@ begin
   FRouter.AddRoute('/dispo/geteinsatzbyid', CreateDataModulDispo, TDataModulDispo(nil).getEinsatzById,true,false);
   FRouter.AddRoute('/dispo/getfahrergruppen', CreateDataModulDispo, TDataModulDispo(nil).getfahrergruppen,true,false);
   FRouter.AddRoute('/dispo/getpersonalstamm', CreateDataModulDispo, TDataModulDispo(nil).getpersonalstamm,true,false);
+  FRouter.AddRoute('/dispo/getFreiesPersonal', CreateDataModulDispo, TDataModulDispo(nil).getFreiesPersonal,true,false);
+
+
+
 
   FRouter.AddRoute('/dispo/geteinsatzarten', CreateDataModulDispo, TDataModulDispo(nil).geteinsatzarten,true,false);
+  FRouter.AddRoute('/dispo/getnextEinsatzkey', CreateDataModulDispo, TDataModulDispo(nil).getnextEinsatzkey,true,false);
+  FRouter.AddRoute('/dispo/inserteinsatz', CreateDataModulDispo, TDataModulDispo(nil).insertEinsatz,true,false);
+  FRouter.AddRoute('/dispo/updateeinsatz', CreateDataModulDispo, TDataModulDispo(nil).updateEinsatz,true,false);
+  FRouter.AddRoute('/dispo/deleteeinsatz', CreateDataModulDispo, TDataModulDispo(nil).deleteEinsatz,true,false);
 
 
 

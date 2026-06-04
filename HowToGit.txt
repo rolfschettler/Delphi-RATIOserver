@@ -23,6 +23,7 @@ bash# Am Anfang des Tages: Updates runterladen
 git pull
 
 # ... deine Änderungen ...
+# comitten........
 
 # Am Ende: Pushen
 git push
@@ -39,3 +40,22 @@ git restore datei.pas
 
 # Alle Änderungen verwerfen
 git restore .
+
+
+
+###########################################branch anlegen
+git fetch --prune
+git status -> schauen was los ist
+Wenn alles OK:
+git switch -c develop
+git push -u origin develop
+
+
+
+################################# Version abschließen
+git switch main
+git merge develop
+git tag v1.0 -m "Version 1.0"
+git push
+git push origin v1.0
+
