@@ -71,7 +71,7 @@ end;
     Fehlende Werte erzeugen KEINEN Fehler, sondern erscheinen im Ergebnis als null.
   ----------------------------------------------------------------------------
 
-  Harry und Rolf
+  Harry
 
   *)
 
