@@ -70,7 +70,12 @@ end;
       - nichts    : POST /dispo/demo ohne Parameter -> alle Felder als null
     Fehlende Werte erzeugen KEINEN Fehler, sondern erscheinen im Ergebnis als null.
   ----------------------------------------------------------------------------
-*)
+
+  Harry
+
+  *)
+
+
 procedure TDataModulDispo.Demo;
 var
   // --- 1) URL-Parameter ---
