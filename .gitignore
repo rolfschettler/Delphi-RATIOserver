@@ -27,3 +27,4 @@ cgi-config/config.ini
 .vscode/
 .idea/
 *.rsm
+harr*.bat

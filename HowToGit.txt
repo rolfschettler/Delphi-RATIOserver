@@ -52,10 +52,33 @@ git push -u origin develop
 
 
 
-################################# Version abschließen
-git switch main
-git merge develop
-git tag v1.0 -m "Version 1.0"
+####################Fremden branch abholen
+git fetch
+git switch develop
+git merge feature/harry
 git push
-git push origin v1.0
+
+
+
+##############################den fremden brunch aktuallisieren
+git switch feature/harry
+git fetch
+git merge develop
+git push origin feature/harry
+git switch develop
+
+
+
+
+################################# Version abschließen
+
+1. git switch main
+2. git merge develop
+3. git push
+4. git tag v1.0 -m "Version 1.0"   ← ERST JETZT
+5. git push origin v1.0
+6. git switch develop
+
+
+
 
