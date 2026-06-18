@@ -25,6 +25,7 @@ type
     procedure KI_GetTeilnehmer();
     procedure ReadTeilnehmer();
     procedure teilnehmerformcsv();
+    procedure getdokument();
 
   end;
 
@@ -32,7 +33,7 @@ function CreateDataModulAddOn(Request: TWebRequest; Response: TWebResponse): TOb
 
 implementation
 
-uses plugin, webUtils, PHPSupport, KI_Support, System.StrUtils;
+uses plugin, webUtils, PHPSupport, KI_Support, System.StrUtils, System.NetEncoding;
 
 function CreateDataModulAddOn(Request: TWebRequest; Response: TWebResponse): TObject;
 begin
@@ -761,6 +762,73 @@ begin
     Response.Content := PHP_Call('showroute', Params, GetAuthToken);
   finally
     Params.Free;
+  end;
+end;
+
+// Route: /addon/getdokument  |  Auth: true  |  LocalOnly: false
+
+procedure TDataModulAddOn.getdokument;
+var
+  Nr: Integer;
+  Art, Name, Mime: string;
+  MS: TMemoryStream;
+  BlobField: TBlobField;
+  Q: TFDQuery;
+begin
+  Nr := StrToIntDef(Request.QueryFields.Values['nr'], 0);
+  if Nr = 0 then
+    raise Exception.Create('getdokument: Parameter ''nr'' fehlt');
+
+  Q := TFDQuery.Create(nil);  // lokal, neu, sauber
+  MS := nil;
+  try
+    Q.Connection := Query.Connection;
+    Q.FetchOptions.AutoFetchAll := afAll;
+    Q.SQL.Text :=
+      'SELECT nr, doktyp, art, bereich, name, haupttext FROM vorlagen WHERE nr = :nr';
+    Q.ParamByName('nr').AsInteger := Nr;
+    Q.Open;
+
+    if Q.IsEmpty then
+      raise Exception.Create('getdokument: Kein Datensatz gefunden');
+
+    Art  := LowerCase(Trim(Q.FieldByName('art').AsString));
+    Name := Trim(Q.FieldByName('name').AsString);
+    if Name = '' then
+      Name := 'dokument' + Art;
+
+    if      Art = '.pdf'  then Mime := 'application/pdf'
+    else if Art = '.docx' then Mime := 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    else if Art = '.doc'  then Mime := 'application/msword'
+    else if Art = '.xlsx' then Mime := 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    else if Art = '.xls'  then Mime := 'application/vnd.ms-excel'
+    else if Art = '.png'  then Mime := 'image/png'
+    else if Art = '.jpg'  then Mime := 'image/jpeg'
+    else if Art = '.jpeg' then Mime := 'image/jpeg'
+    else                       Mime := 'application/octet-stream';
+
+    BlobField := Q.FieldByName('haupttext') as TBlobField;
+    if BlobField.IsNull or (BlobField.BlobSize = 0) then
+      raise Exception.Create('getdokument: Kein Dateiinhalt vorhanden');
+
+    MS := TMemoryStream.Create;
+    BlobField.SaveToStream(MS);
+    Q.Close;
+
+    if MS.Size = 0 then
+      raise Exception.Create('getdokument: BLOB-Feld ist leer');
+
+    MS.Position := 0;
+    Response.ContentType   := Mime;
+    Response.ContentLength := MS.Size;
+    Response.SetCustomHeader('Content-Disposition', 'inline; filename="' + Name + '"');
+    Response.StatusCode    := 200;
+    Response.ContentStream := MS;  // WebBroker übernimmt Ownership
+    MS := nil;                     // damit finally MS nicht freigibt
+
+  finally
+    Q.Free;
+    MS.Free;  // nil-safe — gibt nur frei wenn WebBroker es nicht übernommen hat
   end;
 end;
 

@@ -8,7 +8,6 @@ object DataModulBaseClass: TDataModulBaseClass
     FetchOptions.AssignedValues = [evItems, evRowsetSize, evUnidirectional]
     FetchOptions.Unidirectional = True
     FetchOptions.RowsetSize = 1000
-    FetchOptions.Items = []
     ResourceOptions.AssignedValues = [rvSilentMode]
     ResourceOptions.SilentMode = True
     UpdateOptions.AssignedValues = [uvEDelete, uvEInsert, uvEUpdate, uvCountUpdatedRecords, uvCheckRequired, uvCheckReadOnly, uvCheckUpdatable]
@@ -20,7 +19,7 @@ object DataModulBaseClass: TDataModulBaseClass
     UpdateOptions.CheckReadOnly = False
     UpdateOptions.CheckUpdatable = False
     SQL.Strings = (
-      'select * from adressen')
+      '')
     Left = 208
     Top = 18
   end

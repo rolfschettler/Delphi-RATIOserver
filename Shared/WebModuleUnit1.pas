@@ -437,6 +437,7 @@ begin
   FRouter.AddRoute('/calculateroute',     CreateDataModulAddOn, TDataModulAddOn(nil).calculateroute); // TODO: LocalOnly=true ergänzen
   FRouter.AddRoute('/ki_getteilnehmer',   CreateDataModulAddOn, TDataModulAddOn(nil).KI_GetTeilnehmer);
   FRouter.AddRoute('/teilnehmerfromcsv', CreateDataModulAddOn, TDataModulAddOn(nil).teilnehmerformcsv);
+  FRouter.AddRoute('/getdokument', CreateDataModulAddOn, TDataModulAddOn(nil).getdokument,false,false);
 
   //PUBLIC API: Diese Api können auch von außerhalb des localhost aufgerufen werden
 
