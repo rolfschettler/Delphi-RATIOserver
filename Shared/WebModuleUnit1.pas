@@ -468,6 +468,13 @@ begin
 
   //ANMIET
   FRouter.AddRoute('/anmiet/demo', CreateDataModulAnmiet, TDataModulAnmiet(nil).Demo);
+  FRouter.AddRoute('/fahrtenbuch/getfahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).getFahrtenbuch);
+  FRouter.AddRoute('/fahrtenbuch/getfahrtenbuchfiltered', CreateDataModulAnmiet, TDataModulAnmiet(nil).getFahrtenbuchFiltered);
+  FRouter.AddRoute('/fahrtenbuch/getfahrtenbuchbyid', CreateDataModulAnmiet, TDataModulAnmiet(nil).getFahrtenbuchById);
+  FRouter.AddRoute('/fahrtenbuch/getnextkey', CreateDataModulAnmiet, TDataModulAnmiet(nil).getNextKey);
+  FRouter.AddRoute('/fahrtenbuch/insertfahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).insertFahrtenbuch);
+  FRouter.AddRoute('/fahrtenbuch/updatefahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).updateFahrtenbuch);
+  FRouter.AddRoute('/fahrtenbuch/deletefahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteFahrtenbuch);
 
   //DISPO
   FRouter.AddRoute('/dispo/demo', CreateDataModulDispo, TDataModulDispo(nil).Demo);
