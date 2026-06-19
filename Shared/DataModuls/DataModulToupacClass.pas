@@ -1,4 +1,4 @@
-﻿unit DataModulDemoClass;
+unit DataModulToupacClass;
 
 interface
 
@@ -9,7 +9,7 @@ uses
   FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Phys.IB, FireDAC.Phys.IBDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client, FireDAC.Comp.DataSet;
 
 type
-  TDataModulDemo = class(TDataModulTableBase)
+  TDataModulToupac = class(TDataModulTableBase)
   private
 
     { Private-Deklarationen }
@@ -19,14 +19,14 @@ type
   end;
 
 
-function CreateDataModulDemo(Request: TWebRequest; Response: TWebResponse): TObject;
+function CreateDataModulToupac(Request: TWebRequest; Response: TWebResponse): TObject;
 
 implementation
 uses webutils;
 
-function CreateDataModulDemo(Request: TWebRequest; Response: TWebResponse): TObject;
+function CreateDataModulToupac(Request: TWebRequest; Response: TWebResponse): TObject;
 begin
-  Result := TDataModulDemo.Create(Request, Response);
+  Result := TDataModulToupac.Create(Request, Response);
 end;
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
@@ -48,24 +48,24 @@ end;
 
   ----------------------------- Aufruf (Postman) -----------------------------
     Methode : POST   (GET reicht, wenn nur URL-Parameter genutzt werden)
-    URL     : http://localhost:<port>/ibapi/dispo/demo?id=42&filter=Mueller
+    URL     : http://localhost:<port>/ibapi/toupac/demo?id=42&filter=Mueller
     Header  : Authorization: Bearer <JWT-Token>     (Route verlangt Auth)
               Content-Type : application/json
     Body    : (raw / JSON, optional)
               { "name": "Helga", "menge": 5 }
 
     Test-Kombinationen:
-      - nur URL   : POST /dispo/demo?id=42&filter=Mueller   (Body leer lassen)
-      - nur Body  : POST /dispo/demo   Body { "name":"Helga","menge":5 }
+      - nur URL   : POST /toupac/demo?id=42&filter=Mueller   (Body leer lassen)
+      - nur Body  : POST /toupac/demo   Body { "name":"Helga","menge":5 }
       - gemischt  : beide Quellen gleichzeitig
-      - nichts    : POST /dispo/demo ohne Parameter -> alle Felder als null
+      - nichts    : POST /toupac/demo ohne Parameter -> alle Felder als null
     Fehlende Werte erzeugen KEINEN Fehler, sondern erscheinen im Ergebnis als null.
   ----------------------------------------------------------------------------
 
   *)
 
 
-procedure TDataModulDemo.Demo;
+procedure TDataModulToupac.Demo;
 var
   // --- 1) URL-Parameter ---
   idText      : string;
@@ -83,20 +83,13 @@ var
   UrlObj, BodyObj, Ergebnis: TJSONObject;
 begin
   // ===== 1) Parameter aus der URL (QueryString) =====
-  // QueryFields.Values liefert IMMER einen String ('' wenn nicht vorhanden) -
-  // also nie nil und nie eine Exception.
-
-  // a) numerisch "id": sicher ueber StrToIntDef, Praesenz ueber ''-Pruefung
   idText    := Trim(Request.QueryFields.Values['id']);
   idGesetzt := idText <> '';
-  id        := StrToIntDef(idText, 0);   // Default 0, falls fehlt oder keine Zahl
+  id        := StrToIntDef(idText, 0);
 
-  // b) String "filter": '' bedeutet "nicht gesetzt"
   filter := Trim(Request.QueryFields.Values['filter']);
 
   // ===== 2) Parameter aus dem JSON-Body =====
-  // ParseJSONObject ist leak-sicher und liefert das Objekt ODER nil
-  // (nil = Body leer, ungueltig oder kein JSON-Objekt).
   name         := '';
   nameGesetzt  := False;
   menge        := 0;
@@ -105,12 +98,9 @@ begin
   Body := ParseJSONObject(Request.Content);
   if Assigned(Body) then
   try
-    // a) String "name": GetValue<string> mit Default wirft nicht, auch wenn Feld fehlt
     name        := Trim(Body.GetValue<string>('name', ''));
     nameGesetzt := name <> '';
 
-    // b) numerisch "menge": GetValue liefert nil, wenn das Feld fehlt
-    //    -> auf Assigned UND (nicht) Null pruefen, bevor man den Wert nutzt
     mengeVal := Body.GetValue('menge');
     if Assigned(mengeVal) and not mengeVal.Null then
     begin
@@ -118,12 +108,10 @@ begin
       mengeGesetzt := True;
     end;
   finally
-    Body.Free;   // Body gehoert uns -> immer freigeben
+    Body.Free;
   end;
 
   // ===== 3) Antwort aufbauen =====
-  // Pro Parameter: Wert wenn gesetzt, sonst JSON null. So ist sofort erkennbar,
-  // was tatsaechlich uebergeben wurde.
   Ergebnis := TJSONObject.Create;
   try
     UrlObj := TJSONObject.Create;
@@ -138,14 +126,14 @@ begin
     if mengeGesetzt then BodyObj.AddPair('menge', TJSONNumber.Create(menge))
                     else BodyObj.AddPair('menge', TJSONNull.Create);
 
-    Ergebnis.AddPair('url',  UrlObj);   // Ownership geht an Ergebnis ueber
-    Ergebnis.AddPair('body', BodyObj);  // Ownership geht an Ergebnis ueber
+    Ergebnis.AddPair('url',  UrlObj);
+    Ergebnis.AddPair('body', BodyObj);
 
     Response.ContentType := 'application/json';
     Response.StatusCode  := 200;
     Response.Content     := Ergebnis.ToJSON;
   finally
-    Ergebnis.Free;   // gibt UrlObj + BodyObj rekursiv mit frei
+    Ergebnis.Free;
   end;
 end;
 

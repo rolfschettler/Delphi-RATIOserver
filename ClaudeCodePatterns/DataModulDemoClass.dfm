@@ -1,0 +1,2 @@
+inherited DataModulDemo: TDataModulDemo
+end

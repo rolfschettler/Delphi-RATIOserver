@@ -87,6 +87,7 @@ DataModulAdressenClass,
 DataModulTouristikClass,
 DataModulAnmietClass,
 DataModulDispoClass,
+DataModulToupacClass,
 DataModulIncomingClass,
 DataModulPublicClass;
 
@@ -495,6 +496,9 @@ begin
   FRouter.AddRoute('/dispo/deleteeinsatz', CreateDataModulDispo, TDataModulDispo(nil).deleteEinsatz,true,false);
 
 
+
+  //TOUPAC
+  FRouter.AddRoute('/toupac/demo', CreateDataModulToupac, TDataModulToupac(nil).Demo);
 
   //INCOMING
   FRouter.AddRoute('/incoming/demo',           CreateDataModulIncoming, TDataModulIncoming(nil).Demo);
