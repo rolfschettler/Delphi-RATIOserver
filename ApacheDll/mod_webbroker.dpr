@@ -30,7 +30,8 @@ uses
   PHPSupport in '..\Shared\PHPSupport.pas',
   KI_Support in '..\Shared\KI_Support.pas',
   DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule},
-  DataModulToupacClass in '..\Shared\DataModuls\DataModulToupacClass.pas' {DataModulToupac: TDataModule};
+  DataModulToupacClass in '..\Shared\DataModuls\DataModulToupacClass.pas' {DataModulToupac: TDataModule},
+  DataModulFuhrparkClass in '..\Shared\DataModuls\DataModulFuhrparkClass.pas' {DataModulFuhrpark: TDataModule};
 
 {$R *.res}
 

@@ -27,7 +27,8 @@ uses
   webUtils in '..\Shared\webUtils.pas',
   DataModulPublicClass in '..\Shared\DataModuls\DataModulPublicClass.pas' {DataModulPublic: TDataModule},
   DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule},
-  DataModulToupacClass in '..\Shared\DataModuls\DataModulToupacClass.pas' {DataModulToupac: TDataModule};
+  DataModulToupacClass in '..\Shared\DataModuls\DataModulToupacClass.pas' {DataModulToupac: TDataModule},
+  DataModulFuhrparkClass in '..\Shared\DataModuls\DataModulFuhrparkClass.pas' {DataModulFuhrpark: TDataModule};
 
 {$R *.res}
 

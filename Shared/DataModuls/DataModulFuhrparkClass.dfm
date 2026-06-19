@@ -1,0 +1,2 @@
+inherited DataModulFuhrpark: TDataModulFuhrpark
+end

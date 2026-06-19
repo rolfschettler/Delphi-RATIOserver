@@ -88,6 +88,7 @@ DataModulTouristikClass,
 DataModulAnmietClass,
 DataModulDispoClass,
 DataModulToupacClass,
+DataModulFuhrparkClass,
 DataModulIncomingClass,
 DataModulPublicClass;
 
@@ -506,6 +507,16 @@ begin
   FRouter.AddRoute('/toupac/insertt_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).insertT_Vorgang);
   FRouter.AddRoute('/toupac/updatet_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).updateT_Vorgang);
   FRouter.AddRoute('/toupac/deletet_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).deleteT_Vorgang);
+
+  //FUHRPARK
+  FRouter.AddRoute('/fuhrpark/demo',                    CreateDataModulFuhrpark, TDataModulFuhrpark(nil).Demo);
+  FRouter.AddRoute('/fuhrpark/getfahrtenbuch',          CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuch);
+  FRouter.AddRoute('/fuhrpark/getfahrtenbuchfiltered',  CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchFiltered);
+  FRouter.AddRoute('/fuhrpark/getfahrtenbuchbyid',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchById);
+  FRouter.AddRoute('/fuhrpark/getfahrtenbuchkey',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchKey);
+  FRouter.AddRoute('/fuhrpark/insertfahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertFahrtenbuch);
+  FRouter.AddRoute('/fuhrpark/updatefahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateFahrtenbuch);
+  FRouter.AddRoute('/fuhrpark/deletefahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteFahrtenbuch);
 
   //INCOMING
   FRouter.AddRoute('/incoming/demo',           CreateDataModulIncoming, TDataModulIncoming(nil).Demo);

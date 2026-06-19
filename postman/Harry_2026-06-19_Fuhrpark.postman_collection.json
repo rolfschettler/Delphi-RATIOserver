@@ -1,0 +1,184 @@
+{
+  "info": {
+    "name": "Fuhrpark – Fahrtenbuch CRUD",
+    "_postman_id": "fuhrpark-fahrtenbuch-2026-06-19",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "demo",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Helga\",\n  \"menge\": 5\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseURL}}/fuhrpark/demo?id=42&filter=Mueller",
+          "host": ["{{baseURL}}"],
+          "path": ["fuhrpark", "demo"],
+          "query": [
+            { "key": "id",     "value": "42" },
+            { "key": "filter", "value": "Mueller" }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "getfahrtenbuch",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"von\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseURL}}/fuhrpark/getfahrtenbuch",
+          "host": ["{{baseURL}}"],
+          "path": ["fuhrpark", "getfahrtenbuch"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "getfahrtenbuchfiltered",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fields\": \"*\",\n  \"kennzeichen\": \"B-RX 123\",\n  \"orderby\": \"von\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseURL}}/fuhrpark/getfahrtenbuchfiltered",
+          "host": ["{{baseURL}}"],
+          "path": ["fuhrpark", "getfahrtenbuchfiltered"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "getfahrtenbuchbyid",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseURL}}/fuhrpark/getfahrtenbuchbyid",
+          "host": ["{{baseURL}}"],
+          "path": ["fuhrpark", "getfahrtenbuchbyid"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "getfahrtenbuchkey",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/fuhrpark/getfahrtenbuchkey",
+          "host": ["{{baseURL}}"],
+          "path": ["fuhrpark", "getfahrtenbuchkey"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "insertfahrtenbuch",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"kz\": \"A\",\n  \"von\": \"2026-06-19T08:00:00\",\n  \"bis\": \"2026-06-19T18:00:00\",\n  \"strecke\": \"Berlin - Hamburg\",\n  \"auftragsgeber\": \"Mustermann GmbH\",\n  \"kennzeichen\": \"B-RX 123\",\n  \"fahrer\": \"Schmidt\",\n  \"kmanfang\": 12000,\n  \"kmende\": 12750,\n  \"kminland\": 750,\n  \"kmausland\": 0,\n  \"kmleer\": 50,\n  \"kmgesamt\": 750,\n  \"personen\": 40\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseURL}}/fuhrpark/insertfahrtenbuch",
+          "host": ["{{baseURL}}"],
+          "path": ["fuhrpark", "insertfahrtenbuch"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "updatefahrtenbuch",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nr\": 1,\n  \"strecke\": \"Berlin - Hamburg - Kiel\",\n  \"kmende\": 12900,\n  \"kmgesamt\": 900\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseURL}}/fuhrpark/updatefahrtenbuch",
+          "host": ["{{baseURL}}"],
+          "path": ["fuhrpark", "updatefahrtenbuch"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "deletefahrtenbuch",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nr\": 1\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseURL}}/fuhrpark/deletefahrtenbuch",
+          "host": ["{{baseURL}}"],
+          "path": ["fuhrpark", "deletefahrtenbuch"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
