@@ -1,0 +1,2 @@
+inherited DataModulToupac: TDataModulToupac
+end

@@ -1,0 +1,216 @@
+{
+  "info": {
+    "name": "Rolf_2026-06-19 — Toupac Controller (alle Endpunkte)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Toupac",
+      "item": [
+        {
+          "name": "IBApi toupac/demo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"name\": \"Helga\", \"menge\": 5 }",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/demo?id=42&filter=Mueller",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "demo"],
+              "query": [
+                { "key": "id",     "value": "42" },
+                { "key": "filter", "value": "Mueller" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IBApi toupac/gett_vorgangkey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_vorgangkey",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_vorgangkey"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IBApi toupac/gett_vorgang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"fields\": [\"nr\", \"vorgangsnr\", \"agenturnr\", \"buchender\", \"datum_von\", \"datum_bis\", \"status\", \"endpreis\"], \"orderby\": \"nr\" }",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_vorgang",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_vorgang"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IBApi toupac/gett_vorgangfiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"fields\": [\"nr\", \"vorgangsnr\", \"agenturnr\", \"status\", \"datum_von\", \"datum_bis\"], \"agenturnr\": 1, \"orderby\": \"nr\" }",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_vorgangfiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_vorgangfiltered"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IBApi toupac/gett_vorgangbyid",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nr\": 1, \"fields\": \"*\" }",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_vorgangbyid",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_vorgangbyid"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IBApi toupac/insertt_vorgang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nr\": 1, \"agenturnr\": 1, \"buchender\": 100, \"vorgangsnr\": \"VG-2026-0001\", \"erstellt\": \"2026-06-19\", \"personen\": 2, \"datum_von\": \"2026-07-01\", \"datum_bis\": \"2026-07-14\", \"endpreis\": 2490.00, \"status\": 0, \"agenturcode\": \"AG001\", \"reisebezeichnung\": \"Mallorca All-Inclusive\", \"expedient\": \"Rolf\", \"veranstalter\": \"TUI\", \"ziel\": \"Mallorca\", \"reiseart\": \"Pauschalreise\", \"buchungsdatum\": \"2026-06-19\", \"mandant\": \"RATIO\" }",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_vorgang",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "insertt_vorgang"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IBApi toupac/updatet_vorgang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nr\": 1, \"status\": 1, \"endpreis\": 2590.00, \"reisebezeichnung\": \"Mallorca All-Inclusive (aktualisiert)\", \"geaendert\": \"2026-06-19\", \"geaendertvon\": \"Rolf\" }",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_vorgang",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "updatet_vorgang"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IBApi toupac/deletet_vorgang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nr\": 1 }",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/deletet_vorgang",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "deletet_vorgang"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

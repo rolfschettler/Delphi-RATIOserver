@@ -1,4 +1,4 @@
-﻿unit DataModulAnmietClass;
+﻿unit DataModulDemoClass;
 
 interface
 
@@ -9,7 +9,7 @@ uses
   FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Phys.IB, FireDAC.Phys.IBDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client, FireDAC.Comp.DataSet;
 
 type
-  TDataModulAnmiet = class(TDataModulTableBase)
+  TDataModulDemo = class(TDataModulTableBase)
   private
 
     { Private-Deklarationen }
@@ -19,14 +19,14 @@ type
   end;
 
 
-function CreateDataModulAnmiet(Request: TWebRequest; Response: TWebResponse): TObject;
+function CreateDataModulDemo(Request: TWebRequest; Response: TWebResponse): TObject;
 
 implementation
 uses webutils;
 
-function CreateDataModulAnmiet(Request: TWebRequest; Response: TWebResponse): TObject;
+function CreateDataModulDemo(Request: TWebRequest; Response: TWebResponse): TObject;
 begin
-  Result := TDataModulAnmiet.Create(Request, Response);
+  Result := TDataModulDemo.Create(Request, Response);
 end;
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
@@ -65,7 +65,7 @@ end;
   *)
 
 
-procedure TDataModulDispo.Demo;
+procedure TDataModulDemo.Demo;
 var
   // --- 1) URL-Parameter ---
   idText      : string;

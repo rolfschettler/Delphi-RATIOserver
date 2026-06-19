@@ -26,7 +26,8 @@ uses
   KI_Support in '..\Shared\KI_Support.pas',
   webUtils in '..\Shared\webUtils.pas',
   DataModulPublicClass in '..\Shared\DataModuls\DataModulPublicClass.pas' {DataModulPublic: TDataModule},
-  DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule};
+  DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule},
+  DataModulToupacClass in '..\Shared\DataModuls\DataModulToupacClass.pas' {DataModulToupac: TDataModule};
 
 {$R *.res}
 

@@ -29,7 +29,8 @@ uses
   Fastrep in '..\Shared\Fastreport\Fastrep.pas' {ReportForm},
   PHPSupport in '..\Shared\PHPSupport.pas',
   KI_Support in '..\Shared\KI_Support.pas',
-  DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule};
+  DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule},
+  DataModulToupacClass in '..\Shared\DataModuls\DataModulToupacClass.pas' {DataModulToupac: TDataModule};
 
 {$R *.res}
 
