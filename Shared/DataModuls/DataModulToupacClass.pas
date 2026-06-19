@@ -16,6 +16,13 @@ type
   public
     { Public-Deklarationen }
      procedure Demo;
+     procedure getT_Vorgang;
+     procedure getT_VorgangFiltered;
+     procedure getT_VorgangById;
+     procedure getT_VorgangKey;
+     procedure insertT_Vorgang;
+     procedure updateT_Vorgang;
+     procedure deleteT_Vorgang;
   end;
 
 
@@ -139,5 +146,150 @@ end;
 
 
 
+
+
+// Route: /toupac/gett_vorgang  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_Vorgang;
+// Body: { "fields": ["nr","vorgangsnr",...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..80] of string = (
+    'nr','agenturnr','buchender','vorgangsnr','erstellt','geaendert','personen',
+    'datum_von','datum_bis','endpreis','status','agenturcode','katalogreisenr',
+    'reisebezeichnung','optionsdatum','expedient','bemerkung','fibukontokunde',
+    'fibukontoagentur','sachkontoreise','buchungsdatum','faelligam','veranstalter',
+    'sammelrechnung','nrkreis','rechnungsnr','stand','direktinkasso','anzahlung',
+    'anzfaelligam','erstelltvon','geaendertvon','ansprechpartner','entstehung',
+    'bereich','zusatzinfo','reisegruppe','zahlungsart','ausreise','kontaktentstehung',
+    'reiseart','ziel','filiale','zugeordnetzu','abteilung','hauptkategorie',
+    'vgedruckt','bgedruckt','auftrag_erteilt_am','auftrag_erteilt_von','stornogrund',
+    'lastmaxstatus','sammelrechnungnr','originalreisedatum','terminnr','terminnr_rueck',
+    'knotenhin','knotenrueck','statusinfo','vorgangsstatus','vertretung','lastgeaendert',
+    'fibu_archiv_am','stornodatum','aufteilung','abrechnungsart','hotelkategorie',
+    'versandart','unterschrift','untertitel','app','festbuchung_am','schnittstelle_sendtime',
+    'sprache','aktion','bank','externe_nummer','rechnungsart','stornotermin',
+    'vk_waehrung','mandant'
+  );
+begin
+  DoSelect('T_VORGANG', ALLOWED);
+end;
+
+// Route: /toupac/gett_vorgangfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_VorgangFiltered;
+// Body: { "fields": [...] | "*", "agenturnr": 42, "orderby": "nr" }
+const
+  ALLOWED: array[0..80] of string = (
+    'nr','agenturnr','buchender','vorgangsnr','erstellt','geaendert','personen',
+    'datum_von','datum_bis','endpreis','status','agenturcode','katalogreisenr',
+    'reisebezeichnung','optionsdatum','expedient','bemerkung','fibukontokunde',
+    'fibukontoagentur','sachkontoreise','buchungsdatum','faelligam','veranstalter',
+    'sammelrechnung','nrkreis','rechnungsnr','stand','direktinkasso','anzahlung',
+    'anzfaelligam','erstelltvon','geaendertvon','ansprechpartner','entstehung',
+    'bereich','zusatzinfo','reisegruppe','zahlungsart','ausreise','kontaktentstehung',
+    'reiseart','ziel','filiale','zugeordnetzu','abteilung','hauptkategorie',
+    'vgedruckt','bgedruckt','auftrag_erteilt_am','auftrag_erteilt_von','stornogrund',
+    'lastmaxstatus','sammelrechnungnr','originalreisedatum','terminnr','terminnr_rueck',
+    'knotenhin','knotenrueck','statusinfo','vorgangsstatus','vertretung','lastgeaendert',
+    'fibu_archiv_am','stornodatum','aufteilung','abrechnungsart','hotelkategorie',
+    'versandart','unterschrift','untertitel','app','festbuchung_am','schnittstelle_sendtime',
+    'sprache','aktion','bank','externe_nummer','rechnungsart','stornotermin',
+    'vk_waehrung','mandant'
+  );
+  FILTER        = 'agenturnr = :agenturnr';
+  FILTER_PARAMS: array[0..0] of string = ('agenturnr');
+begin
+  DoSelectFiltered('T_VORGANG', ALLOWED, FILTER, FILTER_PARAMS);
+end;
+
+// Route: /toupac/gett_vorgangbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_VorgangById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..80] of string = (
+    'nr','agenturnr','buchender','vorgangsnr','erstellt','geaendert','personen',
+    'datum_von','datum_bis','endpreis','status','agenturcode','katalogreisenr',
+    'reisebezeichnung','optionsdatum','expedient','bemerkung','fibukontokunde',
+    'fibukontoagentur','sachkontoreise','buchungsdatum','faelligam','veranstalter',
+    'sammelrechnung','nrkreis','rechnungsnr','stand','direktinkasso','anzahlung',
+    'anzfaelligam','erstelltvon','geaendertvon','ansprechpartner','entstehung',
+    'bereich','zusatzinfo','reisegruppe','zahlungsart','ausreise','kontaktentstehung',
+    'reiseart','ziel','filiale','zugeordnetzu','abteilung','hauptkategorie',
+    'vgedruckt','bgedruckt','auftrag_erteilt_am','auftrag_erteilt_von','stornogrund',
+    'lastmaxstatus','sammelrechnungnr','originalreisedatum','terminnr','terminnr_rueck',
+    'knotenhin','knotenrueck','statusinfo','vorgangsstatus','vertretung','lastgeaendert',
+    'fibu_archiv_am','stornodatum','aufteilung','abrechnungsart','hotelkategorie',
+    'versandart','unterschrift','untertitel','app','festbuchung_am','schnittstelle_sendtime',
+    'sprache','aktion','bank','externe_nummer','rechnungsart','stornotermin',
+    'vk_waehrung','mandant'
+  );
+begin
+  DoSelectOne('T_VORGANG', ALLOWED, 'nr');
+end;
+
+// Route: /toupac/gett_vorgangkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_VorgangKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(T_VORGANG_NR_GEN,1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /toupac/insertt_vorgang  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.insertT_Vorgang;
+// Body: { "nr": 1, "agenturnr": 1, "vorgangsnr": "...", ... }
+const
+  ALLOWED: array[0..80] of string = (
+    'nr','agenturnr','buchender','vorgangsnr','erstellt','geaendert','personen',
+    'datum_von','datum_bis','endpreis','status','agenturcode','katalogreisenr',
+    'reisebezeichnung','optionsdatum','expedient','bemerkung','fibukontokunde',
+    'fibukontoagentur','sachkontoreise','buchungsdatum','faelligam','veranstalter',
+    'sammelrechnung','nrkreis','rechnungsnr','stand','direktinkasso','anzahlung',
+    'anzfaelligam','erstelltvon','geaendertvon','ansprechpartner','entstehung',
+    'bereich','zusatzinfo','reisegruppe','zahlungsart','ausreise','kontaktentstehung',
+    'reiseart','ziel','filiale','zugeordnetzu','abteilung','hauptkategorie',
+    'vgedruckt','bgedruckt','auftrag_erteilt_am','auftrag_erteilt_von','stornogrund',
+    'lastmaxstatus','sammelrechnungnr','originalreisedatum','terminnr','terminnr_rueck',
+    'knotenhin','knotenrueck','statusinfo','vorgangsstatus','vertretung','lastgeaendert',
+    'fibu_archiv_am','stornodatum','aufteilung','abrechnungsart','hotelkategorie',
+    'versandart','unterschrift','untertitel','app','festbuchung_am','schnittstelle_sendtime',
+    'sprache','aktion','bank','externe_nummer','rechnungsart','stornotermin',
+    'vk_waehrung','mandant'
+  );
+begin
+  DoInsert('T_VORGANG', ALLOWED);
+end;
+
+// Route: /toupac/updatet_vorgang  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.updateT_Vorgang;
+// Body: { "nr": 42, "agenturnr": 1, "vorgangsnr": "...", ... }
+const
+  ALLOWED: array[0..79] of string = (
+    'agenturnr','buchender','vorgangsnr','erstellt','geaendert','personen',
+    'datum_von','datum_bis','endpreis','status','agenturcode','katalogreisenr',
+    'reisebezeichnung','optionsdatum','expedient','bemerkung','fibukontokunde',
+    'fibukontoagentur','sachkontoreise','buchungsdatum','faelligam','veranstalter',
+    'sammelrechnung','nrkreis','rechnungsnr','stand','direktinkasso','anzahlung',
+    'anzfaelligam','erstelltvon','geaendertvon','ansprechpartner','entstehung',
+    'bereich','zusatzinfo','reisegruppe','zahlungsart','ausreise','kontaktentstehung',
+    'reiseart','ziel','filiale','zugeordnetzu','abteilung','hauptkategorie',
+    'vgedruckt','bgedruckt','auftrag_erteilt_am','auftrag_erteilt_von','stornogrund',
+    'lastmaxstatus','sammelrechnungnr','originalreisedatum','terminnr','terminnr_rueck',
+    'knotenhin','knotenrueck','statusinfo','vorgangsstatus','vertretung','lastgeaendert',
+    'fibu_archiv_am','stornodatum','aufteilung','abrechnungsart','hotelkategorie',
+    'versandart','unterschrift','untertitel','app','festbuchung_am','schnittstelle_sendtime',
+    'sprache','aktion','bank','externe_nummer','rechnungsart','stornotermin',
+    'vk_waehrung','mandant'
+  );
+begin
+  DoUpdate('T_VORGANG', ALLOWED, 'nr');
+end;
+
+// Route: /toupac/deletet_vorgang  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.deleteT_Vorgang;
+// Body: { "nr": 42 }
+begin
+  DoDelete('T_VORGANG', 'nr');
+end;
 
 end.

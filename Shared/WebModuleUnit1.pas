@@ -498,7 +498,14 @@ begin
 
 
   //TOUPAC
-  FRouter.AddRoute('/toupac/demo', CreateDataModulToupac, TDataModulToupac(nil).Demo);
+  FRouter.AddRoute('/toupac/demo',                CreateDataModulToupac, TDataModulToupac(nil).Demo);
+  FRouter.AddRoute('/toupac/gett_vorgang',          CreateDataModulToupac, TDataModulToupac(nil).getT_Vorgang);
+  FRouter.AddRoute('/toupac/gett_vorgangfiltered',  CreateDataModulToupac, TDataModulToupac(nil).getT_VorgangFiltered);
+  FRouter.AddRoute('/toupac/gett_vorgangbyid',      CreateDataModulToupac, TDataModulToupac(nil).getT_VorgangById);
+  FRouter.AddRoute('/toupac/gett_vorgangkey',       CreateDataModulToupac, TDataModulToupac(nil).getT_VorgangKey);
+  FRouter.AddRoute('/toupac/insertt_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).insertT_Vorgang);
+  FRouter.AddRoute('/toupac/updatet_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).updateT_Vorgang);
+  FRouter.AddRoute('/toupac/deletet_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).deleteT_Vorgang);
 
   //INCOMING
   FRouter.AddRoute('/incoming/demo',           CreateDataModulIncoming, TDataModulIncoming(nil).Demo);
