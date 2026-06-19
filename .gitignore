@@ -22,6 +22,8 @@ __recovery/
 *.tmp
 
 # Sonstiges
+ClaudeCodePatterns/token.local.txt
+ClaudeCodePatterns/dev.local.txt
 cgi-config/config.ini
 .DS_Store
 .vscode/

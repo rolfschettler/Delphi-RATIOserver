@@ -1,2 +1,0 @@
-inherited DataModulAnmiet: TDataModulAnmiet
-end

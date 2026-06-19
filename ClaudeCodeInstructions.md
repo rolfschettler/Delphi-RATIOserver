@@ -26,12 +26,21 @@
 
 ### Schritt 1: Tabellenstruktur abrufen
 
-Claude Code MUSS immer zuerst die DB-Struktur ermitteln:
+Claude Code MUSS immer zuerst die DB-Struktur ermitteln.
+
+**Token:** Wird aus `ClaudeCodePatterns/token.local.txt` gelesen (diese Datei
+ist personenbezogen, NICHT Teil des Git-Repos und enthält pro Entwickler
+einen eigenen gültigen Token).
+
+Falls `token.local.txt` fehlt oder leer ist: **nachfragen**, NICHT raten,
+NICHT einen Platzhalter oder alten Token aus dem Gedächtnis verwenden.
 
 ```bash
-curl -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJJbnRlcmJhc2Utd2VibW9kdWxlIiwic3ViIjoiU1VQRVJWSVNPUiIsImlhdCI6MTc3NzM3NDUxOCwiZXhwIjo1NTc3NzM3NDUxOCwicm9sZSI6IntcImxvZ2lubmFtZVwiOlwiU1VQRVJWSVNPUlwiLFwidXNlcm5hbWVcIjpcIlJvbGYgU2NoZXR0bGVyXCIsXCJwYXNzd29ydFwiOlwiXCIsXCJncnVwcGVcIjpcIlhZWlwiLFwienVncnVwcGVcIjpcIlwiLFwiYWdlbnR1cmNvZGVcIjpcIlwiLFwia2VubnppZmZlclwiOlwiXCIsXCJmaWxpYWxlXCI6XCJcIixcImFidGVpbHVuZ1wiOlwiXCJ9In0.VcuTlWenXqPx9P4GqvzDN0LaVy9O9uJhJ_tStnvoh1w" \
+curl -H "Authorization: Bearer $(cat ClaudeCodePatterns/token.local.txt)" \
   "http://localhost/ibapi/tablestructure?table=TABELLENNAME"
 ```
+
+(PowerShell-Äquivalent: `Get-Content ClaudeCodePatterns/token.local.txt` statt `cat`)
 
 ### Schritt 2: Pattern anwenden
 
@@ -63,6 +72,32 @@ FRouter.AddRoute('/adressen/insertadresse', CreateDataModulAdressen, TDataModulA
 FRouter.AddRoute('/adressen/updateadresse', CreateDataModulAdressen, TDataModulAdressen(nil).updateAdresse);
 FRouter.AddRoute('/adressen/deleteadresse', CreateDataModulAdressen, TDataModulAdressen(nil).deleteAdresse);
 ```
+
+### Schritt 5: Postman-Delta-Collection erstellen (automatisch)
+
+Nach Abschluss von Schritt 3 (unabhängig von Schritt 4, da Routes manuell
+ergänzt werden) erstellt Claude Code **automatisch** eine Postman Collection
+JSON für die in dieser Session neu erstellten Endpunkte.
+
+**Vorgaben:**
+- Schema-Version: Postman Collection v2.1.0
+- Speicherort: `postman/`
+- Dateiname: `<NAME>_<JJJJ-MM-TT>.postman_collection.json`
+  - `<NAME>` = Inhalt von `ClaudeCodePatterns/dev.local.txt` (Vorname des
+    aktuellen Bearbeiters). Falls diese Datei fehlt oder leer ist: nachfragen,
+    NICHT raten.
+  - `<JJJJ-MM-TT>` = heutiges Datum
+- Collection-Variable `{{baseUrl}}` verwenden, Wert: `http://localhost/ratioserver`
+- **Nur** die in dieser Session neu hinzugefügten Endpunkte enthalten –
+  keine bestehenden Endpunkte erneut exportieren
+- Ordnerstruktur innerhalb der Collection nach Ressource (z.B. `Adressen`)
+- Für `insert`/`update`-Endpunkte: Beispiel-Request-Body als JSON, basierend
+  auf den tatsächlichen Feldern aus der Tabellenstruktur (Schritt 1)
+- Für `getById`/`delete`: Beispiel-Parameter (z.B. `id`)
+- Kurze Beschreibung je Request (was macht der Endpunkt)
+
+Diese Datei wird **immer ohne separate Aufforderung** erzeugt, sobald neue
+CRUD-Endpunkte nach diesem Pattern gebaut wurden.
 
 ---
 
@@ -105,6 +140,10 @@ FRouter.AddRoute('/adressen/deleteadresse', CreateDataModulAdressen, TDataModulA
 **Falsch:** Existierende `getAdressen()`-Methode modifizieren
 **Richtig:** Neue Methoden dazufügen
 
+### ❌ Fehler 5: Postman-Export vergessen oder bestehende Endpunkte mit exportieren
+**Falsch:** Keine Postman-Datei erzeugen, oder alle Endpunkte der Zieldatei exportieren
+**Richtig:** Automatisch `postman/<Name>_<Datum>.postman_collection.json` nur mit den neuen Endpunkten dieser Session
+
 ---
 
 ## Wichtige Regeln für Claude Code
@@ -114,6 +153,7 @@ FRouter.AddRoute('/adressen/deleteadresse', CreateDataModulAdressen, TDataModulA
 - Tabellenstruktur vor Codegenerierung abrufen (curl)
 - Methodennamen exakt wie im Pattern
 - Zieldatei und Sequence-Name fragen (falls nicht genannt)
+- Postman-Delta-Collection für neue Endpunkte automatisch erstellen (Schritt 5)
 
 ❌ **DÜRFEN NICHT:**
 - Neue .pas oder .dfm Dateien erstellen
@@ -121,6 +161,41 @@ FRouter.AddRoute('/adressen/deleteadresse', CreateDataModulAdressen, TDataModulA
 - Andere Dateien im Projekt konsultieren
 - Methodennamen variieren
 - Business-Logik hinzufügen (nur CRUD)
+- Bestehende Endpunkte erneut in die Postman-Collection aufnehmen
+
+---
+
+## Setup: Token-Datei (einmalig pro Entwickler)
+
+1. `ClaudeCodePatterns/token.local.txt.example` kopieren nach
+   `ClaudeCodePatterns/token.local.txt`
+2. Eigenen gültigen Bearer-Token eintragen (nur der Token-String, keine
+   Anführungszeichen, keine Zeilenumbrüche)
+3. Sicherstellen, dass `ClaudeCodePatterns/token.local.txt` in der
+   `.gitignore` steht:
+   ```
+   ClaudeCodePatterns/token.local.txt
+   ```
+
+Diese Datei ist **personenbezogen** – Rolfs Token und Harrys Token sind
+unterschiedlich und jeweils nur lokal gültig/vorhanden. Sie wird nie
+committed.
+
+## Setup: Entwickler-Name-Datei (einmalig pro Entwickler)
+
+1. `ClaudeCodePatterns/dev.local.txt.example` kopieren nach
+   `ClaudeCodePatterns/dev.local.txt`
+2. Eigenen Vornamen eintragen, z.B. `Rolf` (bei Harry entsprechend `Harry`)
+   – nur das Wort, keine Anführungszeichen, keine Zeilenumbrüche
+3. Sicherstellen, dass `ClaudeCodePatterns/dev.local.txt` in der
+   `.gitignore` steht:
+   ```
+   ClaudeCodePatterns/dev.local.txt
+   ```
+
+Dient dazu, dass Claude Code beim Erzeugen der Postman-Delta-Collection
+(Schritt 5) automatisch den richtigen Namen für den Dateinamen verwendet,
+ohne jedes Mal nachfragen zu müssen.
 
 
 

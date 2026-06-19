@@ -1,4 +1,4 @@
-﻿unit DataModulAdressenClass;
+﻿unit DataModulWhateverClass;
 
 interface
 
@@ -8,7 +8,7 @@ uses
   FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Phys.IB, FireDAC.Phys.IBDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client, FireDAC.Comp.DataSet;
 
 type
-  TDataModulAdressen = class(TDataModulTableBase)
+  TDataModulWhatever = class(TDataModulTableBase)
   public
     procedure getTablename;
     procedure getTablenameFiltered;
@@ -19,24 +19,24 @@ type
     procedure deleteTablename;
   end;
 
-function CreateDataModulAdressen(Request: TWebRequest; Response: TWebResponse): TObject;
+function CreateDataModulWhatever(Request: TWebRequest; Response: TWebResponse): TObject;
 
 implementation
 
 uses webutils;
 
-function CreateDataModulAdressen(Request: TWebRequest; Response: TWebResponse): TObject;
+function CreateDataModulWhatever(Request: TWebRequest; Response: TWebResponse): TObject;
 begin
-  Result := TDataModulAdressen.Create(Request, Response);
+  Result := TDataModulWhatever.Create(Request, Response);
 end;
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 {$R *.dfm}
 
-{ TDataModulAdressen }
+{ TDataModulWhatever }
 
 // Route: /getTablename  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAdressen.getTablename;
+procedure TDataModulWhatever.getTablename;
 // Body: { "fields": ["Field1","Field2",...] | "*", "orderby": "Field" }
 const
   ALLOWED: array[0..12] of string = (
@@ -47,7 +47,7 @@ begin
 end;
 
 // Route: /getTablenamefiltered  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAdressen.getTablenameFiltered;
+procedure TDataModulWhatever.getTablenameFiltered;
 // Body: { "fields": [...] | "*", "Field1": "Field1", "orderby": "name1" }
 const
   ALLOWED: array[0..12] of string = (
@@ -60,7 +60,7 @@ begin
 end;
 
 // Route: /getTablenamebyid  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAdressen.getTablenameById;
+procedure TDataModulWhatever.getTablenameById;
 // Body: { "primarykeyfield": 42, "fields": [...] | "*" }
 const
   ALLOWED: array[0..10] of string = (
@@ -71,7 +71,7 @@ begin
 end;
 
 // Route: /getTablenameKey  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAdressen.getTablenameKey;
+procedure TDataModulWhatever.getTablenameKey;
 begin
   Query.SQL.Text := 'SELECT * FROM ##ASK ME FOR NAME OF GENERATOR##';
   Query.Open;
@@ -83,7 +83,7 @@ end;
 
 
 // Route: /insertTablename  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAdressen.insertTablename;
+procedure TDataModulWhatever.insertTablename;
 // Body: { "name1": "...", "ort": "...", ... }
 const
   ALLOWED: array[0..10] of string = (
@@ -94,7 +94,7 @@ begin
 end;
 
 // Route: /updateTablename  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAdressen.updateTablename;
+procedure TDataModulWhatever.updateTablename;
 // Body: { "primarykeyfield": 42, "name1": "...", ... }
 const
   ALLOWED: array[0..9] of string = (
@@ -105,7 +105,7 @@ begin
 end;
 
 // Route: /deleteTablename  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAdressen.deleteTablename;
+procedure TDataModulWhatever.deleteTablename;
 // Body: { "primarykeyfield": 42 }
 begin
   DoDelete('TABLENAME', 'primarykeyfield');
