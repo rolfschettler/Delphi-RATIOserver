@@ -19,7 +19,7 @@ type
      procedure getFahrtenbuch;
      procedure getFahrtenbuchFiltered;
      procedure getFahrtenbuchById;
-     procedure getNextKey;
+     procedure getFahrtenbuchKey;
      procedure insertFahrtenbuch;
      procedure updateFahrtenbuch;
      procedure deleteFahrtenbuch;
@@ -206,8 +206,8 @@ begin
   DoSelectOne('FAHRTENBUCH', ALLOWED, 'nr');
 end;
 
-// Route: /anmiet/getnextkey  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAnmiet.getNextKey;
+// Route: /fahrtenbuch/getfahrtenbuchkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getFahrtenbuchKey;
 begin
   Query.SQL.Text := 'SELECT GEN_ID(FAHRTENBUCH_NR, 1) FROM RDB$DATABASE';
   Query.Open;

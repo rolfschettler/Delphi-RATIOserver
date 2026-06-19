@@ -1,0 +1,121 @@
+{
+  "info": {
+    "name": "Harry_2026-06-19",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost/ratioserver"
+    }
+  ],
+  "item": [
+    {
+      "name": "Fahrtenbuch",
+      "item": [
+        {
+          "name": "getfahrtenbuch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/fahrtenbuch/getfahrtenbuch", "host": ["{{baseUrl}}"], "path": ["fahrtenbuch", "getfahrtenbuch"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": [\"nr\", \"kz\", \"von\", \"bis\", \"strecke\", \"kennzeichen\", \"fahrer\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "getfahrtenbuchfiltered",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/fahrtenbuch/getfahrtenbuchfiltered", "host": ["{{baseUrl}}"], "path": ["fahrtenbuch", "getfahrtenbuchfiltered"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": [\"nr\", \"kz\", \"von\", \"bis\", \"strecke\", \"kennzeichen\", \"fahrer\"],\n  \"kennzeichen\": \"MOS-XX 123\",\n  \"orderby\": \"von\"\n}"
+            }
+          }
+        },
+        {
+          "name": "getfahrtenbuchbyid",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/fahrtenbuch/getfahrtenbuchbyid", "host": ["{{baseUrl}}"], "path": ["fahrtenbuch", "getfahrtenbuchbyid"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "getfahrtenbuchkey",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/fahrtenbuch/getfahrtenbuchkey", "host": ["{{baseUrl}}"], "path": ["fahrtenbuch", "getfahrtenbuchkey"] },
+            "body": { "mode": "raw", "raw": "" }
+          }
+        },
+        {
+          "name": "insertfahrtenbuch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/fahrtenbuch/insertfahrtenbuch", "host": ["{{baseUrl}}"], "path": ["fahrtenbuch", "insertfahrtenbuch"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kz\": \"MOS-XX 123\",\n  \"von\": \"2026-06-19\",\n  \"bis\": \"2026-06-19\",\n  \"strecke\": \"München - Augsburg\",\n  \"auftragsgeber\": \"Musterfirma GmbH\",\n  \"kminland\": 80,\n  \"kmausland\": 0,\n  \"kmleer\": 5,\n  \"kmanfang\": 12000,\n  \"kmende\": 12085,\n  \"kmgesamt\": 85,\n  \"personen\": 45,\n  \"fahrer\": \"Mustermann\",\n  \"umsatz\": 1200.00,\n  \"kennzeichen\": \"MOS-XX 123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "updatefahrtenbuch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/fahrtenbuch/updatefahrtenbuch", "host": ["{{baseUrl}}"], "path": ["fahrtenbuch", "updatefahrtenbuch"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"strecke\": \"München - Augsburg - München\",\n  \"kmende\": 12090,\n  \"kmgesamt\": 90\n}"
+            }
+          }
+        },
+        {
+          "name": "deletefahrtenbuch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/fahrtenbuch/deletefahrtenbuch", "host": ["{{baseUrl}}"], "path": ["fahrtenbuch", "deletefahrtenbuch"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
