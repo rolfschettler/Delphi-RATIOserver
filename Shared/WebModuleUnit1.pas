@@ -449,10 +449,21 @@ begin
     FRouter.AddRoute('/adressen/getjoin', CreateDataModulAdressen, TDataModulAdressen(nil).getAdressenJoinedQuery);
 
   FRouter.AddRoute('/adressen/getadressebyid',      CreateDataModulAdressen, TDataModulAdressen(nil).getAdresseById);
+    FRouter.AddRoute('/adressen/getadressenbyid',      CreateDataModulAdressen, TDataModulAdressen(nil).getAdresseById);//FIX adresse->adressen
+
   FRouter.AddRoute('/adressen/getnextkennziffer',   CreateDataModulAdressen, TDataModulAdressen(nil).getNextKennziffer);
+  FRouter.AddRoute('/adressen/getadressenkey',   CreateDataModulAdressen, TDataModulAdressen(nil).getNextKennziffer);//FIX
+
+
   FRouter.AddRoute('/adressen/insertadresse',       CreateDataModulAdressen, TDataModulAdressen(nil).insertAdresse);
+  FRouter.AddRoute('/adressen/insertadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).insertAdresse);//FIX adresse->adressen
+
+
   FRouter.AddRoute('/adressen/updateadresse',       CreateDataModulAdressen, TDataModulAdressen(nil).updateAdresse);
+    FRouter.AddRoute('/adressen/updateadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).updateAdresse);//FIX adresse->adressen
+
   FRouter.AddRoute('/adressen/deleteadresse',       CreateDataModulAdressen, TDataModulAdressen(nil).deleteAdresse);
+  FRouter.AddRoute('/adressen/deleteadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).deleteAdresse); //FIX adresse->adressen
 
   FRouter.AddRoute('/adressen/getkategorien',       CreateDataModulAdressen, TDataModulAdressen(nil).getKategorien);
   FRouter.AddRoute('/adressen/getkategoriebyid',    CreateDataModulAdressen, TDataModulAdressen(nil).getKategorieById);
