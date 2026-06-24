@@ -448,22 +448,11 @@ begin
   FRouter.AddRoute('/adressen/getadressenfiltered', CreateDataModulAdressen, TDataModulAdressen(nil).getAdressenFiltered);
     FRouter.AddRoute('/adressen/getjoin', CreateDataModulAdressen, TDataModulAdressen(nil).getAdressenJoinedQuery);
 
-  FRouter.AddRoute('/adressen/getadressebyid',      CreateDataModulAdressen, TDataModulAdressen(nil).getAdresseById);
-    FRouter.AddRoute('/adressen/getadressenbyid',      CreateDataModulAdressen, TDataModulAdressen(nil).getAdresseById);//FIX adresse->adressen
-
-  FRouter.AddRoute('/adressen/getnextkennziffer',   CreateDataModulAdressen, TDataModulAdressen(nil).getNextKennziffer);
-  FRouter.AddRoute('/adressen/getadressenkey',   CreateDataModulAdressen, TDataModulAdressen(nil).getNextKennziffer);//FIX
-
-
-  FRouter.AddRoute('/adressen/insertadresse',       CreateDataModulAdressen, TDataModulAdressen(nil).insertAdresse);
-  FRouter.AddRoute('/adressen/insertadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).insertAdresse);//FIX adresse->adressen
-
-
-  FRouter.AddRoute('/adressen/updateadresse',       CreateDataModulAdressen, TDataModulAdressen(nil).updateAdresse);
-    FRouter.AddRoute('/adressen/updateadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).updateAdresse);//FIX adresse->adressen
-
-  FRouter.AddRoute('/adressen/deleteadresse',       CreateDataModulAdressen, TDataModulAdressen(nil).deleteAdresse);
-  FRouter.AddRoute('/adressen/deleteadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).deleteAdresse); //FIX adresse->adressen
+  FRouter.AddRoute('/adressen/getadressenbyid',      CreateDataModulAdressen, TDataModulAdressen(nil).getAdresseById);
+  FRouter.AddRoute('/adressen/getadressenkey',   CreateDataModulAdressen, TDataModulAdressen(nil).getNextKennziffer);
+  FRouter.AddRoute('/adressen/insertadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).insertAdresse);
+  FRouter.AddRoute('/adressen/updateadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).updateAdresse);
+  FRouter.AddRoute('/adressen/deleteadressen',       CreateDataModulAdressen, TDataModulAdressen(nil).deleteAdresse);
 
   FRouter.AddRoute('/adressen/getkategorien',       CreateDataModulAdressen, TDataModulAdressen(nil).getKategorien);
   FRouter.AddRoute('/adressen/getkategoriebyid',    CreateDataModulAdressen, TDataModulAdressen(nil).getKategorieById);
@@ -488,6 +477,13 @@ begin
   FRouter.AddRoute('/anmiet/insertfahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).insertFahrtenbuch);
   FRouter.AddRoute('/anmiet/updatefahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).updateFahrtenbuch);
   FRouter.AddRoute('/anmiet/deletefahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteFahrtenbuch);
+  FRouter.AddRoute('/anmiet/getanmiet',         CreateDataModulAnmiet, TDataModulAnmiet(nil).getAnmiet);
+  FRouter.AddRoute('/anmiet/getanmietfiltered',  CreateDataModulAnmiet, TDataModulAnmiet(nil).getAnmietFiltered);
+  FRouter.AddRoute('/anmiet/getanmietbyid',      CreateDataModulAnmiet, TDataModulAnmiet(nil).getAnmietById);
+  FRouter.AddRoute('/anmiet/getanmietkey',       CreateDataModulAnmiet, TDataModulAnmiet(nil).getAnmietKey);
+  FRouter.AddRoute('/anmiet/insertanmiet',       CreateDataModulAnmiet, TDataModulAnmiet(nil).insertAnmiet);
+  FRouter.AddRoute('/anmiet/updateanmiet',       CreateDataModulAnmiet, TDataModulAnmiet(nil).updateAnmiet);
+  FRouter.AddRoute('/anmiet/deleteanmiet',       CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteAnmiet);
 
   //DISPO
   FRouter.AddRoute('/dispo/demo', CreateDataModulDispo, TDataModulDispo(nil).Demo);
@@ -498,14 +494,12 @@ begin
   FRouter.AddRoute('/dispo/getpersonalstamm', CreateDataModulDispo, TDataModulDispo(nil).getpersonalstamm,true,false);
   FRouter.AddRoute('/dispo/getFreiesPersonal', CreateDataModulDispo, TDataModulDispo(nil).getFreiesPersonal,true,false);
 
-
   FRouter.AddRoute('/dispo/geteinsatzarten', CreateDataModulDispo, TDataModulDispo(nil).geteinsatzarten,true,false);
   FRouter.AddRoute('/dispo/getnextEinsatzkey', CreateDataModulDispo, TDataModulDispo(nil).getnextEinsatzkey,true,false);
   FRouter.AddRoute('/dispo/inserteinsatz', CreateDataModulDispo, TDataModulDispo(nil).insertEinsatz,true,false);
   FRouter.AddRoute('/dispo/updateeinsatz', CreateDataModulDispo, TDataModulDispo(nil).updateEinsatz,true,false);
   FRouter.AddRoute('/dispo/deleteeinsatz', CreateDataModulDispo, TDataModulDispo(nil).deleteEinsatz,true,false);
-
-
+  FRouter.AddRoute('/dispo/getfis_logfiltered', CreateDataModulDispo, TDataModulDispo(nil).getFis_LogFiltered,true,false);
 
   //TOUPAC
   FRouter.AddRoute('/toupac/demo',                CreateDataModulToupac, TDataModulToupac(nil).Demo);
@@ -529,16 +523,13 @@ begin
 
   //INCOMING
   FRouter.AddRoute('/incoming/demo',           CreateDataModulIncoming, TDataModulIncoming(nil).Demo);
-  FRouter.AddRoute('/incoming/getteilnehmer',         CreateDataModulIncoming, TDataModulIncoming(nil).getTeilnehmer);
-  FRouter.AddRoute('/incoming/getteilnehmerfiltered', CreateDataModulIncoming, TDataModulIncoming(nil).getTeilnehmerFiltered);
-  FRouter.AddRoute('/incoming/getteilnehmerbyid',     CreateDataModulIncoming, TDataModulIncoming(nil).getTeilnehmerById);
+  FRouter.AddRoute('/incoming/gett_teilnehmer',         CreateDataModulIncoming, TDataModulIncoming(nil).getTeilnehmer);
+  FRouter.AddRoute('/incoming/gett_teilnehmerfiltered', CreateDataModulIncoming, TDataModulIncoming(nil).getTeilnehmerFiltered);
+  FRouter.AddRoute('/incoming/gett_teilnehmerbyid',     CreateDataModulIncoming, TDataModulIncoming(nil).getTeilnehmerById);
   FRouter.AddRoute('/incoming/gett_teilnehmernextnr', CreateDataModulIncoming, TDataModulIncoming(nil).getT_TeilnehmerNextNr);
   FRouter.AddRoute('/incoming/insertt_teilnehmer',    CreateDataModulIncoming, TDataModulIncoming(nil).insertT_Teilnehmer);
   FRouter.AddRoute('/incoming/updatet_teilnehmer',    CreateDataModulIncoming, TDataModulIncoming(nil).updateT_Teilnehmer);
   FRouter.AddRoute('/incoming/deletet_teilnehmer',    CreateDataModulIncoming, TDataModulIncoming(nil).deleteT_Teilnehmer);
-
-
-
 
 end;
 

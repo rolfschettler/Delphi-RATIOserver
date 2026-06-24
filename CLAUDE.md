@@ -51,5 +51,7 @@ Variablennamen: {{baseURL}} (nicht baseUrl), {{jwttoken}} (nicht token).
 Body: `options.raw.language` = `"json"` setzen.
 `response`: leeres Array `[]` (nicht null).
 
+IMMER jeder Request benötigt {{jwttoken}}
+
 ## Projektkontext (Kurzfassung)
 Delphi WebBroker REST-API, Apache-DLL + CGI, FireDAC/IB, JWT-Auth, OpenAI GPT-4o, Touristik-Domain.

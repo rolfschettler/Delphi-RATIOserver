@@ -23,6 +23,13 @@ type
      procedure insertFahrtenbuch;
      procedure updateFahrtenbuch;
      procedure deleteFahrtenbuch;
+     procedure getAnmiet;
+     procedure getAnmietFiltered;
+     procedure getAnmietById;
+     procedure getAnmietKey;
+     procedure insertAnmiet;
+     procedure updateAnmiet;
+     procedure deleteAnmiet;
   end;
 
 
@@ -253,6 +260,169 @@ procedure TDataModulAnmiet.deleteFahrtenbuch;
 // Body: { "nr": 42 }
 begin
   DoDelete('FAHRTENBUCH', 'nr');
+end;
+
+
+
+// Route: /anmiet/getanmiet  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getAnmiet;
+// Body: { "fields": ["Field1","Field2",...] | "*", "orderby": "Field" }
+const
+  ALLOWED: array[0..134] of string = (
+    'nr','vorgang','anrede','name1','name2','name3','land','plz',
+    'ort','strasse','telefon','telefax','ziel','erstellt','kunde','preis',
+    'status','von','bis','vonzeit','biszeit','vart','rueckort','stunden',
+    'zustieg1','zustieg2','zustieg3','zustieg4','zustieg5','zustieg6',
+    'zustiegzeit1','zustiegzeit2','zustiegzeit3','zustiegzeit4','zustiegzeit5','zustiegzeit6',
+    'bearbeiter','perszahl','notiz','fahrerinfo','fahrtstrecke','optionsdatum','geaendert_am','kennzeichen',
+    'fahrer','fahrer2','fahrtnr','kmleer','kmanfang','kmende','kmgesamt','personen',
+    'buchungsdatum','datevkto','faellig','berechnung','gedruckt','erledigt','fest','uebernommen',
+    'ausvorgang','haupttext','storniert','kalkulation','disponr','bereitstellung','bereitdatum','bereitzeiet',
+    'basisvorgang','transferfahrt','symbol','eart','rueckzeit','abfahrtszeit','terminnr','bereich',
+    'rueckzustieg','rueckabfahrt','rueckabzeit','fusstext','ansprechpartner','provsatz1','provsatz2','provsatz3',
+    'provsteuer','transfehrnr','abfahrtsdatum','feld1','feld2','feld3','feld4','feld5',
+    'feld6','feld7','feld8','datumfeld1','datumfeld2','ausstiegrueck','disponentinfo','kontaktentstehung',
+    'reiseart','agentur','notiz2','azbis','rzbis','azbetrag','fahrtenplan','abrechnungsart',
+    'nrkreis','ankunftort','ankunftdatum','ankunftzeit','fahrzeugprofil','fahrerprofil','filialnr','lzugriff',
+    'lzugriff_von','stornogrund','sammelrechnung','anzahlung','anzfaelligam','zusatzinfo','stand','bereitstellung2',
+    'ankunftort2','rueckort2','rueckzustieg2','fibu_archiv_am','bestellnummer','unterschrift','datumfeld3','datumfeld4',
+    'schnittstelle_sendtime','geaendert_von','mandant'
+  );
+begin
+  DoSelect('ANMIET', ALLOWED);
+end;
+
+// Route: /anmiet/getanmietfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getAnmietFiltered;
+// Body: { "fields": [...] | "*", "vorgang": "VG-2026-001", "orderby": "von" }
+const
+  ALLOWED: array[0..134] of string = (
+    'nr','vorgang','anrede','name1','name2','name3','land','plz',
+    'ort','strasse','telefon','telefax','ziel','erstellt','kunde','preis',
+    'status','von','bis','vonzeit','biszeit','vart','rueckort','stunden',
+    'zustieg1','zustieg2','zustieg3','zustieg4','zustieg5','zustieg6',
+    'zustiegzeit1','zustiegzeit2','zustiegzeit3','zustiegzeit4','zustiegzeit5','zustiegzeit6',
+    'bearbeiter','perszahl','notiz','fahrerinfo','fahrtstrecke','optionsdatum','geaendert_am','kennzeichen',
+    'fahrer','fahrer2','fahrtnr','kmleer','kmanfang','kmende','kmgesamt','personen',
+    'buchungsdatum','datevkto','faellig','berechnung','gedruckt','erledigt','fest','uebernommen',
+    'ausvorgang','haupttext','storniert','kalkulation','disponr','bereitstellung','bereitdatum','bereitzeiet',
+    'basisvorgang','transferfahrt','symbol','eart','rueckzeit','abfahrtszeit','terminnr','bereich',
+    'rueckzustieg','rueckabfahrt','rueckabzeit','fusstext','ansprechpartner','provsatz1','provsatz2','provsatz3',
+    'provsteuer','transfehrnr','abfahrtsdatum','feld1','feld2','feld3','feld4','feld5',
+    'feld6','feld7','feld8','datumfeld1','datumfeld2','ausstiegrueck','disponentinfo','kontaktentstehung',
+    'reiseart','agentur','notiz2','azbis','rzbis','azbetrag','fahrtenplan','abrechnungsart',
+    'nrkreis','ankunftort','ankunftdatum','ankunftzeit','fahrzeugprofil','fahrerprofil','filialnr','lzugriff',
+    'lzugriff_von','stornogrund','sammelrechnung','anzahlung','anzfaelligam','zusatzinfo','stand','bereitstellung2',
+    'ankunftort2','rueckort2','rueckzustieg2','fibu_archiv_am','bestellnummer','unterschrift','datumfeld3','datumfeld4',
+    'schnittstelle_sendtime','geaendert_von','mandant'
+  );
+
+//  FILTER        = 'vorgang = :vorgang';   //absoluter Filter
+  FILTER        = '((vorgang = :vorgang) OR (cast(:vorgang as varchar(50)) is null))';           // Optionaler Filter
+  FILTER_PARAMS: array[0..0] of string = ('vorgang');
+begin
+  DoSelectFiltered('ANMIET', ALLOWED, FILTER, FILTER_PARAMS);
+end;
+
+// Route: /anmiet/getanmietbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getAnmietById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..134] of string = (
+    'nr','vorgang','anrede','name1','name2','name3','land','plz',
+    'ort','strasse','telefon','telefax','ziel','erstellt','kunde','preis',
+    'status','von','bis','vonzeit','biszeit','vart','rueckort','stunden',
+    'zustieg1','zustieg2','zustieg3','zustieg4','zustieg5','zustieg6',
+    'zustiegzeit1','zustiegzeit2','zustiegzeit3','zustiegzeit4','zustiegzeit5','zustiegzeit6',
+    'bearbeiter','perszahl','notiz','fahrerinfo','fahrtstrecke','optionsdatum','geaendert_am','kennzeichen',
+    'fahrer','fahrer2','fahrtnr','kmleer','kmanfang','kmende','kmgesamt','personen',
+    'buchungsdatum','datevkto','faellig','berechnung','gedruckt','erledigt','fest','uebernommen',
+    'ausvorgang','haupttext','storniert','kalkulation','disponr','bereitstellung','bereitdatum','bereitzeiet',
+    'basisvorgang','transferfahrt','symbol','eart','rueckzeit','abfahrtszeit','terminnr','bereich',
+    'rueckzustieg','rueckabfahrt','rueckabzeit','fusstext','ansprechpartner','provsatz1','provsatz2','provsatz3',
+    'provsteuer','transfehrnr','abfahrtsdatum','feld1','feld2','feld3','feld4','feld5',
+    'feld6','feld7','feld8','datumfeld1','datumfeld2','ausstiegrueck','disponentinfo','kontaktentstehung',
+    'reiseart','agentur','notiz2','azbis','rzbis','azbetrag','fahrtenplan','abrechnungsart',
+    'nrkreis','ankunftort','ankunftdatum','ankunftzeit','fahrzeugprofil','fahrerprofil','filialnr','lzugriff',
+    'lzugriff_von','stornogrund','sammelrechnung','anzahlung','anzfaelligam','zusatzinfo','stand','bereitstellung2',
+    'ankunftort2','rueckort2','rueckzustieg2','fibu_archiv_am','bestellnummer','unterschrift','datumfeld3','datumfeld4',
+    'schnittstelle_sendtime','geaendert_von','mandant'
+  );
+begin
+  DoSelectOne('ANMIET', ALLOWED, 'nr');
+end;
+
+// Route: /anmiet/getanmietkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getAnmietKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(ANMIETNR, 1) FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /anmiet/insertanmiet  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.insertAnmiet;
+// Body: { "vorgang": "...", "name1": "...", ... }
+const
+  ALLOWED: array[0..133] of string = (
+    'vorgang','anrede','name1','name2','name3','land','plz',
+    'ort','strasse','telefon','telefax','ziel','erstellt','kunde','preis',
+    'status','von','bis','vonzeit','biszeit','vart','rueckort','stunden',
+    'zustieg1','zustieg2','zustieg3','zustieg4','zustieg5','zustieg6',
+    'zustiegzeit1','zustiegzeit2','zustiegzeit3','zustiegzeit4','zustiegzeit5','zustiegzeit6',
+    'bearbeiter','perszahl','notiz','fahrerinfo','fahrtstrecke','optionsdatum','geaendert_am','kennzeichen',
+    'fahrer','fahrer2','fahrtnr','kmleer','kmanfang','kmende','kmgesamt','personen',
+    'buchungsdatum','datevkto','faellig','berechnung','gedruckt','erledigt','fest','uebernommen',
+    'ausvorgang','haupttext','storniert','kalkulation','disponr','bereitstellung','bereitdatum','bereitzeiet',
+    'basisvorgang','transferfahrt','symbol','eart','rueckzeit','abfahrtszeit','terminnr','bereich',
+    'rueckzustieg','rueckabfahrt','rueckabzeit','fusstext','ansprechpartner','provsatz1','provsatz2','provsatz3',
+    'provsteuer','transfehrnr','abfahrtsdatum','feld1','feld2','feld3','feld4','feld5',
+    'feld6','feld7','feld8','datumfeld1','datumfeld2','ausstiegrueck','disponentinfo','kontaktentstehung',
+    'reiseart','agentur','notiz2','azbis','rzbis','azbetrag','fahrtenplan','abrechnungsart',
+    'nrkreis','ankunftort','ankunftdatum','ankunftzeit','fahrzeugprofil','fahrerprofil','filialnr','lzugriff',
+    'lzugriff_von','stornogrund','sammelrechnung','anzahlung','anzfaelligam','zusatzinfo','stand','bereitstellung2',
+    'ankunftort2','rueckort2','rueckzustieg2','fibu_archiv_am','bestellnummer','unterschrift','datumfeld3','datumfeld4',
+    'schnittstelle_sendtime','geaendert_von','mandant'
+  );
+begin
+  DoInsert('ANMIET', ALLOWED);
+end;
+
+// Route: /anmiet/updateanmiet  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.updateAnmiet;
+// Body: { "nr": 42, "vorgang": "...", ... }
+const
+  ALLOWED: array[0..133] of string = (
+    'vorgang','anrede','name1','name2','name3','land','plz',
+    'ort','strasse','telefon','telefax','ziel','erstellt','kunde','preis',
+    'status','von','bis','vonzeit','biszeit','vart','rueckort','stunden',
+    'zustieg1','zustieg2','zustieg3','zustieg4','zustieg5','zustieg6',
+    'zustiegzeit1','zustiegzeit2','zustiegzeit3','zustiegzeit4','zustiegzeit5','zustiegzeit6',
+    'bearbeiter','perszahl','notiz','fahrerinfo','fahrtstrecke','optionsdatum','geaendert_am','kennzeichen',
+    'fahrer','fahrer2','fahrtnr','kmleer','kmanfang','kmende','kmgesamt','personen',
+    'buchungsdatum','datevkto','faellig','berechnung','gedruckt','erledigt','fest','uebernommen',
+    'ausvorgang','haupttext','storniert','kalkulation','disponr','bereitstellung','bereitdatum','bereitzeiet',
+    'basisvorgang','transferfahrt','symbol','eart','rueckzeit','abfahrtszeit','terminnr','bereich',
+    'rueckzustieg','rueckabfahrt','rueckabzeit','fusstext','ansprechpartner','provsatz1','provsatz2','provsatz3',
+    'provsteuer','transfehrnr','abfahrtsdatum','feld1','feld2','feld3','feld4','feld5',
+    'feld6','feld7','feld8','datumfeld1','datumfeld2','ausstiegrueck','disponentinfo','kontaktentstehung',
+    'reiseart','agentur','notiz2','azbis','rzbis','azbetrag','fahrtenplan','abrechnungsart',
+    'nrkreis','ankunftort','ankunftdatum','ankunftzeit','fahrzeugprofil','fahrerprofil','filialnr','lzugriff',
+    'lzugriff_von','stornogrund','sammelrechnung','anzahlung','anzfaelligam','zusatzinfo','stand','bereitstellung2',
+    'ankunftort2','rueckort2','rueckzustieg2','fibu_archiv_am','bestellnummer','unterschrift','datumfeld3','datumfeld4',
+    'schnittstelle_sendtime','geaendert_von','mandant'
+  );
+begin
+  DoUpdate('ANMIET', ALLOWED, 'nr');
+end;
+
+// Route: /anmiet/deleteanmiet  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.deleteAnmiet;
+// Body: { "nr": 42 }
+begin
+  DoDelete('ANMIET', 'nr');
 end;
 
 end.

@@ -3,7 +3,7 @@
 interface
 
 uses
-  Web.HTTPApp, System.JSON, System.Generics.Collections,
+  Web.HTTPApp, System.JSON, System.Generics.Collections,System.Variants,
   System.SysUtils, System.Classes, DataModulBaseClass,
   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
@@ -393,7 +393,7 @@ begin
           ParamName := AFilterParams[i];
           ParamVal  := Body.GetValue(ParamName);
           if not Assigned(ParamVal) or ParamVal.Null then
-            Q.ParamByName(ParamName).Clear
+            Q.ParamByName(ParamName).value:=NULL
           else
           begin
             Q.ParamByName(ParamName).AsString := ParamVal.Value;

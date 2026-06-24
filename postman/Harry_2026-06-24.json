@@ -1,0 +1,451 @@
+{
+  "info": {
+    "name": "Harry_2026-06-24",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    },
+    {
+      "key": "jwttoken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Fuhrpark",
+      "item": [
+        {
+          "name": "getfahrtenbuch",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/fuhrpark/getfahrtenbuch",
+              "host": ["{{baseURL}}"],
+              "path": ["fuhrpark", "getfahrtenbuch"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"fields\": [\"nr\", \"kz\", \"von\", \"bis\", \"strecke\", \"kennzeichen\", \"fahrer\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getfahrtenbuchfiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/fuhrpark/getfahrtenbuchfiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["fuhrpark", "getfahrtenbuchfiltered"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"fields\": [\"nr\", \"kz\", \"von\", \"bis\", \"strecke\", \"kennzeichen\", \"fahrer\"],\n  \"kennzeichen\": \"MOS-XX 123\",\n  \"orderby\": \"von\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getfahrtenbuchbyid",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/fuhrpark/getfahrtenbuchbyid",
+              "host": ["{{baseURL}}"],
+              "path": ["fuhrpark", "getfahrtenbuchbyid"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getfahrtenbuchkey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/fuhrpark/getfahrtenbuchkey",
+              "host": ["{{baseURL}}"],
+              "path": ["fuhrpark", "getfahrtenbuchkey"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "insertfahrtenbuch",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/fuhrpark/insertfahrtenbuch",
+              "host": ["{{baseURL}}"],
+              "path": ["fuhrpark", "insertfahrtenbuch"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"kz\": \"MOS-XX 123\",\n  \"von\": \"2026-06-24T08:00\",\n  \"bis\": \"2026-06-24T18:00\",\n  \"strecke\": \"München - Augsburg\",\n  \"auftragsgeber\": \"Musterfirma GmbH\",\n  \"kminland\": 80,\n  \"kmausland\": 0,\n  \"kmleer\": 5,\n  \"kmanfang\": 12000,\n  \"kmende\": 12085,\n  \"kmgesamt\": 85,\n  \"personen\": 45,\n  \"fahrer\": \"Mustermann\",\n  \"umsatz\": 1200.00,\n  \"kennzeichen\": \"MOS-XX 123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updatefahrtenbuch",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/fuhrpark/updatefahrtenbuch",
+              "host": ["{{baseURL}}"],
+              "path": ["fuhrpark", "updatefahrtenbuch"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"nr\": 1,\n  \"strecke\": \"München - Augsburg - München\",\n  \"kmende\": 12090,\n  \"kmgesamt\": 90\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "deletefahrtenbuch",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/fuhrpark/deletefahrtenbuch",
+              "host": ["{{baseURL}}"],
+              "path": ["fuhrpark", "deletefahrtenbuch"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"nr\": 1\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Anmiet",
+      "item": [
+        {
+          "name": "getanmiet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/anmiet/getanmiet",
+              "host": ["{{baseURL}}"],
+              "path": ["anmiet", "getanmiet"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"fields\": [\"nr\", \"vorgang\", \"name1\", \"von\", \"bis\", \"ziel\", \"kennzeichen\", \"fahrer\", \"status\"],\n  \"orderby\": \"von\"\n}"
+            },
+            "description": "Alle ANMIET-Datensätze abrufen (Mietanfragen/Mietaufträge)"
+          },
+          "response": []
+        },
+        {
+          "name": "getanmietfiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/anmiet/getanmietfiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["anmiet", "getanmietfiltered"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"fields\": [\"nr\", \"vorgang\", \"name1\", \"von\", \"bis\", \"ziel\", \"kennzeichen\", \"fahrer\", \"status\"],\n  \"vorgang\": \"VG-2026-001\",\n  \"orderby\": \"von\"\n}"
+            },
+            "description": "ANMIET-Datensätze nach Vorgang (vorgang = :vorgang) filtern"
+          },
+          "response": []
+        },
+        {
+          "name": "getanmietbyid",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/anmiet/getanmietbyid",
+              "host": ["{{baseURL}}"],
+              "path": ["anmiet", "getanmietbyid"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}"
+            },
+            "description": "Einen ANMIET-Datensatz per Primärschlüssel (nr) abrufen"
+          },
+          "response": []
+        },
+        {
+          "name": "getanmietkey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/anmiet/getanmietkey",
+              "host": ["{{baseURL}}"],
+              "path": ["anmiet", "getanmietkey"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{}"
+            },
+            "description": "Nächsten Primärschlüssel via GEN_ID(ANMIETNR,1) abrufen"
+          },
+          "response": []
+        },
+        {
+          "name": "insertanmiet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/anmiet/insertanmiet",
+              "host": ["{{baseURL}}"],
+              "path": ["anmiet", "insertanmiet"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"vorgang\": \"VG-2026-001\",\n  \"anrede\": \"Firma\",\n  \"name1\": \"Musterfirma GmbH\",\n  \"name2\": \"\",\n  \"ort\": \"München\",\n  \"strasse\": \"Musterstraße 1\",\n  \"plz\": \"80333\",\n  \"land\": \"D\",\n  \"telefon\": \"089 123456\",\n  \"ziel\": \"München – Augsburg – München\",\n  \"von\": \"2026-07-01T08:00\",\n  \"bis\": \"2026-07-01T20:00\",\n  \"vonzeit\": \"08:00\",\n  \"biszeit\": \"20:00\",\n  \"kennzeichen\": \"MOS-XX 123\",\n  \"fahrer\": \"Mustermann\",\n  \"personen\": 45,\n  \"preis\": 1500.00,\n  \"status\": 1,\n  \"bearbeiter\": \"H.Wiest\"\n}"
+            },
+            "description": "Neuen ANMIET-Datensatz anlegen (nr wird via GEN_ID generiert)"
+          },
+          "response": []
+        },
+        {
+          "name": "updateanmiet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/anmiet/updateanmiet",
+              "host": ["{{baseURL}}"],
+              "path": ["anmiet", "updateanmiet"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"nr\": 1,\n  \"status\": 2,\n  \"kennzeichen\": \"MOS-YY 456\",\n  \"fahrer\": \"Musterfahrer\",\n  \"preis\": 1600.00\n}"
+            },
+            "description": "ANMIET-Datensatz aktualisieren (nr als Primärschlüssel erforderlich)"
+          },
+          "response": []
+        },
+        {
+          "name": "deleteanmiet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/anmiet/deleteanmiet",
+              "host": ["{{baseURL}}"],
+              "path": ["anmiet", "deleteanmiet"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"nr\": 1\n}"
+            },
+            "description": "ANMIET-Datensatz per Primärschlüssel (nr) löschen"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dispo - FIS_LOG",
+      "item": [
+        {
+          "name": "getfis_logfiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/dispo/getfis_logfiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["dispo", "getfis_logfiltered"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"fields\": [\"nr\", \"datum\", \"einsatznr\", \"fahrer\", \"fahrzeug\", \"status\", \"kmstand\", \"standort\", \"text\"],\n  \"einsatznr\": 1,\n  \"fahrer\": \"Mustermann\",\n  \"orderby\": \"datum\"\n}"
+            },
+            "description": "FIS_LOG-Einträge nach einsatznr UND fahrer filtern"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

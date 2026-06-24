@@ -29,6 +29,7 @@ type
     procedure updateEinsatz;
     procedure deleteEinsatz;
     procedure getFreiesPersonal;
+    procedure getFis_LogFiltered;
   end;
 
 function CreateDataModulDispo(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -511,6 +512,25 @@ end;
 procedure TDataModulDispo.deleteEinsatz;
 begin
   DoDelete('EINSATZ', 'nr');
+end;
+
+// Route: /dispo/getfis_logfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getFis_LogFiltered;
+// Body: { "fields": [...] | "*", "einsatznr": 42, "fahrer": "Mustermann", "orderby": "datum" }
+const
+  ALLOWED: array[0..29] of string = (
+    'nr','datum','xkoord','ykoord','status','einsatznr','taetigkeit','herkunft',
+    'fahrer','fahrzeug','zusatzfeld1','zusatzfeld2','kmstand','distance','dauer',
+    'fremdnr','text','standort','zeitpunkt','sortierung','loginname','art',
+    'textfeld1','textfeld2','textfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'wert','erledigt_am'
+  );
+//  FILTER        = 'einsatznr = :einsatznr AND fahrer = :fahrer';
+  FILTER        = '((einsatznr = :einsatznr) OR (cast(:einsatznr as integer) is null))  AND ((cast(datum as date) = :datum) OR (cast(:datum as date) is null))  AND ((fahrer = :fahrer) OR (cast(:fahrer as varchar(50)) is null)) ';           // Optionaler Filter
+
+  FILTER_PARAMS: array[0..2] of string = ('einsatznr', 'datum', 'fahrer');
+begin
+  DoSelectFiltered('FIS_LOG', ALLOWED, FILTER, FILTER_PARAMS);
 end;
 
 end.
