@@ -113,11 +113,19 @@ var
   QCount:   TFDQuery;
   Total:    Integer;
   ParamKey: string;
+  I:        Integer;
 begin
   QCount := TFDQuery.Create(nil);
   try
     QCount.Connection := Connection;
     QCount.SQL.Text   := ACountSQL;
+    // Erst alle vom SQL geparsten Parameter auf NULL binden, dann die bekannten
+    // Werte setzen. Sonst bleiben optionale Filter-Parameter (z.B. :vorgang bei
+    // einem "(... ) OR (:p is null)"-Filter) in der COUNT-Query ungebunden,
+    // waehrend der Haupt-Query sie explizit auf NULL setzt -> inkonsistentes
+    // Ergebnis bzw. Fehler beim Open.
+    for I := 0 to QCount.Params.Count - 1 do
+      QCount.Params[I].Clear;
     if Assigned(ACountParams) then
       for ParamKey in ACountParams.Keys do
         QCount.ParamByName(ParamKey).AsString := ACountParams[ParamKey];
