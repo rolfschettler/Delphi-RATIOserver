@@ -27,13 +27,16 @@ type
     function IsAllowed(const Field: string;
       const Whitelist: array of string): Boolean;
 
-
-    // SELECT, joinedSql:ein parameterisierter Join
-    // Body: {  "<param1>": "wert1", ..., }
-    procedure DoJoinedSelect(const joinedSql:string;const AFilterParams: array of string);
+    // SELECT, joinedSql: ein parameterisierter Join
+    // Body: { "<param1>": "wert1", ..., }
+    procedure DoJoinedSelect(const joinedSql: string;
+      const AFilterParams: array of string);
 
     // SELECT mit optionaler WHERE-Klausel und Server-seitigen Parametern.
-    // Body: { "fields": ["f1","f2"] | "*", "orderby": "f1" }
+    // Body: { "fields": ["f1","f2"] | "*", "orderby": "f1",
+    //         "limit": 10, "offset": 0 }
+    // Pagination: InterBase ROWS x TO y Syntax.
+    // limit=0 -> alle Datensaetze, kein ROWS-Zusatz.
     procedure DoSelect(const ATable: string;
       const AAllowed: array of string;
       const AWhere: string = '';
@@ -61,7 +64,10 @@ type
     procedure DoDelete(const ATable: string; const AKeyField: string);
 
     // SELECT mit festem WHERE-SQL im Controller, Parameterwerte kommen aus dem Body.
-    // Body: { "fields": [...] | "*", "<param1>": "wert1", ..., "orderby": "f1" }
+    // Body: { "fields": [...] | "*", "<param1>": "wert1", ..., "orderby": "f1",
+    //         "limit": 10, "offset": 0 }
+    // Pagination: InterBase ROWS x TO y Syntax.
+    // limit=0 -> alle Datensaetze, kein ROWS-Zusatz.
     procedure DoSelectFiltered(const ATable: string;
       const AAllowed: array of string;
       const AFilter: string;
@@ -86,7 +92,8 @@ end;
 
 { TDataModulTableBase }
 
-procedure TDataModulTableBase.ReadPagination(Body: TJSONObject; out ALimit, AOffset: Integer);
+procedure TDataModulTableBase.ReadPagination(Body: TJSONObject;
+  out ALimit, AOffset: Integer);
 var
   V: TJSONValue;
 begin
@@ -167,6 +174,7 @@ begin
   if (FieldsVal = nil) or
      ((FieldsVal is TJSONString) and SameText(FieldsVal.Value, '*')) then
   begin
+    // Kein fields-Parameter oder '*' -- alle erlaubten Felder zurueckgeben
     FieldList := '';
     for i := 0 to High(AAllowed) do
     begin
@@ -198,19 +206,26 @@ end;
 procedure TDataModulTableBase.DoSelect(const ATable: string;
   const AAllowed: array of string; const AWhere: string;
   AParams: TDictionary<string, string>);
+// Pagination: InterBase ROWS x TO y
+// x = Offset + 1  (1-basiert)
+// y = Offset + Limit
+// Limit = 0 -> kein ROWS-Zusatz, alle Datensaetze
 var
-  Body:     TJSONObject;
-  OrderVal: TJSONValue;
-  OrderBy:  string;
-  Limit, Offset: Integer;
-  FirstSkip, WhereClause: string;
-  Q:        TFDQuery;
-  ParamKey: string;
+  Body:        TJSONObject;
+  OrderVal:    TJSONValue;
+  OrderBy:     string;
+  Limit:       Integer;
+  Offset:      Integer;
+  RowsClause:  string;
+  WhereClause: string;
+  Q:           TFDQuery;
+  ParamKey:    string;
 begin
   Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
     Body := TJSONObject.Create;
   try
+    // Sortierung lesen und pruefen
     OrderBy  := '';
     OrderVal := Body.GetValue('orderby');
     if Assigned(OrderVal) and not OrderVal.Null then
@@ -220,31 +235,41 @@ begin
         raise Exception.CreateFmt('Sortierfeld "%s" ist nicht erlaubt.', [OrderBy]);
     end;
 
+    // Pagination lesen
+    // Limit = 0 bedeutet: alle Datensaetze, kein ROWS-Zusatz
     ReadPagination(Body, Limit, Offset);
-    FirstSkip   := '';
+    RowsClause := '';
     if Limit > 0 then
-      FirstSkip := Format('FIRST %d SKIP %d ', [Limit, Offset]);
+      RowsClause := Format(' ROWS %d TO %d', [Offset + 1, Offset + Limit]);
 
+    // WHERE-Klausel
     WhereClause := '';
     if AWhere <> '' then
       WhereClause := ' WHERE ' + AWhere;
 
+    // SQL aufbauen:
+    // SELECT <felder> FROM <tabelle> [WHERE ...] [ORDER BY ...] [ROWS x TO y]
     Q := TFDQuery.Create(nil);
     try
       Q.Connection := Connection;
-      Q.SQL.Text   := 'SELECT ' + FirstSkip + ParseFieldList(Body, AAllowed) +
+      Q.SQL.Text   := 'SELECT ' + ParseFieldList(Body, AAllowed) +
                       ' FROM ' + ATable + WhereClause;
       if OrderBy <> '' then
         Q.SQL.Text := Q.SQL.Text + ' ORDER BY ' + OrderBy;
+      if RowsClause <> '' then
+        Q.SQL.Text := Q.SQL.Text + RowsClause;
+
       if Assigned(AParams) then
         for ParamKey in AParams.Keys do
           Q.ParamByName(ParamKey).AsString := AParams[ParamKey];
+
       Q.Open;
       Response.ContentType := 'application/json';
       Response.StatusCode  := 200;
       if Limit > 0 then
         Response.Content := BuildPagedResponse(Q,
-          'SELECT COUNT(*) FROM ' + ATable + WhereClause, AParams, Limit, Offset)
+          'SELECT COUNT(*) FROM ' + ATable + WhereClause,
+          AParams, Limit, Offset)
       else
         Response.Content := SerializeQuery(Q);
     finally
@@ -255,111 +280,26 @@ begin
   end;
 end;
 
-procedure TDataModulTableBase.DoJoinedSelect(const joinedSql:string;const AFilterParams: array of string);
-VAR
-  Q:TFDQuery;
-  CountParams: TDictionary<string, string>;
-  ParamVal:  TJSONValue;
-  Body: TJSONObject;
-  ParamName: string;
-  i:Integer;
-begin
-  Body := ParseJSONObject(Request.Content);
-  try
-  if not Assigned(Body) then
-    raise Exception.Create('Kein gültiges JSON im Request-Body.');
-    Q := TFDQuery.Create(nil);
-    try
-       Q.Connection := Connection;
-       Q.SQL.Text   := joinedSql;
-        // Parameterwerte aus dem Body lesen
-        CountParams := TDictionary<string, string>.Create;
-        try
-          for i := 0 to High(AFilterParams) do
-          begin
-
-            ParamName := AFilterParams[i];
-            ParamVal  := Body.GetValue(ParamName);
-            if not Assigned(ParamVal) or ParamVal.Null then
-              Q.ParamByName(ParamName).Clear
-            else
-            begin
-              Q.ParamByName(ParamName).AsString := ParamVal.Value;
-              CountParams.Add(ParamName, ParamVal.Value);
-            end;
-          end;
-          Q.Open;
-          Response.ContentType := 'application/json';
-          Response.StatusCode  := 200;
-          Response.Content := SerializeQuery(Q);
-        finally
-          CountParams.Free;
-        end;
-    finally
-       Q.free;
-     end;
-  finally
-     Body.free;
-   end;
-end;
-
-
-procedure TDataModulTableBase.DoSelectFiltered(const ATable: string;
-  const AAllowed: array of string;
-  const AFilter: string;
+procedure TDataModulTableBase.DoJoinedSelect(const joinedSql: string;
   const AFilterParams: array of string);
 var
-  Body:      TJSONObject;
-  OrderVal:  TJSONValue;
-  OrderBy:   string;
-  ParamVal:  TJSONValue;
-  ParamName: string;
-  Limit, Offset: Integer;
-  FirstSkip: string;
-  Q:         TFDQuery;
-  i:         Integer;
+  Q:           TFDQuery;
   CountParams: TDictionary<string, string>;
+  ParamVal:    TJSONValue;
+  Body:        TJSONObject;
+  ParamName:   string;
+  i:           Integer;
 begin
   Body := ParseJSONObject(Request.Content);
-
-  if not Assigned(Body) then
-    raise Exception.Create('Kein gültiges JSON im Request-Body.');
   try
-    OrderBy  := '';
-    OrderVal := Body.GetValue('orderby');
-    if Assigned(OrderVal) and not OrderVal.Null then
-    begin
-      OrderBy := LowerCase(OrderVal.Value);
-      if not IsAllowed(OrderBy, AAllowed) then
-        raise Exception.CreateFmt('Sortierfeld "%s" ist nicht erlaubt.', [OrderBy]);
-    end;
-
-    ReadPagination(Body, Limit, Offset);
-    FirstSkip := '';
-
-    if Limit > 0 then
-      FirstSkip := Format(' ROWS %d  ', [Limit]);
-
-
-    if (Limit > 0) and (Offset>0) then
-    begin
-      var toRow:=Offset+limit-1;
-      FirstSkip := Format(' ROWS %d TO %d ', [Offset,toRow]);
-    end;
-
+    if not Assigned(Body) then
+      raise Exception.Create('Kein gueltiges JSON im Request-Body.');
 
     Q := TFDQuery.Create(nil);
     try
       Q.Connection := Connection;
-      Q.SQL.Text   := 'SELECT '  + ParseFieldList(Body, AAllowed) +
-                      ' FROM ' + ATable +
-                      ' WHERE ' + AFilter;
-      if OrderBy <> '' then
-        Q.SQL.Text := Q.SQL.Text + ' ORDER BY ' + OrderBy;
+      Q.SQL.Text   := joinedSql;
 
-      Q.SQL.Text := Q.SQL.Text + FirstSkip;
-
-      // Parameterwerte aus dem Body lesen
       CountParams := TDictionary<string, string>.Create;
       try
         for i := 0 to High(AFilterParams) do
@@ -378,7 +318,93 @@ begin
         Q.Open;
         Response.ContentType := 'application/json';
         Response.StatusCode  := 200;
-        if (Limit > 0) and (offset>0) then
+        Response.Content     := SerializeQuery(Q);
+      finally
+        CountParams.Free;
+      end;
+    finally
+      Q.Free;
+    end;
+  finally
+    Body.Free;
+  end;
+end;
+
+procedure TDataModulTableBase.DoSelectFiltered(const ATable: string;
+  const AAllowed: array of string;
+  const AFilter: string;
+  const AFilterParams: array of string);
+// Pagination: InterBase ROWS x TO y
+// x = Offset + 1  (1-basiert)
+// y = Offset + Limit
+// Limit = 0 -> kein ROWS-Zusatz, alle Datensaetze
+var
+  Body:        TJSONObject;
+  OrderVal:    TJSONValue;
+  OrderBy:     string;
+  ParamVal:    TJSONValue;
+  ParamName:   string;
+  Limit:       Integer;
+  Offset:      Integer;
+  RowsClause:  string;
+  Q:           TFDQuery;
+  i:           Integer;
+  CountParams: TDictionary<string, string>;
+begin
+  Body := ParseJSONObject(Request.Content);
+  if not Assigned(Body) then
+    raise Exception.Create('Kein gueltiges JSON im Request-Body.');
+  try
+    // Sortierung lesen und pruefen
+    OrderBy  := '';
+    OrderVal := Body.GetValue('orderby');
+    if Assigned(OrderVal) and not OrderVal.Null then
+    begin
+      OrderBy := LowerCase(OrderVal.Value);
+      if not IsAllowed(OrderBy, AAllowed) then
+        raise Exception.CreateFmt('Sortierfeld "%s" ist nicht erlaubt.', [OrderBy]);
+    end;
+
+    // Pagination lesen
+    // Limit = 0 bedeutet: alle Datensaetze, kein ROWS-Zusatz
+    ReadPagination(Body, Limit, Offset);
+    RowsClause := '';
+    if Limit > 0 then
+      RowsClause := Format(' ROWS %d TO %d', [Offset + 1, Offset + Limit]);
+
+    // SQL aufbauen:
+    // SELECT <felder> FROM <tabelle> WHERE <filter> [ORDER BY ...] [ROWS x TO y]
+    Q := TFDQuery.Create(nil);
+    try
+      Q.Connection := Connection;
+      Q.SQL.Text   := 'SELECT ' + ParseFieldList(Body, AAllowed) +
+                      ' FROM ' + ATable +
+                      ' WHERE ' + AFilter;
+      if OrderBy <> '' then
+        Q.SQL.Text := Q.SQL.Text + ' ORDER BY ' + OrderBy;
+      if RowsClause <> '' then
+        Q.SQL.Text := Q.SQL.Text + RowsClause;
+
+      // Filterwerte aus dem Body lesen
+      CountParams := TDictionary<string, string>.Create;
+      try
+        for i := 0 to High(AFilterParams) do
+        begin
+          ParamName := AFilterParams[i];
+          ParamVal  := Body.GetValue(ParamName);
+          if not Assigned(ParamVal) or ParamVal.Null then
+            Q.ParamByName(ParamName).Clear
+          else
+          begin
+            Q.ParamByName(ParamName).AsString := ParamVal.Value;
+            CountParams.Add(ParamName, ParamVal.Value);
+          end;
+        end;
+
+        Q.Open;
+        Response.ContentType := 'application/json';
+        Response.StatusCode  := 200;
+        if Limit > 0 then
           Response.Content := BuildPagedResponse(Q,
             'SELECT COUNT(*) FROM ' + ATable + ' WHERE ' + AFilter,
             CountParams, Limit, Offset)
@@ -395,7 +421,6 @@ begin
   end;
 end;
 
-
 procedure TDataModulTableBase.DoSelectOne(const ATable: string;
   const AAllowed: array of string; const AKeyField: string);
 var
@@ -405,7 +430,7 @@ var
 begin
   Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
-    raise Exception.Create('Kein gültiges JSON im Request-Body.');
+    raise Exception.Create('Kein gueltiges JSON im Request-Body.');
   try
     KeyValue := Body.GetValue<string>(LowerCase(AKeyField));
     if KeyValue = '' then
@@ -443,7 +468,7 @@ var
 begin
   Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
-    raise Exception.Create('Kein gültiges JSON.');
+    raise Exception.Create('Kein gueltiges JSON.');
   try
     Q := TFDQuery.Create(nil);
     try
@@ -461,9 +486,10 @@ begin
       end;
 
       if Count = 0 then
-        raise Exception.Create('Keine gültigen Felder übergeben.');
+        raise Exception.Create('Keine gueltigen Felder uebergeben.');
 
-      Q.SQL.Text := 'INSERT INTO ' + ATable + ' (' + Cols + ') VALUES (' + Vals + ')';
+      Q.SQL.Text := 'INSERT INTO ' + ATable +
+                    ' (' + Cols + ') VALUES (' + Vals + ')';
 
       for Pair in Body do
       begin
@@ -496,7 +522,7 @@ var
 begin
   Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
-    raise Exception.Create('Kein gültiges JSON.');
+    raise Exception.Create('Kein gueltiges JSON.');
   try
     Q := TFDQuery.Create(nil);
     try
@@ -514,7 +540,7 @@ begin
       end;
 
       if Count = 0 then
-        raise Exception.Create('Keine gültigen Felder übergeben.');
+        raise Exception.Create('Keine gueltigen Felder uebergeben.');
 
       Q.SQL.Text := 'UPDATE ' + ATable + ' SET ' + SetClause +
                     ' WHERE ' + LowerCase(AKeyField) + '=:' + LowerCase(AKeyField);
@@ -548,7 +574,7 @@ var
 begin
   Body := ParseJSONObject(Request.Content);
   if not Assigned(Body) then
-    raise Exception.Create('Kein gültiges JSON.');
+    raise Exception.Create('Kein gueltiges JSON.');
   try
     Q := TFDQuery.Create(nil);
     try
