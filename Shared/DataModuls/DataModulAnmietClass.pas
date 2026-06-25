@@ -16,13 +16,15 @@ type
   public
     { Public-Deklarationen }
      procedure Demo;
-     procedure getFahrtenbuch;
-     procedure getFahrtenbuchFiltered;
-     procedure getFahrtenbuchById;
-     procedure getFahrtenbuchKey;
-     procedure insertFahrtenbuch;
-     procedure updateFahrtenbuch;
-     procedure deleteFahrtenbuch;
+
+//     procedure getFahrtenbuch;
+//     procedure getFahrtenbuchFiltered;
+//     procedure getFahrtenbuchById;
+//     procedure getFahrtenbuchKey;
+//     procedure insertFahrtenbuch;
+//     procedure updateFahrtenbuch;
+//     procedure deleteFahrtenbuch;
+
      procedure getAnmiet;
      procedure getAnmietFiltered;
      procedure getAnmietById;
@@ -162,105 +164,6 @@ end;
 
 
 
-
-// Route: /anmiet/getfahrtenbuch  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAnmiet.getFahrtenbuch;
-// Body: { "fields": ["Field1","Field2",...] | "*", "orderby": "Field" }
-const
-  ALLOWED: array[0..34] of string = (
-    'nr','kz','von','bis','strecke','auftragsgeber','kminland','kmausland',
-    'kmleer','kmanfang','kmende','kmgesamt','personen','fahrer','umsatz',
-    'rvlin','rvlaus','eleistung','kennzeichen','text','steuerfahr',
-    'steuermarge','freiemarge','freieumsatz','ratiobusfahrtnr','steuer',
-    'sonstigervl','sonstrvlpz','steuermarge2','fahrer2','beguenstigt',
-    'zusatz1','zusatz2','km_stand_zustieg_1_kunde','km_stand_ausstieg_l_kunde'
-  );
-begin
-  DoSelect('FAHRTENBUCH', ALLOWED);
-end;
-
-// Route: /anmiet/getfahrtenbuchfiltered  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAnmiet.getFahrtenbuchFiltered;
-// Body: { "fields": [...] | "*", "kennzeichen": "...", "orderby": "von" }
-const
-  ALLOWED: array[0..34] of string = (
-    'nr','kz','von','bis','strecke','auftragsgeber','kminland','kmausland',
-    'kmleer','kmanfang','kmende','kmgesamt','personen','fahrer','umsatz',
-    'rvlin','rvlaus','eleistung','kennzeichen','text','steuerfahr',
-    'steuermarge','freiemarge','freieumsatz','ratiobusfahrtnr','steuer',
-    'sonstigervl','sonstrvlpz','steuermarge2','fahrer2','beguenstigt',
-    'zusatz1','zusatz2','km_stand_zustieg_1_kunde','km_stand_ausstieg_l_kunde'
-  );
-  FILTER        = 'kennzeichen = :kennzeichen';
-  FILTER_PARAMS: array[0..0] of string = ('kennzeichen');
-begin
-  DoSelectFiltered('FAHRTENBUCH', ALLOWED, FILTER, FILTER_PARAMS);
-end;
-
-// Route: /anmiet/getfahrtenbuchbyid  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAnmiet.getFahrtenbuchById;
-// Body: { "nr": 42, "fields": [...] | "*" }
-const
-  ALLOWED: array[0..34] of string = (
-    'nr','kz','von','bis','strecke','auftragsgeber','kminland','kmausland',
-    'kmleer','kmanfang','kmende','kmgesamt','personen','fahrer','umsatz',
-    'rvlin','rvlaus','eleistung','kennzeichen','text','steuerfahr',
-    'steuermarge','freiemarge','freieumsatz','ratiobusfahrtnr','steuer',
-    'sonstigervl','sonstrvlpz','steuermarge2','fahrer2','beguenstigt',
-    'zusatz1','zusatz2','km_stand_zustieg_1_kunde','km_stand_ausstieg_l_kunde'
-  );
-begin
-  DoSelectOne('FAHRTENBUCH', ALLOWED, 'nr');
-end;
-
-// Route: /fahrtenbuch/getfahrtenbuchkey  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAnmiet.getFahrtenbuchKey;
-begin
-  Query.SQL.Text := 'SELECT GEN_ID(FAHRTENBUCH_NR, 1) FROM RDB$DATABASE';
-  Query.Open;
-  Response.ContentType := 'application/json';
-  Response.StatusCode  := 200;
-  Response.Content     := SerializeQuery(Query);
-end;
-
-// Route: /anmiet/insertfahrtenbuch  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAnmiet.insertFahrtenbuch;
-// Body: { "kz": "...", "von": "...", ... }
-const
-  ALLOWED: array[0..33] of string = (
-    'kz','von','bis','strecke','auftragsgeber','kminland','kmausland',
-    'kmleer','kmanfang','kmende','kmgesamt','personen','fahrer','umsatz',
-    'rvlin','rvlaus','eleistung','kennzeichen','text','steuerfahr',
-    'steuermarge','freiemarge','freieumsatz','ratiobusfahrtnr','steuer',
-    'sonstigervl','sonstrvlpz','steuermarge2','fahrer2','beguenstigt',
-    'zusatz1','zusatz2','km_stand_zustieg_1_kunde','km_stand_ausstieg_l_kunde'
-  );
-begin
-  DoInsert('FAHRTENBUCH', ALLOWED);
-end;
-
-// Route: /anmiet/updatefahrtenbuch  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAnmiet.updateFahrtenbuch;
-// Body: { "nr": 42, "kz": "...", ... }
-const
-  ALLOWED: array[0..33] of string = (
-    'kz','von','bis','strecke','auftragsgeber','kminland','kmausland',
-    'kmleer','kmanfang','kmende','kmgesamt','personen','fahrer','umsatz',
-    'rvlin','rvlaus','eleistung','kennzeichen','text','steuerfahr',
-    'steuermarge','freiemarge','freieumsatz','ratiobusfahrtnr','steuer',
-    'sonstigervl','sonstrvlpz','steuermarge2','fahrer2','beguenstigt',
-    'zusatz1','zusatz2','km_stand_zustieg_1_kunde','km_stand_ausstieg_l_kunde'
-  );
-begin
-  DoUpdate('FAHRTENBUCH', ALLOWED, 'nr');
-end;
-
-// Route: /anmiet/deletefahrtenbuch  |  Auth: true  |  LocalOnly: false
-procedure TDataModulAnmiet.deleteFahrtenbuch;
-// Body: { "nr": 42 }
-begin
-  DoDelete('FAHRTENBUCH', 'nr');
-end;
 
 
 

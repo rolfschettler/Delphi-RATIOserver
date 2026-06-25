@@ -468,15 +468,19 @@ begin
   FRouter.AddRoute('/touristik/demo',             CreateDataModulTouristik, TDataModulTouristik(nil).Demo);
 
 
+    //FUHRPARK
+  FRouter.AddRoute('/fuhrpark/demo',                    CreateDataModulFuhrpark, TDataModulFuhrpark(nil).Demo);
+  FRouter.AddRoute('/fuhrpark/getfahrtenbuch',          CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuch);
+  FRouter.AddRoute('/fuhrpark/getfahrtenbuchfiltered',  CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchFiltered);
+  FRouter.AddRoute('/fuhrpark/getfahrtenbuchbyid',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchById);
+  FRouter.AddRoute('/fuhrpark/getfahrtenbuchkey',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchKey);
+  FRouter.AddRoute('/fuhrpark/insertfahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertFahrtenbuch);
+  FRouter.AddRoute('/fuhrpark/updatefahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateFahrtenbuch);
+  FRouter.AddRoute('/fuhrpark/deletefahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteFahrtenbuch);
+
+
   //ANMIET
   FRouter.AddRoute('/anmiet/demo', CreateDataModulAnmiet, TDataModulAnmiet(nil).Demo);
-  FRouter.AddRoute('/anmiet/getfahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).getFahrtenbuch);
-  FRouter.AddRoute('/anmiet/getfahrtenbuchfiltered', CreateDataModulAnmiet, TDataModulAnmiet(nil).getFahrtenbuchFiltered);
-  FRouter.AddRoute('/anmiet/getfahrtenbuchbyid', CreateDataModulAnmiet, TDataModulAnmiet(nil).getFahrtenbuchById);
-  FRouter.AddRoute('/anmiet/getfahrtenbuchkey', CreateDataModulAnmiet, TDataModulAnmiet(nil).getFahrtenbuchKey);
-  FRouter.AddRoute('/anmiet/insertfahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).insertFahrtenbuch);
-  FRouter.AddRoute('/anmiet/updatefahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).updateFahrtenbuch);
-  FRouter.AddRoute('/anmiet/deletefahrtenbuch', CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteFahrtenbuch);
   FRouter.AddRoute('/anmiet/getanmiet',         CreateDataModulAnmiet, TDataModulAnmiet(nil).getAnmiet);
   FRouter.AddRoute('/anmiet/getanmietfiltered',  CreateDataModulAnmiet, TDataModulAnmiet(nil).getAnmietFiltered);
   FRouter.AddRoute('/anmiet/getanmietbyid',      CreateDataModulAnmiet, TDataModulAnmiet(nil).getAnmietById);
@@ -511,15 +515,7 @@ begin
   FRouter.AddRoute('/toupac/updatet_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).updateT_Vorgang);
   FRouter.AddRoute('/toupac/deletet_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).deleteT_Vorgang);
 
-  //FUHRPARK
-  FRouter.AddRoute('/fuhrpark/demo',                    CreateDataModulFuhrpark, TDataModulFuhrpark(nil).Demo);
-  FRouter.AddRoute('/fuhrpark/getfahrtenbuch',          CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuch);
-  FRouter.AddRoute('/fuhrpark/getfahrtenbuchfiltered',  CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchFiltered);
-  FRouter.AddRoute('/fuhrpark/getfahrtenbuchbyid',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchById);
-  FRouter.AddRoute('/fuhrpark/getfahrtenbuchkey',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrtenbuchKey);
-  FRouter.AddRoute('/fuhrpark/insertfahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertFahrtenbuch);
-  FRouter.AddRoute('/fuhrpark/updatefahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateFahrtenbuch);
-  FRouter.AddRoute('/fuhrpark/deletefahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteFahrtenbuch);
+
 
   //INCOMING
   FRouter.AddRoute('/incoming/demo',           CreateDataModulIncoming, TDataModulIncoming(nil).Demo);
