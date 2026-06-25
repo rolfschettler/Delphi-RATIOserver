@@ -514,6 +514,13 @@ begin
   FRouter.AddRoute('/toupac/insertt_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).insertT_Vorgang);
   FRouter.AddRoute('/toupac/updatet_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).updateT_Vorgang);
   FRouter.AddRoute('/toupac/deletet_vorgang',       CreateDataModulToupac, TDataModulToupac(nil).deleteT_Vorgang);
+  FRouter.AddRoute('/toupac/getf_fahrtauftrag',         CreateDataModulToupac, TDataModulToupac(nil).getF_Fahrtauftrag);
+  FRouter.AddRoute('/toupac/getf_fahrtauftragfiltered', CreateDataModulToupac, TDataModulToupac(nil).getF_FahrtauftragFiltered);
+  FRouter.AddRoute('/toupac/getf_fahrtauftragbyid',     CreateDataModulToupac, TDataModulToupac(nil).getF_FahrtauftragById);
+  FRouter.AddRoute('/toupac/getf_fahrtauftragkey',      CreateDataModulToupac, TDataModulToupac(nil).getF_FahrtauftragKey);
+  FRouter.AddRoute('/toupac/insertf_fahrtauftrag',      CreateDataModulToupac, TDataModulToupac(nil).insertF_Fahrtauftrag);
+  FRouter.AddRoute('/toupac/updatef_fahrtauftrag',      CreateDataModulToupac, TDataModulToupac(nil).updateF_Fahrtauftrag);
+  FRouter.AddRoute('/toupac/deletef_fahrtauftrag',      CreateDataModulToupac, TDataModulToupac(nil).deleteF_Fahrtauftrag);
 
 
 

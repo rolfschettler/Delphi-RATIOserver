@@ -23,6 +23,13 @@ type
      procedure insertT_Vorgang;
      procedure updateT_Vorgang;
      procedure deleteT_Vorgang;
+     procedure getF_Fahrtauftrag;
+     procedure getF_FahrtauftragFiltered;
+     procedure getF_FahrtauftragById;
+     procedure getF_FahrtauftragKey;
+     procedure insertF_Fahrtauftrag;
+     procedure updateF_Fahrtauftrag;
+     procedure deleteF_Fahrtauftrag;
   end;
 
 
@@ -290,6 +297,95 @@ procedure TDataModulToupac.deleteT_Vorgang;
 // Body: { "nr": 42 }
 begin
   DoDelete('T_VORGANG', 'nr');
+end;
+
+// Route: /toupac/getf_fahrtauftrag  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getF_Fahrtauftrag;
+// Body: { "fields": ["nr","fahrtnr",...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..20] of string = (
+    'nr','fahrtnr','einsatznr','fahrtabrechnungsnr','fahrtenbuchnr','auftragsart',
+    'personenzahl','fahrzeugprofil','fahrerprofil','status','filiale','gedruckt',
+    'erledigt','angelegt_am','geaendert_am','erstelltvon','geaendertvon',
+    'zusatzinfo','fahrtenplan','reftable','refnr'
+  );
+begin
+  DoSelect('F_FAHRTAUFTRAG', ALLOWED);
+end;
+
+// Route: /toupac/getf_fahrtauftragfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getF_FahrtauftragFiltered;
+// Body: { "fields": [...] | "*", "einsatznr": 42, "orderby": "nr" }
+const
+  ALLOWED: array[0..20] of string = (
+    'nr','fahrtnr','einsatznr','fahrtabrechnungsnr','fahrtenbuchnr','auftragsart',
+    'personenzahl','fahrzeugprofil','fahrerprofil','status','filiale','gedruckt',
+    'erledigt','angelegt_am','geaendert_am','erstelltvon','geaendertvon',
+    'zusatzinfo','fahrtenplan','reftable','refnr'
+  );
+  FILTER        = 'einsatznr = :einsatznr';
+  FILTER_PARAMS: array[0..0] of string = ('einsatznr');
+begin
+  DoSelectFiltered('F_FAHRTAUFTRAG', ALLOWED, FILTER, FILTER_PARAMS);
+end;
+
+// Route: /toupac/getf_fahrtauftragbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getF_FahrtauftragById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..20] of string = (
+    'nr','fahrtnr','einsatznr','fahrtabrechnungsnr','fahrtenbuchnr','auftragsart',
+    'personenzahl','fahrzeugprofil','fahrerprofil','status','filiale','gedruckt',
+    'erledigt','angelegt_am','geaendert_am','erstelltvon','geaendertvon',
+    'zusatzinfo','fahrtenplan','reftable','refnr'
+  );
+begin
+  DoSelectOne('F_FAHRTAUFTRAG', ALLOWED, 'nr');
+end;
+
+// Route: /toupac/getf_fahrtauftragkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getF_FahrtauftragKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(F_FAHRTAUFTRAG_NR_GEN,1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /toupac/insertf_fahrtauftrag  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.insertF_Fahrtauftrag;
+// Body: { "nr": 1, "fahrtnr": "...", "einsatznr": 1, ... }
+const
+  ALLOWED: array[0..20] of string = (
+    'nr','fahrtnr','einsatznr','fahrtabrechnungsnr','fahrtenbuchnr','auftragsart',
+    'personenzahl','fahrzeugprofil','fahrerprofil','status','filiale','gedruckt',
+    'erledigt','angelegt_am','geaendert_am','erstelltvon','geaendertvon',
+    'zusatzinfo','fahrtenplan','reftable','refnr'
+  );
+begin
+  DoInsert('F_FAHRTAUFTRAG', ALLOWED);
+end;
+
+// Route: /toupac/updatef_fahrtauftrag  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.updateF_Fahrtauftrag;
+// Body: { "nr": 42, "fahrtnr": "...", "einsatznr": 1, ... }
+const
+  ALLOWED: array[0..19] of string = (
+    'fahrtnr','einsatznr','fahrtabrechnungsnr','fahrtenbuchnr','auftragsart',
+    'personenzahl','fahrzeugprofil','fahrerprofil','status','filiale','gedruckt',
+    'erledigt','angelegt_am','geaendert_am','erstelltvon','geaendertvon',
+    'zusatzinfo','fahrtenplan','reftable','refnr'
+  );
+begin
+  DoUpdate('F_FAHRTAUFTRAG', ALLOWED, 'nr');
+end;
+
+// Route: /toupac/deletef_fahrtauftrag  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.deleteF_Fahrtauftrag;
+// Body: { "nr": 42 }
+begin
+  DoDelete('F_FAHRTAUFTRAG', 'nr');
 end;
 
 end.

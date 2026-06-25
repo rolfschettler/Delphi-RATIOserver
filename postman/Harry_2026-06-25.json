@@ -1,0 +1,194 @@
+{
+  "info": {
+    "name": "Harry_2026-06-25",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    },
+    {
+      "key": "jwttoken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Toupac - F_FAHRTAUFTRAG",
+      "item": [
+        {
+          "name": "getf_fahrtauftrag",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/getf_fahrtauftrag",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "getf_fahrtauftrag"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"fields\": [\"nr\", \"fahrtnr\", \"einsatznr\", \"auftragsart\", \"personenzahl\", \"status\", \"filiale\"],\n  \"orderby\": \"nr\"\n}"
+            },
+            "description": "Alle F_FAHRTAUFTRAG-Datensätze abrufen (Fahrtaufträge)"
+          },
+          "response": []
+        },
+        {
+          "name": "getf_fahrtauftragfiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/getf_fahrtauftragfiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "getf_fahrtauftragfiltered"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"fields\": [\"nr\", \"fahrtnr\", \"einsatznr\", \"auftragsart\", \"personenzahl\", \"status\", \"filiale\"],\n  \"einsatznr\": 1,\n  \"orderby\": \"nr\"\n}"
+            },
+            "description": "F_FAHRTAUFTRAG-Datensätze nach einsatznr (einsatznr = :einsatznr) filtern"
+          },
+          "response": []
+        },
+        {
+          "name": "getf_fahrtauftragbyid",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/getf_fahrtauftragbyid",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "getf_fahrtauftragbyid"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}"
+            },
+            "description": "Einen F_FAHRTAUFTRAG-Datensatz per Primärschlüssel (nr) abrufen"
+          },
+          "response": []
+        },
+        {
+          "name": "getf_fahrtauftragkey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/getf_fahrtauftragkey",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "getf_fahrtauftragkey"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{}"
+            },
+            "description": "Nächsten Primärschlüssel via GEN_ID(F_FAHRTAUFTRAG_NR_GEN,1) abrufen"
+          },
+          "response": []
+        },
+        {
+          "name": "insertf_fahrtauftrag",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertf_fahrtauftrag",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "insertf_fahrtauftrag"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"nr\": 1,\n  \"fahrtnr\": \"F-2026-001\",\n  \"einsatznr\": 1,\n  \"fahrtabrechnungsnr\": 0,\n  \"fahrtenbuchnr\": 0,\n  \"auftragsart\": \"Linienfahrt\",\n  \"personenzahl\": 45,\n  \"status\": 1,\n  \"filiale\": \"01\",\n  \"gedruckt\": \"N\",\n  \"erledigt\": \"N\",\n  \"angelegt_am\": \"2026-06-25T08:00\",\n  \"geaendert_am\": \"2026-06-25T08:00\",\n  \"erstelltvon\": \"H.Wiest\",\n  \"geaendertvon\": \"H.Wiest\",\n  \"reftable\": \"T_VORGANG\",\n  \"refnr\": 1000\n}"
+            },
+            "description": "Neuen F_FAHRTAUFTRAG-Datensatz anlegen (nr ggf. via getf_fahrtauftragkey holen)"
+          },
+          "response": []
+        },
+        {
+          "name": "updatef_fahrtauftrag",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatef_fahrtauftrag",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "updatef_fahrtauftrag"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"nr\": 1,\n  \"status\": 2,\n  \"personenzahl\": 50,\n  \"erledigt\": \"J\",\n  \"geaendert_am\": \"2026-06-25T18:00\",\n  \"geaendertvon\": \"H.Wiest\"\n}"
+            },
+            "description": "F_FAHRTAUFTRAG-Datensatz aktualisieren (nr als Primärschlüssel erforderlich)"
+          },
+          "response": []
+        },
+        {
+          "name": "deletef_fahrtauftrag",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/deletef_fahrtauftrag",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "deletef_fahrtauftrag"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"nr\": 1\n}"
+            },
+            "description": "F_FAHRTAUFTRAG-Datensatz per Primärschlüssel (nr) löschen"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
