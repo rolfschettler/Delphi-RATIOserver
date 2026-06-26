@@ -72,6 +72,20 @@ type
       const AAllowed: array of string;
       const AFilter: string;
       const AFilterParams: array of string);
+
+    // Wie DoSelectFiltered, aber die WHERE-Klausel wird dynamisch aufgebaut:
+    // AConditions[i] gehoert zu AFilterParams[i] (parallele Arrays, gleiche Laenge);
+    // jede Bedingung enthaelt genau ein :AFilterParams[i]. Eine Bedingung wird nur
+    // aufgenommen, wenn der zugehoerige Parameter im Body vorhanden und nicht null
+    // ist. Dadurch erscheint jeder Parameter genau einmal und nur wenn gesetzt --
+    // kein "(...) OR (cast(:p as ...) is null)"-Hack, kein untypisiertes NULL und
+    // keine Mehrfachbindung. (InterBase-freundlich.)
+    // Body: { "fields": [...] | "*", "<param>": "wert", ..., "orderby": "f1",
+    //         "limit": 10, "offset": 0 }
+    procedure DoSelectFilteredDynamic(const ATable: string;
+      const AAllowed: array of string;
+      const AConditions: array of string;
+      const AFilterParams: array of string);
   end;
 
 function CreateDataModulTableBase(Request: TWebRequest;
@@ -423,6 +437,106 @@ begin
       end;
     finally
       Q.Free;
+    end;
+  finally
+    Body.Free;
+  end;
+end;
+
+procedure TDataModulTableBase.DoSelectFilteredDynamic(const ATable: string;
+  const AAllowed: array of string;
+  const AConditions: array of string;
+  const AFilterParams: array of string);
+// Pagination: InterBase ROWS x TO y
+// x = Offset + 1  (1-basiert)
+// y = Offset + Limit
+// Limit = 0 -> kein ROWS-Zusatz, alle Datensaetze
+var
+  Body:        TJSONObject;
+  OrderVal:    TJSONValue;
+  OrderBy:     string;
+  ParamVal:    TJSONValue;
+  Limit:       Integer;
+  Offset:      Integer;
+  RowsClause:  string;
+  WhereClause: string;
+  Q:           TFDQuery;
+  i:           Integer;
+  CountParams: TDictionary<string, string>;
+  ParamKey:    string;
+begin
+  if Length(AConditions) <> Length(AFilterParams) then
+    raise Exception.Create('AConditions und AFilterParams muessen gleich lang sein.');
+
+  Body := ParseJSONObject(Request.Content);
+  if not Assigned(Body) then
+    raise Exception.Create('Kein gueltiges JSON im Request-Body.');
+  try
+    // Sortierung lesen und pruefen
+    OrderBy  := '';
+    OrderVal := Body.GetValue('orderby');
+    if Assigned(OrderVal) and not OrderVal.Null then
+    begin
+      OrderBy := LowerCase(OrderVal.Value);
+      if not IsAllowed(OrderBy, AAllowed) then
+        raise Exception.CreateFmt('Sortierfeld "%s" ist nicht erlaubt.', [OrderBy]);
+    end;
+
+    // Pagination lesen (Limit = 0 -> alle Datensaetze, kein ROWS-Zusatz)
+    ReadPagination(Body, Limit, Offset);
+    RowsClause := '';
+    if Limit > 0 then
+      RowsClause := Format(' ROWS %d TO %d', [Offset + 1, Offset + Limit]);
+
+    CountParams := TDictionary<string, string>.Create;
+    try
+      // WHERE dynamisch aufbauen: nur vorhandene Parameter erzeugen eine Bedingung,
+      // jeder Parameter erscheint genau einmal und nur wenn gesetzt.
+      WhereClause := '';
+      for i := 0 to High(AFilterParams) do
+      begin
+        ParamVal := Body.GetValue(AFilterParams[i]);
+        if Assigned(ParamVal) and not ParamVal.Null then
+        begin
+          if WhereClause <> '' then
+            WhereClause := WhereClause + ' AND ';
+          WhereClause := WhereClause + '(' + AConditions[i] + ')';
+          CountParams.Add(AFilterParams[i], ParamVal.Value);
+        end;
+      end;
+      if WhereClause <> '' then
+        WhereClause := ' WHERE ' + WhereClause;
+
+      // SQL aufbauen:
+      // SELECT <felder> FROM <tabelle> [WHERE ...] [ORDER BY ...] [ROWS x TO y]
+      Q := TFDQuery.Create(nil);
+      try
+        Q.Connection := Connection;
+        Q.SQL.Text   := 'SELECT ' + ParseFieldList(Body, AAllowed) +
+                        ' FROM ' + ATable + WhereClause;
+        if OrderBy <> '' then
+          Q.SQL.Text := Q.SQL.Text + ' ORDER BY ' + OrderBy;
+        if RowsClause <> '' then
+          Q.SQL.Text := Q.SQL.Text + RowsClause;
+
+        // Nur die tatsaechlich vorhandenen Parameter binden (jeder genau einmal).
+        for ParamKey in CountParams.Keys do
+          Q.ParamByName(ParamKey).AsString := CountParams[ParamKey];
+
+        Q.Open;
+        Response.ContentType := 'application/json';
+        Response.StatusCode  := 200;
+        if Limit > 0 then
+          Response.Content := BuildPagedResponse(Q,
+            'SELECT COUNT(*) FROM ' + ATable + WhereClause,
+            CountParams, Limit, Offset)
+        else
+          Response.Content := SerializeQuery(Q);
+      finally
+        Q.Free;
+      end;
+    finally
+      CountParams.Free;
     end;
   finally
     Body.Free;

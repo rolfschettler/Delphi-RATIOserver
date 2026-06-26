@@ -525,12 +525,18 @@ const
     'textfeld1','textfeld2','textfeld3','datumfeld1','datumfeld2','datumfeld3',
     'wert','erledigt_am'
   );
-//  FILTER        = 'einsatznr = :einsatznr AND fahrer = :fahrer';
-  FILTER        = '((einsatznr = :einsatznr) OR (cast(:einsatznr as integer) is null))  AND ((cast(datum as date) = :datum) OR (cast(:datum as date) is null))  AND ((fahrer = :fahrer) OR (cast(:fahrer as varchar(50)) is null)) ';           // Optionaler Filter
+  // Pro Filterparameter genau eine Bedingung (parallel zu FILTER_PARAMS).
+  // Die WHERE-Klausel wird dynamisch nur aus den im Body gesetzten Parametern
+  // gebaut -> kein NULL-Hack, kein untypisiertes NULL, keine Mehrfachbindung.
+  CONDITIONS: array[0..2] of string = (
+    'einsatznr = :einsatznr',
+    'cast(datum as date) = :datum',
+    'fahrer = :fahrer'
+  );
 
   FILTER_PARAMS: array[0..2] of string = ('einsatznr', 'datum', 'fahrer');
 begin
-  DoSelectFiltered('FIS_LOG', ALLOWED, FILTER, FILTER_PARAMS);
+  DoSelectFilteredDynamic('FIS_LOG', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
 end.
