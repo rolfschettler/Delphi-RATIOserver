@@ -201,10 +201,12 @@ const
     'sprache','aktion','bank','externe_nummer','rechnungsart','stornotermin',
     'vk_waehrung','mandant'
   );
-  FILTER        = 'agenturnr = :agenturnr';
+  CONDITIONS: array[0..0] of string = (
+    'agenturnr = :agenturnr'
+  );
   FILTER_PARAMS: array[0..0] of string = ('agenturnr');
 begin
-  DoSelectFiltered('T_VORGANG', ALLOWED, FILTER, FILTER_PARAMS);
+  DoSelectFilteredDynamic('T_VORGANG', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
 // Route: /toupac/gett_vorgangbyid  |  Auth: true  |  LocalOnly: false
@@ -323,10 +325,12 @@ const
     'erledigt','angelegt_am','geaendert_am','erstelltvon','geaendertvon',
     'zusatzinfo','fahrtenplan','reftable','refnr'
   );
-  FILTER        = 'einsatznr = :einsatznr';
+  CONDITIONS: array[0..0] of string = (
+    'einsatznr = :einsatznr'
+  );
   FILTER_PARAMS: array[0..0] of string = ('einsatznr');
 begin
-  DoSelectFiltered('F_FAHRTAUFTRAG', ALLOWED, FILTER, FILTER_PARAMS);
+  DoSelectFilteredDynamic('F_FAHRTAUFTRAG', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
 // Route: /toupac/getf_fahrtauftragbyid  |  Auth: true  |  LocalOnly: false

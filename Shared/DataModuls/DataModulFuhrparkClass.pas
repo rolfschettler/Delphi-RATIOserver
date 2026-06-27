@@ -189,10 +189,12 @@ const
     'steuermarge2','fahrer2','beguenstigt','zusatz1','zusatz2',
     'km_stand_zustieg_1_kunde','km_stand_ausstieg_l_kunde'
   );
-  FILTER        = 'kennzeichen = :kennzeichen';
+  CONDITIONS: array[0..0] of string = (
+    'kennzeichen = :kennzeichen'
+  );
   FILTER_PARAMS: array[0..0] of string = ('kennzeichen');
 begin
-  DoSelectFiltered('FAHRTENBUCH', ALLOWED, FILTER, FILTER_PARAMS);
+  DoSelectFilteredDynamic('FAHRTENBUCH', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
 // Route: /fuhrpark/getfahrtenbuchbyid  |  Auth: true  |  LocalOnly: false

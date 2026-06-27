@@ -48,15 +48,20 @@ end;
 
 // Route: /getTablenamefiltered  |  Auth: true  |  LocalOnly: false
 procedure TDataModulWhatever.getTablenameFiltered;
-// Body: { "fields": [...] | "*", "Field1": "Field1", "orderby": "name1" }
+// Body: { "fields": [...] | "*", "Field1": "value1", "Field2": "value2", "orderby": "Field1" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
 const
-  ALLOWED: array[0..12] of string = (
+  ALLOWED: array[0..2] of string = (
     'Field1','Field2','Field3'
   );
-  FILTER        = 'Field1 = :Field1';
-  FILTER_PARAMS: array[0..0] of string = ('value1');
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..1] of string = (
+    'Field1 = :Field1',
+    'Field2 = :Field2'
+  );
+  FILTER_PARAMS: array[0..1] of string = ('Field1', 'Field2');
 begin
-  DoSelectFiltered('TABLENAME', ALLOWED, FILTER, FILTER_PARAMS);
+  DoSelectFilteredDynamic('TABLENAME', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
 // Route: /getTablenamebyid  |  Auth: true  |  LocalOnly: false

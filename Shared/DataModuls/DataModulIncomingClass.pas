@@ -189,10 +189,12 @@ const
     'telefon1','telefon2','telefon3','xkoord','ykoord',
     'heimatort','pass_name1','pass_name2','zusatzdaten'
   );
-  FILTER       = 'vorgangnr = :vorgangnr';
+  CONDITIONS: array[0..0] of string = (
+    'vorgangnr = :vorgangnr'
+  );
   FILTER_PARAMS: array[0..0] of string = ('vorgangnr');
 begin
-  DoSelectFiltered('T_TEILNEHMER', ALLOWED, FILTER, FILTER_PARAMS);
+  DoSelectFilteredDynamic('T_TEILNEHMER', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
 // Route: /incoming/getteilnehmerbyid  |  Auth: true  |  LocalOnly: false

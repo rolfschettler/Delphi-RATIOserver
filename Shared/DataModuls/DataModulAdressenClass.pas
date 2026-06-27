@@ -179,10 +179,12 @@ const
     'kennziffer','gruppe','anrede','titel','name1','name2',
     'strasse','plz','ort','telefon1','email','matchcode','lvorgang'
   );
-  FILTER        = 'gruppe = :gruppe';
+  CONDITIONS: array[0..0] of string = (
+    'gruppe = :gruppe'
+  );
   FILTER_PARAMS: array[0..0] of string = ('gruppe');
 begin
-  DoSelectFiltered('ADRESSEN', ALLOWED, FILTER, FILTER_PARAMS);
+  DoSelectFilteredDynamic('ADRESSEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
 
