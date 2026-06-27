@@ -246,7 +246,9 @@ begin
       exit;
     if TJWTUtils.VerifyToken(Token, Claims) then
     begin
-      JSONObject := ParseJSONObject(Claims.Claims.JSON.Values['role'].Value);
+      var RoleVal := Claims.Claims.JSON.Values['role'];
+      if Assigned(RoleVal) and not RoleVal.Null then
+        JSONObject := ParseJSONObject(RoleVal.Value);
       if Assigned(JSONObject) then
       begin
         Result.LoginName := JSONObject.GetValue<string>('loginname', '');

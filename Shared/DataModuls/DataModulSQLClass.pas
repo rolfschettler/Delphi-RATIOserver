@@ -829,7 +829,8 @@ begin
       Response.ContentType := 'application/json';
       Response.StatusCode := 200;
       Response.Content := GetTableStructure(table);
-      Connection.Commit;
+      // Kein Commit: reiner SELECT, es wurde keine Transaktion explizit gestartet
+      // (StartTransaction/Commit nur bei schreibenden Operationen, vgl. Select/Insert).
 
     end
     else

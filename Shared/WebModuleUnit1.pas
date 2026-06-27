@@ -204,7 +204,11 @@ begin
 
     if TJWTUtils.VerifyToken(Token, Claims) then
       try
-        Result := Format('{"status":"OK","valid":true,"user":"%s","role":%s}', [Claims.Claims.Subject, Claims.Claims.JSON.Values['role'].Value]);
+        var RoleVal := Claims.Claims.JSON.Values['role'];
+        var RoleJson := 'null';
+        if Assigned(RoleVal) and not RoleVal.Null then
+          RoleJson := RoleVal.Value;
+        Result := Format('{"status":"OK","valid":true,"user":"%s","role":%s}', [Claims.Claims.Subject, RoleJson]);
         exit;
       finally
         Claims.Free;
