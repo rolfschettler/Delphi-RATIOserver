@@ -37,6 +37,12 @@ function BlobToBase64(Field: TField): string;
 procedure SetBase64ToBlob(const Base64: string; AField: TField);
 function GetValueCaseInsensitive(JsonObj: TJSONObject; const key: string): TJSONValue;
 
+// Hilfen zum Antwort-Aufbau: liefern den Wert als JSON-Wert, wenn Gesetzt = True,
+// sonst JSON null. Gedacht fuer AddPair(...). Beim JSON-Erzeugen ist der Typ
+// relevant (Zahl 5 vs. String "5"), daher je ein Overload fuer String und Integer.
+function JsonOrNull(Gesetzt: Boolean; const Value: string): TJSONValue; overload;
+function JsonOrNull(Gesetzt: Boolean; Value: Integer): TJSONValue; overload;
+
 // Leak-sicherer Ersatz für: TJSONObject.ParseJSONValue(X) as TJSONObject
 // Liefert das TJSONObject (Aufrufer übernimmt Eigentum) oder nil, wenn der Inhalt
 // kein gültiges JSON-Objekt ist. Nicht-Objekt-Werte werden freigegeben (kein Leak).
@@ -117,6 +123,22 @@ begin
       Result := Pair.JsonValue;
       Exit;
     end;
+end;
+
+function JsonOrNull(Gesetzt: Boolean; const Value: string): TJSONValue;
+begin
+  if Gesetzt then
+    Result := TJSONString.Create(Value)
+  else
+    Result := TJSONNull.Create;
+end;
+
+function JsonOrNull(Gesetzt: Boolean; Value: Integer): TJSONValue;
+begin
+  if Gesetzt then
+    Result := TJSONNumber.Create(Value)
+  else
+    Result := TJSONNull.Create;
 end;
 
 function ParseJSONObject(const AJson: string): TJSONObject;

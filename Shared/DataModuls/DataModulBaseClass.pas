@@ -30,6 +30,9 @@ type
   private
     FRequest: TWebRequest;
     FResponse: TWebResponse;
+    FBody: TJSONObject;     // gecachter Request-Body, EINMAL geparst (oder nil)
+    FBodyParsed: Boolean;   // True, sobald EnsureBodyParsed gelaufen ist
+    procedure EnsureBodyParsed;
     //function GetServerPort: Integer;
 
     // function GetDocumentRootFromCgi: string;
@@ -41,6 +44,20 @@ type
     first_pathInfo: string;
     function GetUserInfo(): TUserInfo;
     function GetAuthToken(): string;
+
+    // Parameter aus dem JSON-Body des Requests lesen.
+    // Der Body wird beim ersten Zugriff EINMAL geparst und beim Zerstoeren des
+    // Moduls automatisch freigegeben -> kein ParseJSONObject/try-finally noetig,
+    // kein Leak. Beide Methoden sind nil-/leer-sicher und case-insensitiv.
+    //   isParamFromBody('x')  -> ist 'x' vorhanden (und nicht null)?
+    //   getParamFromBody('x') -> Wert von 'x' als String (Default, wenn fehlt)
+    function isParamFromBody(const Key: string): Boolean;
+    function getParamFromBody(const Key: string; const Default: string = ''): string;
+
+    // Sendet AObj als JSON-Antwort: setzt Content-Type + Statuscode, schreibt
+    // AObj.ToJSON in den Response und gibt AObj danach frei (inkl. aller
+    // verschachtelten Objekte). Spart try/finally + manuelles Free im Handler.
+    procedure SendJson(AObj: TJSONObject; AStatusCode: Integer = 200);
 
     constructor Create(ARequest: TWebRequest; AResponse: TWebResponse); reintroduce;
     procedure initConnection;
@@ -134,8 +151,54 @@ end;
 
 procedure TDataModulBaseClass.DataModuleDestroy(Sender: TObject);
 begin
+  FBody.Free;   // nil-sicher; gibt den einmal geparsten Request-Body frei
   if Connection.Connected then
     Connection.Connected := false;
+end;
+
+procedure TDataModulBaseClass.EnsureBodyParsed;
+begin
+  if FBodyParsed then
+    Exit;
+  // ParseJSONObject ist leak-sicher und liefert nil bei leer/ungueltig/kein Objekt.
+  FBody := ParseJSONObject(Request.Content);
+  FBodyParsed := True;
+end;
+
+function TDataModulBaseClass.isParamFromBody(const Key: string): Boolean;
+var
+  V: TJSONValue;
+begin
+  EnsureBodyParsed;
+  Result := False;
+  if not Assigned(FBody) then
+    Exit;
+  V := GetValueCaseInsensitive(FBody, Key);
+  Result := Assigned(V) and not V.Null;
+end;
+
+function TDataModulBaseClass.getParamFromBody(const Key: string; const Default: string): string;
+var
+  V: TJSONValue;
+begin
+  EnsureBodyParsed;
+  Result := Default;
+  if not Assigned(FBody) then
+    Exit;
+  V := GetValueCaseInsensitive(FBody, Key);
+  if Assigned(V) and not V.Null then
+    Result := V.Value;
+end;
+
+procedure TDataModulBaseClass.SendJson(AObj: TJSONObject; AStatusCode: Integer);
+begin
+  try
+    Response.ContentType := 'application/json';
+    Response.StatusCode  := AStatusCode;
+    Response.Content     := AObj.ToJSON;
+  finally
+    AObj.Free;   // gibt AObj inkl. verschachtelter Objekte frei (auch bei Fehler)
+  end;
 end;
 
 function TDataModulBaseClass.GetAuthToken: string;

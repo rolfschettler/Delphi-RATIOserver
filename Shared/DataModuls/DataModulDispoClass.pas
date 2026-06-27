@@ -54,7 +54,7 @@ end;
 
   Quellen:
     1) URL / QueryString  -> Request.QueryFields   (Beispiel-Parameter: id, filter)
-    2) JSON-Body          -> ParseJSONObject        (Beispiel-Parameter: name, menge)
+    2) JSON-Body          -> isParamFromBody / getParamFromBody        (Beispiel-Parameter: name, menge)
 
   ----------------------------- Aufruf (Postman) -----------------------------
     Methode : POST   (GET reicht, wenn nur URL-Parameter genutzt werden)
@@ -85,10 +85,8 @@ var
   idGesetzt   : Boolean;
   filter      : string;
   // --- 2) Body-Parameter ---
-  Body        : TJSONObject;
   name        : string;
   nameGesetzt : Boolean;
-  mengeVal    : TJSONValue;
   menge       : Integer;
   mengeGesetzt: Boolean;
   // --- Antwort ---
@@ -107,58 +105,44 @@ begin
   filter := Trim(Request.QueryFields.Values['filter']);
 
   // ===== 2) Parameter aus dem JSON-Body =====
-  // ParseJSONObject ist leak-sicher und liefert das Objekt ODER nil
-  // (nil = Body leer, ungueltig oder kein JSON-Objekt).
-  name         := '';
-  nameGesetzt  := False;
-  menge        := 0;
-  mengeGesetzt := False;
+  // Body-Parameter liest man ueber zwei Methoden der Basisklasse - fuer JEDEN
+  // Parameter immer nach demselben Muster:
+  //   isParamFromBody('x')  -> ist 'x' im Body vorhanden (und nicht null)?
+  //   getParamFromBody('x') -> Wert von 'x' als String ('' wenn nicht vorhanden)
+  //
+  // Der Body wird dabei intern EINMAL geparst (leak-sicher) und beim Zerstoeren
+  // des Moduls automatisch freigegeben. Deshalb hier KEIN ParseJSONObject und
+  // KEIN try/finally noetig - und keine Gefahr eines Leaks.
+  //
+  // Werte kommen IMMER als String (so wie im JSON). Brauchst du eine Zahl,
+  // wandelst du an der Aufrufstelle mit StrToIntDef - es gibt bewusst keine
+  // typgetrennten Varianten.
 
-  Body := ParseJSONObject(Request.Content);
-  if Assigned(Body) then
-  try
-    // a) String "name": GetValue<string> mit Default wirft nicht, auch wenn Feld fehlt
-    name        := Trim(Body.GetValue<string>('name', ''));
-    nameGesetzt := name <> '';
+  // a) String "name"
+  nameGesetzt := isParamFromBody('name');
+  name        := getParamFromBody('name');
 
-    // b) numerisch "menge": GetValue liefert nil, wenn das Feld fehlt
-    //    -> auf Assigned UND (nicht) Null pruefen, bevor man den Wert nutzt
-    mengeVal := Body.GetValue('menge');
-    if Assigned(mengeVal) and not mengeVal.Null then
-    begin
-      menge        := StrToIntDef(mengeVal.Value, 0);
-      mengeGesetzt := True;
-    end;
-  finally
-    Body.Free;   // Body gehoert uns -> immer freigeben
-  end;
+  // b) Zahl "menge": String-Wert mit StrToIntDef in Integer wandeln
+  mengeGesetzt := isParamFromBody('menge');
+  menge        := StrToIntDef(getParamFromBody('menge'), 0);
 
-  // ===== 3) Antwort aufbauen =====
-  // Pro Parameter: Wert wenn gesetzt, sonst JSON null. So ist sofort erkennbar,
-  // was tatsaechlich uebergeben wurde.
+  // ===== 3) Antwort aufbauen und senden =====
+  // JsonOrNull(gesetzt, wert) -> Wert oder JSON null (eine Zeile pro Feld).
+  // SendJson(obj)             -> setzt Content-Type + Status, sendet obj als
+  //                              JSON und gibt es frei (auch verschachtelte
+  //                              Objekte). Kein try/finally, kein manuelles Free.
+  UrlObj := TJSONObject.Create;
+  UrlObj.AddPair('id',     JsonOrNull(idGesetzt,    id));
+  UrlObj.AddPair('filter', JsonOrNull(filter <> '', filter));
+
+  BodyObj := TJSONObject.Create;
+  BodyObj.AddPair('name',  JsonOrNull(nameGesetzt,  name));
+  BodyObj.AddPair('menge', JsonOrNull(mengeGesetzt, menge));
+
   Ergebnis := TJSONObject.Create;
-  try
-    UrlObj := TJSONObject.Create;
-    if idGesetzt   then UrlObj.AddPair('id', TJSONNumber.Create(id))
-                   else UrlObj.AddPair('id', TJSONNull.Create);
-    if filter <> '' then UrlObj.AddPair('filter', filter)
-                    else UrlObj.AddPair('filter', TJSONNull.Create);
-
-    BodyObj := TJSONObject.Create;
-    if nameGesetzt  then BodyObj.AddPair('name', name)
-                    else BodyObj.AddPair('name', TJSONNull.Create);
-    if mengeGesetzt then BodyObj.AddPair('menge', TJSONNumber.Create(menge))
-                    else BodyObj.AddPair('menge', TJSONNull.Create);
-
-    Ergebnis.AddPair('url',  UrlObj);   // Ownership geht an Ergebnis ueber
-    Ergebnis.AddPair('body', BodyObj);  // Ownership geht an Ergebnis ueber
-
-    Response.ContentType := 'application/json';
-    Response.StatusCode  := 200;
-    Response.Content     := Ergebnis.ToJSON;
-  finally
-    Ergebnis.Free;   // gibt UrlObj + BodyObj rekursiv mit frei
-  end;
+  Ergebnis.AddPair('url',  UrlObj);    // Ownership geht an Ergebnis ueber
+  Ergebnis.AddPair('body', BodyObj);   // Ownership geht an Ergebnis ueber
+  SendJson(Ergebnis);
 end;
 
 // Route: /dispo/geteinsatz  |  Auth: true  |  LocalOnly: false

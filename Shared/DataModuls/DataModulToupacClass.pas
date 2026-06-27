@@ -58,7 +58,7 @@ end;
 
   Quellen:
     1) URL / QueryString  -> Request.QueryFields   (Beispiel-Parameter: id, filter)
-    2) JSON-Body          -> ParseJSONObject        (Beispiel-Parameter: name, menge)
+    2) JSON-Body          -> isParamFromBody / getParamFromBody (Beispiel-Parameter: name, menge)
 
   ----------------------------- Aufruf (Postman) -----------------------------
     Methode : POST   (GET reicht, wenn nur URL-Parameter genutzt werden)
@@ -87,10 +87,8 @@ var
   idGesetzt   : Boolean;
   filter      : string;
   // --- 2) Body-Parameter ---
-  Body        : TJSONObject;
   name        : string;
   nameGesetzt : Boolean;
-  mengeVal    : TJSONValue;
   menge       : Integer;
   mengeGesetzt: Boolean;
   // --- Antwort ---
@@ -104,51 +102,37 @@ begin
   filter := Trim(Request.QueryFields.Values['filter']);
 
   // ===== 2) Parameter aus dem JSON-Body =====
-  name         := '';
-  nameGesetzt  := False;
-  menge        := 0;
-  mengeGesetzt := False;
+  // Fuer JEDEN Body-Parameter dasselbe Muster:
+  //   isParamFromBody('x')  -> ist 'x' im Body vorhanden?
+  //   getParamFromBody('x') -> sein Wert (kommt immer als String)
+  // Der Body wird intern einmal geparst und automatisch freigegeben:
+  // kein ParseJSONObject, kein try/finally, kein Leak.
 
-  Body := ParseJSONObject(Request.Content);
-  if Assigned(Body) then
-  try
-    name        := Trim(Body.GetValue<string>('name', ''));
-    nameGesetzt := name <> '';
+  // a) String "name"
+  nameGesetzt := isParamFromBody('name');
+  name        := getParamFromBody('name');
 
-    mengeVal := Body.GetValue('menge');
-    if Assigned(mengeVal) and not mengeVal.Null then
-    begin
-      menge        := StrToIntDef(mengeVal.Value, 0);
-      mengeGesetzt := True;
-    end;
-  finally
-    Body.Free;
-  end;
+  // b) Zahl "menge": String-Wert mit StrToIntDef in Integer wandeln
+  mengeGesetzt := isParamFromBody('menge');
+  menge        := StrToIntDef(getParamFromBody('menge'), 0);
 
-  // ===== 3) Antwort aufbauen =====
+  // ===== 3) Antwort aufbauen und senden =====
+  // JsonOrNull(gesetzt, wert) -> Wert oder JSON null (eine Zeile pro Feld).
+  // SendJson(obj)             -> setzt Content-Type + Status, sendet obj als
+  //                              JSON und gibt es frei (auch verschachtelte
+  //                              Objekte). Kein try/finally, kein manuelles Free.
+  UrlObj := TJSONObject.Create;
+  UrlObj.AddPair('id',     JsonOrNull(idGesetzt,    id));
+  UrlObj.AddPair('filter', JsonOrNull(filter <> '', filter));
+
+  BodyObj := TJSONObject.Create;
+  BodyObj.AddPair('name',  JsonOrNull(nameGesetzt,  name));
+  BodyObj.AddPair('menge', JsonOrNull(mengeGesetzt, menge));
+
   Ergebnis := TJSONObject.Create;
-  try
-    UrlObj := TJSONObject.Create;
-    if idGesetzt   then UrlObj.AddPair('id', TJSONNumber.Create(id))
-                   else UrlObj.AddPair('id', TJSONNull.Create);
-    if filter <> '' then UrlObj.AddPair('filter', filter)
-                    else UrlObj.AddPair('filter', TJSONNull.Create);
-
-    BodyObj := TJSONObject.Create;
-    if nameGesetzt  then BodyObj.AddPair('name', name)
-                    else BodyObj.AddPair('name', TJSONNull.Create);
-    if mengeGesetzt then BodyObj.AddPair('menge', TJSONNumber.Create(menge))
-                    else BodyObj.AddPair('menge', TJSONNull.Create);
-
-    Ergebnis.AddPair('url',  UrlObj);
-    Ergebnis.AddPair('body', BodyObj);
-
-    Response.ContentType := 'application/json';
-    Response.StatusCode  := 200;
-    Response.Content     := Ergebnis.ToJSON;
-  finally
-    Ergebnis.Free;
-  end;
+  Ergebnis.AddPair('url',  UrlObj);
+  Ergebnis.AddPair('body', BodyObj);
+  SendJson(Ergebnis);
 end;
 
 

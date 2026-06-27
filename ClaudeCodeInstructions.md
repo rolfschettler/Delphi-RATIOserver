@@ -122,6 +122,23 @@ CRUD-Endpunkte nach diesem Pattern gebaut wurden.
 
 ---
 
+## Request-Body lesen & Antwort senden
+
+In Controller-Handlern Body-Parameter **NICHT** manuell parsen, sondern die
+Methoden der Basisklasse `TDataModulBaseClass` nutzen (Body wird intern einmal
+geparst und leak-sicher freigegeben):
+
+- `isParamFromBody('x')` → ist Parameter `x` im Body vorhanden (und nicht null)?
+- `getParamFromBody('x', default)` → Wert von `x` als String (Zahl bei Bedarf an
+  der Aufrufstelle per `StrToIntDef`)
+- `SendJson(obj)` → sendet `obj` als JSON-Antwort (setzt Content-Type + Status)
+  und gibt es frei; kein `try/finally`/`Free` nötig
+- `JsonOrNull(gesetzt, wert)` (in `webUtils`) → Wert oder JSON `null` für `AddPair`
+
+**Vorbild/Vorlage:** `Demo`-Methode in `ClaudeCodePatterns/DataModulDemoClass.pas`.
+
+---
+
 ## Häufige Fehler (Blacklist)
 
 ### ❌ Fehler 1: Methodennamen variieren
@@ -143,6 +160,10 @@ CRUD-Endpunkte nach diesem Pattern gebaut wurden.
 ### ❌ Fehler 5: Postman-Export vergessen oder bestehende Endpunkte mit exportieren
 **Falsch:** Keine Postman-Datei erzeugen, oder alle Endpunkte der Zieldatei exportieren
 **Richtig:** Automatisch `postman/<Name>_<Datum>.postman_collection.json` nur mit den neuen Endpunkten dieser Session
+
+### ❌ Fehler 6: Body-Parameter manuell parsen
+**Falsch:** `Body := ParseJSONObject(Request.Content)` + `try/finally` im Handler
+**Richtig:** `isParamFromBody('x')` / `getParamFromBody('x')` der Basisklasse nutzen
 
 ---
 

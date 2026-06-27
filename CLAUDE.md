@@ -30,6 +30,7 @@ Vor jeder CRUD- oder Controller-Aufgabe ZUERST `ClaudeCodeInstructions.md` lesen
 - Andere Dateien als Referenz nutzen (nur Pattern-Datei)
 - Neue Dateien anlegen statt in bestehende einfügen
 - Bestehende Methoden modifizieren
+- Body-Parameter manuell parsen (`ParseJSONObject(Request.Content)` + `try/finally`) statt `isParamFromBody`/`getParamFromBody` der Basisklasse zu nutzen
 
 ## JSON Parsing
 In `Shared\webUtils.pas` existiert die Funktion `ParseJSONObject(const AJson: string): TJSONObject`.
@@ -43,6 +44,15 @@ Rückgabe ist das Objekt oder `nil` (bei Nicht-Objekt/ungültigem JSON) — vorh
 **Grund:** Der `as TJSONObject`-Cast leckt Speicher, wenn der Client gültiges JSON sendet, das aber kein Objekt ist (z.B. `[...]`, `"text"`, `123`, `true`): `ParseJSONValue` erzeugt ein `TJSONValue`, der Cast wirft `EInvalidCast`, das geparste Objekt wird nie freigegeben. In der Apache-DLL (Dauerläufer) ist das ein remote auslösbares Leck. Am 2026-06-04 wurden alle ~23 Fundstellen projektweit umgestellt.
 
 Korrektes manuelles Muster (parse → `is TJSONObject` → `FreeAndNil`) als Vorbild: `DataModulDispoClass.pas`.
+
+## Request-Body lesen & Antwort senden
+In Controller-Handlern Body-Parameter NICHT manuell parsen, sondern die Methoden der Basisklasse `TDataModulBaseClass` nutzen (Body wird intern einmal geparst, leak-sicher freigegeben):
+- `isParamFromBody('x')` — ist Parameter `x` im Body vorhanden (und nicht null)?
+- `getParamFromBody('x', default)` — Wert von `x` als String (Zahl bei Bedarf an der Aufrufstelle per `StrToIntDef`).
+- `SendJson(obj)` — sendet `obj` als JSON-Antwort (setzt Content-Type + Status) und gibt es frei; kein `try/finally`/`Free` nötig.
+- `JsonOrNull(gesetzt, wert)` (in `webUtils`) — Wert oder JSON `null` für `AddPair`.
+
+Vorbild/Vorlage: `Demo`-Methode in `ClaudeCodePatterns/DataModulDemoClass.pas`.
 
 ## Postman Collections
 IMMER `auth`-Block verwenden (type: bearer, value: {{jwttoken}}) — NIEMALS manueller Authorization-Header.
