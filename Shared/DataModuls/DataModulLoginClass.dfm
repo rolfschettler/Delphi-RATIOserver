@@ -1,2 +1,2 @@
-﻿inherited DataModulLoginClass: TDataModulLoginClass
+inherited DataModulLoginClass: TDataModulLoginClass
 end

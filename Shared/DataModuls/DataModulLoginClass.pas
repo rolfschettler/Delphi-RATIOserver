@@ -94,7 +94,7 @@ begin
     with query do
     begin
       close;
-      sql.text := 'select loginname,username,passwort,gruppe,zugruppe,agenturcode,kennziffer,filiale,abteilung from users where loginname= :username and ((passwort= :password) or (passwort is null) or (passwort =''''))';
+      sql.text := 'select loginname,username,passwort,gruppe,zugruppe,agenturcode,kennziffer,filiale,abteilung from users where UPPER(loginname)= UPPER(:username) and ((passwort= :password) or (passwort is null) or (passwort =''''))';
       ParamByName('username').AsString := username;
       ParamByName('password').AsString := DeCodieren(password);
       open;
