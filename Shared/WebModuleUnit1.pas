@@ -500,6 +500,7 @@ begin
   FRouter.AddRoute('/dispo/geteinsatzbyid', CreateDataModulDispo, TDataModulDispo(nil).getEinsatzById,true,false);
   FRouter.AddRoute('/dispo/getfahrergruppen', CreateDataModulDispo, TDataModulDispo(nil).getfahrergruppen,true,false);
   FRouter.AddRoute('/dispo/getpersonalstamm', CreateDataModulDispo, TDataModulDispo(nil).getpersonalstamm,true,false);
+  FRouter.AddRoute('/dispo/getpersonalstammfiltered', CreateDataModulDispo, TDataModulDispo(nil).getpersonalstammfiltered,true,false);
   FRouter.AddRoute('/dispo/getFreiesPersonal', CreateDataModulDispo, TDataModulDispo(nil).getFreiesPersonal,true,false);
 
   FRouter.AddRoute('/dispo/geteinsatzarten', CreateDataModulDispo, TDataModulDispo(nil).geteinsatzarten,true,false);

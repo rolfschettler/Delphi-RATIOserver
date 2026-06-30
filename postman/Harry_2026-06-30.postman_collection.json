@@ -1,0 +1,52 @@
+{
+  "info": {
+    "name": "Harry_2026-06-30",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    }
+  ],
+  "item": [
+    {
+      "name": "Dispo",
+      "item": [
+        {
+          "name": "getpersonalstammfiltered",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": [\"nr\", \"name1\", \"name2\", \"zeichen\"],\n  \"zeichen\": \"MU\",\n  \"orderby\": \"name2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getpersonalstammfiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["dispo", "getpersonalstammfiltered"]
+            },
+            "description": "Liefert Personalstamm-Datensätze gefiltert nach dem Feld 'zeichen'. Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -23,6 +23,7 @@ type
     procedure getEinsatzById;
     procedure getfahrergruppen;
     procedure getpersonalstamm;
+    procedure getpersonalstammfiltered;
     procedure geteinsatzarten;
     procedure getnextEinsatzkey;
     procedure insertEinsatz;
@@ -367,6 +368,32 @@ begin
       raise;
     End;
   End;
+end;
+
+// Route: /dispo/getpersonalstammfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getpersonalstammfiltered;
+// Body: { "fields": [...] | "*", "zeichen": "MU", "orderby": "name2" }
+const
+  ALLOWED: array[0..67] of string = (
+    'nr','anrede','name1','name2','zeichen','strasse','land','plz','ort',
+    'telefon1','telefon2','fsnummer','pbs_gueltig_bis','verwendung','geburtstag',
+    'bemerkung','angestellt_seit','urlaubgesamt','resturlaub','gesperrt','fahrzeug',
+    'sortierung','stundenlohn','stundenlohn2','zuschlag','kostenstelle','urlaubsjahr',
+    'alterurlaub','altefreietage','freietagegesamt','restfreietage','betrieb','profil',
+    'feiertagsberechtigt','zulageberechtigt','mindestregelungsberechtigt',
+    'arbeitsvertragsart','urlaubsstunden','krankheitsstunden','durchschnittsstunden',
+    'ausgeschieden_am','sprache','versicherungsnummer','passwort','zusatzinfo',
+    'kennziffer','passwort2','versuche','zeitsperre','freistunden','pushid',
+    'wochenende','abteilung','kostelle1','personalnummer','apikey','urlaubsgruppe',
+    'vertretung','resturlaub_aktuell','altefreietage2','alterurlaub2','nation',
+    'xkoord','ykoord','koords_erfasst_am','pushid_fis','pushid_dispo','pushid_tickets'
+  );
+  CONDITIONS: array[0..0] of string = (
+    'zeichen = :zeichen'
+  );
+  FILTER_PARAMS: array[0..0] of string = ('zeichen');
+begin
+  DoSelectFilteredDynamic('PERSONALSTAMM', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
 procedure TDataModulDispo.geteinsatzarten;
