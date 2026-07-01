@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "Harry_2026-07-01",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    }
+  ],
+  "item": [
+    {
+      "name": "FIS_LOG",
+      "item": [
+        {
+          "name": "getFis_Log",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"datum\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/getfis_log", "host": ["{{baseURL}}"], "path": ["dispo", "getfis_log"] },
+            "description": "Alle Datensätze aus FIS_LOG abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "getFis_LogFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"einsatznr\": 1001,\n  \"datum\": \"2026-07-01\",\n  \"fahrer\": \"Mustermann\",\n  \"orderby\": \"datum\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/getfis_logfiltered", "host": ["{{baseURL}}"], "path": ["dispo", "getfis_logfiltered"] },
+            "description": "FIS_LOG gefiltert nach einsatznr, datum und/oder fahrer abrufen (alle Filter optional)."
+          },
+          "response": []
+        },
+        {
+          "name": "getFis_LogById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/getfis_logbyid", "host": ["{{baseURL}}"], "path": ["dispo", "getfis_logbyid"] },
+            "description": "Einen FIS_LOG-Datensatz per Primärschlüssel (nr) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "getFis_LogKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/getfis_logkey", "host": ["{{baseURL}}"], "path": ["dispo", "getfis_logkey"] },
+            "description": "Nächsten Primärschlüssel via GEN_ID(FIS_LOG_NR_GEN,1) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "insertFis_Log",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"datum\": \"2026-07-01 08:00:00\",\n  \"xkoord\": \"48.1234\",\n  \"ykoord\": \"11.5678\",\n  \"status\": \"A\",\n  \"einsatznr\": 1001,\n  \"taetigkeit\": 2,\n  \"herkunft\": \"FIS\",\n  \"fahrer\": \"Mustermann\",\n  \"fahrzeug\": \"KFZ-01\",\n  \"zusatzfeld1\": \"\",\n  \"zusatzfeld2\": \"\",\n  \"kmstand\": 12345,\n  \"distance\": 0,\n  \"dauer\": 0,\n  \"fremdnr\": null,\n  \"text\": \"Testeinrag\",\n  \"standort\": \"München HBF\",\n  \"zeitpunkt\": \"2026-07-01 08:00:00\",\n  \"sortierung\": 1,\n  \"loginname\": \"SUPERVISOR\",\n  \"art\": \"LOG\",\n  \"textfeld1\": \"\",\n  \"textfeld2\": \"\",\n  \"textfeld3\": \"\",\n  \"datumfeld1\": null,\n  \"datumfeld2\": null,\n  \"datumfeld3\": null,\n  \"wert\": \"\",\n  \"erledigt_am\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/insertfis_log", "host": ["{{baseURL}}"], "path": ["dispo", "insertfis_log"] },
+            "description": "Neuen FIS_LOG-Datensatz einfügen."
+          },
+          "response": []
+        },
+        {
+          "name": "updateFis_Log",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"status\": \"B\",\n  \"text\": \"Aktualisierter Text\",\n  \"erledigt_am\": \"2026-07-01 09:00:00\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/updatefis_log", "host": ["{{baseURL}}"], "path": ["dispo", "updatefis_log"] },
+            "description": "Einen FIS_LOG-Datensatz per nr aktualisieren (nur übergebene Felder werden geschrieben)."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteFis_Log",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/deletefis_log", "host": ["{{baseURL}}"], "path": ["dispo", "deletefis_log"] },
+            "description": "FIS_LOG-Datensatz per nr löschen."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

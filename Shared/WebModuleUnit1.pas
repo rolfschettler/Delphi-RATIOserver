@@ -510,7 +510,13 @@ begin
   FRouter.AddRoute('/dispo/inserteinsatz', CreateDataModulDispo, TDataModulDispo(nil).insertEinsatz,true,false);
   FRouter.AddRoute('/dispo/updateeinsatz', CreateDataModulDispo, TDataModulDispo(nil).updateEinsatz,true,false);
   FRouter.AddRoute('/dispo/deleteeinsatz', CreateDataModulDispo, TDataModulDispo(nil).deleteEinsatz,true,false);
+  FRouter.AddRoute('/dispo/getfis_log',         CreateDataModulDispo, TDataModulDispo(nil).getFis_Log,true,false);
   FRouter.AddRoute('/dispo/getfis_logfiltered', CreateDataModulDispo, TDataModulDispo(nil).getFis_LogFiltered,true,false);
+  FRouter.AddRoute('/dispo/getfis_logbyid',     CreateDataModulDispo, TDataModulDispo(nil).getFis_LogById,true,false);
+  FRouter.AddRoute('/dispo/getfis_logkey',      CreateDataModulDispo, TDataModulDispo(nil).getFis_LogKey,true,false);
+  FRouter.AddRoute('/dispo/insertfis_log',      CreateDataModulDispo, TDataModulDispo(nil).insertFis_Log,true,false);
+  FRouter.AddRoute('/dispo/updatefis_log',      CreateDataModulDispo, TDataModulDispo(nil).updateFis_Log,true,false);
+  FRouter.AddRoute('/dispo/deletefis_log',      CreateDataModulDispo, TDataModulDispo(nil).deleteFis_Log,true,false);
 
   //TOUPAC
   FRouter.AddRoute('/toupac/demo',                CreateDataModulToupac, TDataModulToupac(nil).Demo);

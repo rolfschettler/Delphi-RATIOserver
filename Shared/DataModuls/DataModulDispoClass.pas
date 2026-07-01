@@ -30,7 +30,13 @@ type
     procedure updateEinsatz;
     procedure deleteEinsatz;
     procedure getFreiesPersonal;
+    procedure getFis_Log;
     procedure getFis_LogFiltered;
+    procedure getFis_LogById;
+    procedure getFis_LogKey;
+    procedure insertFis_Log;
+    procedure updateFis_Log;
+    procedure deleteFis_Log;
   end;
 
 function CreateDataModulDispo(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -525,6 +531,20 @@ begin
   DoDelete('EINSATZ', 'nr');
 end;
 
+// Route: /dispo/getfis_log  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getFis_Log;
+const
+  ALLOWED: array[0..29] of string = (
+    'nr','datum','xkoord','ykoord','status','einsatznr','taetigkeit','herkunft',
+    'fahrer','fahrzeug','zusatzfeld1','zusatzfeld2','kmstand','distance','dauer',
+    'fremdnr','text','standort','zeitpunkt','sortierung','loginname','art',
+    'textfeld1','textfeld2','textfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'wert','erledigt_am'
+  );
+begin
+  DoSelect('FIS_LOG', ALLOWED);
+end;
+
 // Route: /dispo/getfis_logfiltered  |  Auth: true  |  LocalOnly: false
 procedure TDataModulDispo.getFis_LogFiltered;
 // Body: { "fields": [...] | "*", "einsatznr": 42, "fahrer": "Mustermann", "orderby": "datum" }
@@ -548,6 +568,64 @@ const
   FILTER_PARAMS: array[0..2] of string = ('einsatznr', 'datum', 'fahrer');
 begin
   DoSelectFilteredDynamic('FIS_LOG', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /dispo/getfis_logbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getFis_LogById;
+const
+  ALLOWED: array[0..29] of string = (
+    'nr','datum','xkoord','ykoord','status','einsatznr','taetigkeit','herkunft',
+    'fahrer','fahrzeug','zusatzfeld1','zusatzfeld2','kmstand','distance','dauer',
+    'fremdnr','text','standort','zeitpunkt','sortierung','loginname','art',
+    'textfeld1','textfeld2','textfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'wert','erledigt_am'
+  );
+begin
+  DoSelectOne('FIS_LOG', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/getfis_logkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getFis_LogKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(FIS_LOG_NR_GEN,1) AS NR FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /dispo/insertfis_log  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.insertFis_Log;
+const
+  ALLOWED: array[0..29] of string = (
+    'nr','datum','xkoord','ykoord','status','einsatznr','taetigkeit','herkunft',
+    'fahrer','fahrzeug','zusatzfeld1','zusatzfeld2','kmstand','distance','dauer',
+    'fremdnr','text','standort','zeitpunkt','sortierung','loginname','art',
+    'textfeld1','textfeld2','textfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'wert','erledigt_am'
+  );
+begin
+  DoInsert('FIS_LOG', ALLOWED);
+end;
+
+// Route: /dispo/updatefis_log  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.updateFis_Log;
+const
+  ALLOWED: array[0..29] of string = (
+    'nr','datum','xkoord','ykoord','status','einsatznr','taetigkeit','herkunft',
+    'fahrer','fahrzeug','zusatzfeld1','zusatzfeld2','kmstand','distance','dauer',
+    'fremdnr','text','standort','zeitpunkt','sortierung','loginname','art',
+    'textfeld1','textfeld2','textfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'wert','erledigt_am'
+  );
+begin
+  DoUpdate('FIS_LOG', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/deletefis_log  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.deleteFis_Log;
+begin
+  DoDelete('FIS_LOG', 'nr');
 end;
 
 end.
