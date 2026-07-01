@@ -50,7 +50,7 @@ function ParseJSONObject(const AJson: string): TJSONObject;
 
 // Serialisiert ein geöffnetes Dataset als { "header": {...Feldtypen...}, "data": [...] }
 // WithBlob = True: BLOB-Felder als Base64, sonst als Platzhalter 'BLOB'
-function SerializeQuery(Dataset: TDataSet; WithBlob: Boolean = False): string;
+function SerializeQuery(Dataset: TDataSet; WithBlob: Boolean = true): string;
 
 implementation
 

@@ -862,10 +862,10 @@ begin
 
   Fields := TStringList.Create;
   try
-    // WhiteList f�r Feldnamen erzeugen:   (Alle Felder der angeforderten tabelle)
+    // WhiteList für Feldnamen erzeugen:   (Alle Felder der angeforderten tabelle)
     Connection.GetFieldNames('', '', _table, '', Fields);
 
-    // Feldname auf g�ltigkeit pr�fen:
+    // Feldname auf gültigkeit prüfen:
     if Fields.count = 0 then
       raise exception.Create('Feldname für table ungültig');
     if Fields.IndexOf(_keyfield) < 0 then

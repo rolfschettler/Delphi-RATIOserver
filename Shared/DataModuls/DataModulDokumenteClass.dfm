@@ -1,0 +1,2 @@
+inherited DataModulDokumente: TDataModulDokumente
+end

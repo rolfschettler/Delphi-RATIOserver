@@ -90,7 +90,8 @@ DataModulDispoClass,
 DataModulToupacClass,
 DataModulFuhrparkClass,
 DataModulIncomingClass,
-DataModulPublicClass;
+DataModulPublicClass,
+DataModulDokumenteClass;
 
 
 {$R *.dfm}
@@ -416,8 +417,9 @@ begin
   FRouter.AddRoute('/execsql', CreateDataModulSQL, TDataModulSQL(nil).select,true,true);
 
   FRouter.AddRoute('/update', CreateDataModulSQL, TDataModulSQL(nil).update,true,true);
-  FRouter.AddRoute('/filetoblob', CreateDataModulSQL, TDataModulSQL(nil).filetoblob,true,true);
-  FRouter.AddRoute('/base64toblob', CreateDataModulSQL, TDataModulSQL(nil).base64toblob,true,true);
+
+  FRouter.AddRoute('/filetoblob', CreateDataModulSQL, TDataModulSQL(nil).filetoblob,true,false);  // LocalOnly=fase
+  FRouter.AddRoute('/base64toblob', CreateDataModulSQL, TDataModulSQL(nil).base64toblob,true,false); // LocalOnly=fase
 
   FRouter.AddRoute('/insert', CreateDataModulSQL, TDataModulSQL(nil).insert,true,true);
 
@@ -528,6 +530,17 @@ begin
   FRouter.AddRoute('/toupac/deletef_fahrtauftrag',      CreateDataModulToupac, TDataModulToupac(nil).deleteF_Fahrtauftrag);
 
 
+
+  //DOKUMENTE
+  FRouter.AddRoute('/dokumente/demo',                CreateDataModulDokumente, TDataModulDokumente(nil).Demo);
+  FRouter.AddRoute('/dokumente/getvorlagen',         CreateDataModulDokumente, TDataModulDokumente(nil).getVorlagen);
+  FRouter.AddRoute('/dokumente/getvorlagenfiltered', CreateDataModulDokumente, TDataModulDokumente(nil).getVorlagenFiltered);
+  FRouter.AddRoute('/dokumente/getvorlagenbyid',     CreateDataModulDokumente, TDataModulDokumente(nil).getVorlagenById);
+  FRouter.AddRoute('/dokumente/getvorlagenkey',      CreateDataModulDokumente, TDataModulDokumente(nil).getVorlagenKey);
+  FRouter.AddRoute('/dokumente/insertvorlagen',      CreateDataModulDokumente, TDataModulDokumente(nil).insertVorlagen);
+  FRouter.AddRoute('/dokumente/updatevorlagen',      CreateDataModulDokumente, TDataModulDokumente(nil).updateVorlagen);
+  FRouter.AddRoute('/dokumente/deletevorlagen',      CreateDataModulDokumente, TDataModulDokumente(nil).deleteVorlagen);
+  FRouter.AddRoute('/dokumente/uploaddokument',         CreateDataModulDokumente, TDataModulDokumente(nil).uploadDokument);
 
   //INCOMING
   FRouter.AddRoute('/incoming/demo',           CreateDataModulIncoming, TDataModulIncoming(nil).Demo);

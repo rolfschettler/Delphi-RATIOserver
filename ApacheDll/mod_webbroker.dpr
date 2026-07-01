@@ -31,7 +31,8 @@ uses
   KI_Support in '..\Shared\KI_Support.pas',
   DataModulDispoClass in '..\Shared\DataModuls\DataModulDispoClass.pas' {DataModulDispo: TDataModule},
   DataModulToupacClass in '..\Shared\DataModuls\DataModulToupacClass.pas' {DataModulToupac: TDataModule},
-  DataModulFuhrparkClass in '..\Shared\DataModuls\DataModulFuhrparkClass.pas' {DataModulFuhrpark: TDataModule};
+  DataModulFuhrparkClass in '..\Shared\DataModuls\DataModulFuhrparkClass.pas' {DataModulFuhrpark: TDataModule},
+  DataModulDokumenteClass in '..\Shared\DataModuls\DataModulDokumenteClass.pas' {DataModulDokumente: TDataModule};
 
 {$R *.res}
 
