@@ -55,7 +55,9 @@ object WebModule1: TWebModule1
         '{"status":"error", "message":"Benutzername oder Passwort sind fa' +
         'lsch"}'
       ''
-      ''
+      
+        '<div style="Font-size:large;color:red;font-weight:bold">gesch'#252'tz' +
+        'te Endpunkte:</div>'
       ''
       '#/getparams'
       '<<POST, GET>>'

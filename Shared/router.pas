@@ -4,7 +4,7 @@ interface
 
 uses
 
-  StrUtils, System.SysUtils, Web.HTTPApp;
+  StrUtils, System.SysUtils,System.Classes, Web.HTTPApp;
 
 type
   // Factory erzeugt die Instanz und erhält Request + Response
@@ -22,9 +22,11 @@ type
     LocalOnly: boolean;  // Zugriff nur vom localhost erlaubt
   end;
 
+  TRouteEntryArray = array of TRouteEntry;
+
   TRouter = class
   private
-    FRoutes: array of TRouteEntry;
+    FRoutes: TRouteEntryArray;
 
   public
     procedure AddRoute(APath: string; AFactory: TInstanceFactory; AMethod: TRouteHandler; AuthRequired: boolean = true; ALocalOnly: boolean = false);
@@ -33,11 +35,12 @@ type
     function IsLocalOnly(Path: string): boolean;
     procedure Clear;
     function ListRoutes: string;
+    function ListRoutes2: string;
   end;
 
 implementation
 
-uses webUtils;
+uses webUtils, System.Generics.Collections, System.Generics.Defaults;
 
 procedure TRouter.AddRoute(APath: string; AFactory: TInstanceFactory; AMethod: TRouteHandler; AuthRequired: boolean = true; ALocalOnly: boolean = false);
 var
@@ -163,9 +166,16 @@ begin
   SetLength(FRoutes, 0);
 end;
 
-function TRouter.ListRoutes: string;
+function IsFlatPath(const APath: string): boolean;
+begin
+  // Flach = kein Gruppen-Term, z.B. /adddemo statt /adressen/xyz
+  Result := APath.TrimLeft(['/']).IndexOf('/') < 0;
+end;
+
+function TRouter.ListRoutes2: string;
 var
   I: Integer;
+
 begin
   Result := '/login' + sLineBreak;
   // for I := Low(FRoutes) to High(FRoutes) do
@@ -175,12 +185,101 @@ begin
   begin
     Result := Result + FRoutes[I].Path ;
     if not FRoutes[I].AuthRequired then
-      Result := Result + ' [No Auth]';
+      Result := Result + '<span style="color:green"> [No Auth]</span>';
     if FRoutes[I].LocalOnly then
-      Result := Result + ' [Localhost only]';
+      Result := Result + '<span style="color:red"> [Localhost only]</span>';
     Result := Result + sLineBreak;
   end;
 
+end;
+
+function TRouter.ListRoutes: string;
+var
+  I: Integer;
+  SortedRoutes: TRouteEntryArray;
+  slist:TStringlist;
+    s:string;
+  Term, LastTerm: string;
+  P: Integer;
+begin
+  slist:=TStringlist.create;
+
+    slist.add('<b>geschützte Endpunkte (nur für PHP-Entwicklung und Diagnose)</b>');
+    slist.add('Diese Endpunkte sind nur lokal erreichbar. Also z.B. von PHP-Scripten auf dem selben Server.');
+    slist.add('');
+
+  LastTerm := '';
+  try
+
+  SortedRoutes := Copy(FRoutes);
+
+  TArray.Sort<TRouteEntry>(SortedRoutes, TComparer<TRouteEntry>.Construct(
+    function(const Left, Right: TRouteEntry): Integer
+    begin
+      if Left.LocalOnly <> Right.LocalOnly then
+      begin
+        if Left.LocalOnly then
+          Exit(-1)
+        else
+          Exit(1);
+      end;
+
+      if not Left.LocalOnly then
+        if IsFlatPath(Left.Path) <> IsFlatPath(Right.Path) then
+        begin
+          if IsFlatPath(Left.Path) then
+            Exit(1)
+          else
+            Exit(-1);
+        end;
+
+      Result := CompareText(Left.Path, Right.Path);
+    end));
+
+
+
+
+  for I := Low(SortedRoutes) to High(SortedRoutes) do
+  begin
+  s:=SortedRoutes[I].Path;
+
+
+
+    if not SortedRoutes[I].LocalOnly then
+    begin
+      if IsFlatPath(SortedRoutes[I].Path) then
+        Term := 'Sonstige Endpunkte'
+      else
+      begin
+        Term := SortedRoutes[I].Path.TrimLeft(['/']);
+        P := Term.IndexOf('/');
+        if P >= 0 then
+          Term := Term.Substring(0, P);
+      end;
+
+      if not SameText(Term, LastTerm) then
+      begin
+          slist.add('');
+           if IsFlatPath(SortedRoutes[I].Path) then
+               slist.add('<b style="display:inline; margin-bottom:2px;margin-left:12px">'+Term+'</b>')
+           else
+               slist.add('<div style="display:inline; margin-bottom:2px;margin-left:12px;text-decoration:underline"> <b>' + UpperCase(Term) + '</b> <span style="font-size:small;">Daten-Endpunkt</span></div> ');
+           LastTerm := Term;
+      end;
+    end;
+
+    if not SortedRoutes[I].AuthRequired then
+        s:=s+('<span style="color:green"> [No Auth]</span>');
+    if SortedRoutes[I].LocalOnly then
+        s:=s+('<span style="color:red"> [Localhost only]</span>');
+    slist.add('<span style="margin-left:32px">'+s+'</span>');
+
+  end;
+        slist.add('/login');
+        result:=slist.text;
+  finally
+    slist.free;
+  end;
 end;
 
 end.
