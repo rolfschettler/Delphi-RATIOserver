@@ -43,6 +43,7 @@ type
   TWebModule1 = class(TWebModule)
     HelpPageProducer: TPageProducer;
     TitlePageProducer: TPageProducer;
+    HandbuchPageProducer: TPageProducer;
     procedure WebModuleException(Sender: TObject; E: Exception; var Handled: Boolean);
     procedure WebModuleBeforeDispatch(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
     procedure WebModuleCreate(Sender: TObject);
@@ -53,6 +54,7 @@ type
     procedure WebModule1WebActionItem3Action(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
     procedure WebModule1WebActionItem4Action(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
     procedure TitlePageProducerHTMLTag(Sender: TObject; Tag: TTag; const TagString: string; TagParams: TStrings; var ReplaceText: string);
+    procedure WebModule1HandbuchActionAction(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 
   private
     FRouter: TRouter; // Objectvariable. Wird im  Webmodul erzeugt, und kann so von jedem anderen Modul des Projekts erreicht werden.
@@ -281,6 +283,11 @@ end;
 
 (* *********************************** JWT TOKEN ************************************************************************ *)
 
+procedure TWebModule1.WebModule1HandbuchActionAction(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
+begin
+    response.content:=HandbuchPageProducer.HTMLDoc.text
+end;
+
 procedure TWebModule1.WebModule1WebActionItem1Action(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 begin
   DoCreateToken(Request, Response);
@@ -316,13 +323,18 @@ begin
 
   try
     sb.append('<html><head><title>API Dokumentation</title></head><body>');
-    sb.append('<h1>API  bersicht</h1>');
+    sb.append('<h1>API  Übersicht</h1>');
+
+    sb.Append('<div style="margin: 30px;"> <span style="font-size:60px">📖</span>  <a  href="/ibapi/handbuch"> Entwickler Handbuch anzeigen<a></div>');
+
     sb.append(StringReplace(FRouter.ListRoutes(), sLineBreak, '<br>', [rfReplaceAll]));
     for Entry in Docs do
     begin
-      sb.AppendFormat('<h2>%s</h2><div>%s</div>', [SimpleMarkdownToHTML(Entry.Path), SimpleMarkdownToHTML(Entry.Markdown)]);
+      sb.AppendFormat(' <h2>%s</h2><div>%s</div>', [SimpleMarkdownToHTML(Entry.Path), SimpleMarkdownToHTML(Entry.Markdown)]);
     end;
 
+
+    sb.Append('<div style="margin: 30px"> <span style="font-size:60px">📖</span>  <a  href="/ibapi/handbuch"> Entwickler Handbuch anzeigen<a></div>');
     sb.append('</body></html>');
 
     sb.append('    <style>');
@@ -341,6 +353,11 @@ begin
 
     Response.ContentType := 'text/html; charset=utf-8';
     Response.Content := sb.ToString;
+
+
+
+
+
     Handled := True;
   finally
     Docs.Free;
@@ -435,7 +452,7 @@ begin
   FRouter.AddRoute('/adddemopersonal', CreateDataModulAddOn, TDataModulAddOn(nil).adddemopersonal); // TODO: LocalOnly=true ergänzen
 
 
-  FRouter.AddRoute('/getjson', CreateDataModulAddOn, TDataModulAddOn(nil).readjson); // TODO: LocalOnly=true ergänzen
+  //Nur als Beispiel für eine Weiterleitung an PHP: FRouter.AddRoute('/getjson', CreateDataModulAddOn, TDataModulAddOn(nil).readjson); // TODO: LocalOnly=true ergänzen
 
   FRouter.AddRoute('/showroute', CreateDataModulAddOn, TDataModulAddOn(nil).showhtml, false); // TODO: LocalOnly=true ergänzen
 
