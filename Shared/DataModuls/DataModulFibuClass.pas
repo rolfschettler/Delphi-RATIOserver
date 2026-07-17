@@ -1,4 +1,4 @@
-unit DataModulFibuClass;
+﻿unit DataModulFibuClass;
 
 interface
 
@@ -382,6 +382,9 @@ end;
 // Route: /fibu/insertgutschein  |  Auth: true  |  LocalOnly: false
 procedure TDataModulFibu.insertGutschein;
 // Body: { "vorgang": "V001", "bearbeiter": "SUPERVISOR", "betrag": 50.00, ... }
+// Insert und BUILDGSFIBU(nr) laufen in einer gemeinsamen Transaktion. RETURNING
+// wird von InterBase nicht unterstuetzt, daher wird die Primaernummer vorab
+// wie in getGutscheinKey per GEN_ID(GUTSCHEIN_NR_GEN,1) ermittelt.
 const
   ALLOWED: array[0..29] of string = (
     'vorgang','bearbeiter','geaendert_am','geaendert_von','erfasst',
@@ -391,13 +394,61 @@ const
     'fibukto','kulanz','kostelle1','kostelle2','code','motivnr',
     'fibu_archiv_am','nrkreis','entstehung','zahlungsart'
   );
+var
+  Cols, Vals, Field: string;
+  i, NewNr: Integer;
+  ResultObj: TJSONObject;
 begin
-  DoInsert('GUTSCHEIN', ALLOWED);
+  Cols := 'nr'; Vals := ':nr';
+  for i := Low(ALLOWED) to High(ALLOWED) do
+  begin
+    Field := ALLOWED[i];
+    if not isParamFromBody(Field) then Continue;
+    Cols := Cols + ',' + Field;
+    Vals := Vals + ',:' + Field;
+  end;
+
+  Connection.StartTransaction;
+  try
+    Query.Close;
+    Query.SQL.Text := 'SELECT GEN_ID(GUTSCHEIN_NR_GEN, 1) AS nr FROM RDB$DATABASE';
+    Query.Open;
+    NewNr := Query.FieldByName('nr').AsInteger;
+    Query.Close;
+
+    Query.SQL.Text := 'INSERT INTO GUTSCHEIN (' + Cols + ') VALUES (' + Vals + ')';
+    Query.ParamByName('nr').AsInteger := NewNr;
+    for i := Low(ALLOWED) to High(ALLOWED) do
+    begin
+      Field := ALLOWED[i];
+      if isParamFromBody(Field) then
+        Query.ParamByName(Field).AsString := getParamFromBody(Field);
+    end;
+    Query.ExecSQL;
+
+    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr)';
+    Query.ParamByName('nr').AsInteger := NewNr;
+    Query.ExecSQL;
+
+    Connection.Commit;
+  except
+    on E: Exception do
+    begin
+      if Connection.InTransaction then Connection.Rollback;
+      raise;
+    end;
+  end;
+
+  ResultObj := TJSONObject.Create;
+  ResultObj.AddPair('status', 'OK');
+  ResultObj.AddPair('nr', TJSONNumber.Create(NewNr));
+  SendJson(ResultObj);
 end;
 
 // Route: /fibu/updategutschein  |  Auth: true  |  LocalOnly: false
 procedure TDataModulFibu.updateGutschein;
 // Body: { "nr": 42, "erledigt": "J", "storniert": "N", ... }
+// Update und BUILDGSFIBU(nr) laufen in einer gemeinsamen Transaktion.
 const
   ALLOWED: array[0..29] of string = (
     'vorgang','bearbeiter','geaendert_am','geaendert_von','erfasst',
@@ -407,15 +458,103 @@ const
     'fibukto','kulanz','kostelle1','kostelle2','code','motivnr',
     'fibu_archiv_am','nrkreis','entstehung','zahlungsart'
   );
+var
+  SetClause, Field: string;
+  i, Count, NewNr: Integer;
+  ResultObj: TJSONObject;
 begin
-  DoUpdate('GUTSCHEIN', ALLOWED, 'nr');
+  if not isParamFromBody('nr') then
+    raise Exception.Create('"nr" fehlt.');
+  if not TryStrToInt(getParamFromBody('nr'), NewNr) then
+    raise Exception.CreateFmt('"nr" ist keine gueltige Zahl: %s', [getParamFromBody('nr')]);
+
+  SetClause := ''; Count := 0;
+  for i := Low(ALLOWED) to High(ALLOWED) do
+  begin
+    Field := ALLOWED[i];
+    if not isKeyInBody(Field) then Continue;
+    if Count > 0 then SetClause := SetClause + ',';
+    SetClause := SetClause + Field + '=:' + Field;
+    Inc(Count);
+  end;
+
+  if Count = 0 then
+    raise Exception.Create('Keine gueltigen Felder uebergeben.');
+
+  Connection.StartTransaction;
+  try
+    Query.Close;
+    Query.SQL.Text := 'UPDATE GUTSCHEIN SET ' + SetClause + ' WHERE nr=:nr';
+    Query.ParamByName('nr').AsInteger := NewNr;
+    for i := Low(ALLOWED) to High(ALLOWED) do
+    begin
+      Field := ALLOWED[i];
+      if isKeyInBody(Field) then
+      begin
+        if isParamFromBody(Field) then
+          Query.ParamByName(Field).AsString := getParamFromBody(Field)
+        else
+          Query.ParamByName(Field).Clear;   // Body-Wert war explizit null -> Spalte auf NULL setzen
+      end;
+    end;
+    Query.ExecSQL;
+
+    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr)';
+    Query.ParamByName('nr').AsInteger := NewNr;
+    Query.ExecSQL;
+
+    Connection.Commit;
+  except
+    on E: Exception do
+    begin
+      if Connection.InTransaction then Connection.Rollback;
+      raise;
+    end;
+  end;
+
+  ResultObj := TJSONObject.Create;
+  ResultObj.AddPair('status', 'OK');
+  ResultObj.AddPair('nr', TJSONNumber.Create(NewNr));
+  SendJson(ResultObj);
 end;
 
 // Route: /fibu/deletegutschein  |  Auth: true  |  LocalOnly: false
 procedure TDataModulFibu.deleteGutschein;
 // Body: { "nr": 42 }
+// Delete und BUILDGSFIBU(nr) laufen in einer gemeinsamen Transaktion.
+var
+  NewNr: Integer;
+  ResultObj: TJSONObject;
 begin
-  DoDelete('GUTSCHEIN', 'nr');
+  if not isParamFromBody('nr') then
+    raise Exception.Create('"nr" fehlt.');
+  if not TryStrToInt(getParamFromBody('nr'), NewNr) then
+    raise Exception.CreateFmt('"nr" ist keine gueltige Zahl: %s', [getParamFromBody('nr')]);
+
+  Connection.StartTransaction;
+  try
+    Query.Close;
+    Query.SQL.Text := 'DELETE FROM GUTSCHEIN WHERE nr=:nr';
+    Query.ParamByName('nr').AsInteger := NewNr;
+    Query.ExecSQL;
+
+    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr)';
+    Query.ParamByName('nr').AsInteger := NewNr;
+    Query.ExecSQL;
+
+    Connection.Commit;
+  except
+    on E: Exception do
+    begin
+      if Connection.InTransaction then Connection.Rollback;
+      raise;
+    end;
+  end;
+
+  ResultObj := TJSONObject.Create;
+  ResultObj.AddPair('status', 'OK');
+  ResultObj.AddPair('nr', TJSONNumber.Create(NewNr));
+  SendJson(ResultObj);
 end;
 
 end.

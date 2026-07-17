@@ -51,8 +51,12 @@ type
     // kein Leak. Beide Methoden sind nil-/leer-sicher und case-insensitiv.
     //   isParamFromBody('x')  -> ist 'x' vorhanden (und nicht null)?
     //   getParamFromBody('x') -> Wert von 'x' als String (Default, wenn fehlt)
+    //   isKeyInBody('x')      -> ist 'x' vorhanden, auch wenn der Wert null ist?
+    //                            (fuer UPDATE-Handler, die ein Feld gezielt auf
+    //                            NULL zuruecksetzen koennen muessen)
     function isParamFromBody(const Key: string): Boolean;
     function getParamFromBody(const Key: string; const Default: string = ''): string;
+    function isKeyInBody(const Key: string): Boolean;
 
     // Sendet AObj als JSON-Antwort: setzt Content-Type + Statuscode, schreibt
     // AObj.ToJSON in den Response und gibt AObj danach frei (inkl. aller
@@ -188,6 +192,18 @@ begin
   V := GetValueCaseInsensitive(FBody, Key);
   if Assigned(V) and not V.Null then
     Result := V.Value;
+end;
+
+function TDataModulBaseClass.isKeyInBody(const Key: string): Boolean;
+var
+  V: TJSONValue;
+begin
+  EnsureBodyParsed;
+  Result := False;
+  if not Assigned(FBody) then
+    Exit;
+  V := GetValueCaseInsensitive(FBody, Key);
+  Result := Assigned(V);
 end;
 
 procedure TDataModulBaseClass.SendJson(AObj: TJSONObject; AStatusCode: Integer);
