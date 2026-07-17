@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "Harry_2026-07-17_5",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    }
+  ],
+  "item": [
+    {
+      "name": "FUNDSACHEN",
+      "item": [
+        {
+          "name": "getFundsachen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"erfasst_am\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/anmiet/getfundsachen", "host": ["{{baseURL}}"], "path": ["anmiet", "getfundsachen"] },
+            "description": "Alle Datensätze aus FUNDSACHEN abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "getFundsachenFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"status\": \"offen\",\n  \"verlustort\": \"Bahnhof\",\n  \"orderby\": \"erfasst_am\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/anmiet/getfundsachenfiltered", "host": ["{{baseURL}}"], "path": ["anmiet", "getfundsachenfiltered"] },
+            "description": "FUNDSACHEN gefiltert nach beliebigen Feldern abrufen (alle Filter optional)."
+          },
+          "response": []
+        },
+        {
+          "name": "getFundsachenById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/anmiet/getfundsachenbyid", "host": ["{{baseURL}}"], "path": ["anmiet", "getfundsachenbyid"] },
+            "description": "Einen FUNDSACHEN-Datensatz per Primärschlüssel (nr) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "getFundsachenKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/anmiet/getfundsachenkey", "host": ["{{baseURL}}"], "path": ["anmiet", "getfundsachenkey"] },
+            "description": "Nächsten Primärschlüssel via GEN_ID(FUNDSACHEN_NR_GEN,1) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "insertFundsachen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"abgeholt_am\": null,\n  \"abgeholt_von\": \"\",\n  \"abholort\": \"Bahnhof München\",\n  \"bearbeitet_am\": \"2026-07-17\",\n  \"bearbeitet_von\": \"SUPERVISOR\",\n  \"beschreibung\": \"Schwarzer Regenschirm\",\n  \"bilder\": null,\n  \"bild_klein\": null,\n  \"erfasst_am\": \"2026-07-17\",\n  \"erfasst_von\": \"SUPERVISOR\",\n  \"status\": \"offen\",\n  \"text_intern\": \"Im Bus liegen gelassen\",\n  \"unterschrift\": null,\n  \"verlustdatum\": \"2026-07-16\",\n  \"verlustort\": \"Bahnhof München\",\n  \"zusatzfeld1\": \"\",\n  \"zusatzfeld2\": \"\",\n  \"zusatzfeld3\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/anmiet/insertfundsachen", "host": ["{{baseURL}}"], "path": ["anmiet", "insertfundsachen"] },
+            "description": "Neuen FUNDSACHEN-Datensatz einfügen."
+          },
+          "response": []
+        },
+        {
+          "name": "updateFundsachen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"status\": \"abgeholt\",\n  \"abgeholt_am\": \"2026-07-17\",\n  \"abgeholt_von\": \"Max Mustermann\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/anmiet/updatefundsachen", "host": ["{{baseURL}}"], "path": ["anmiet", "updatefundsachen"] },
+            "description": "Einen FUNDSACHEN-Datensatz per nr aktualisieren (nur übergebene Felder werden geschrieben)."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteFundsachen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/anmiet/deletefundsachen", "host": ["{{baseURL}}"], "path": ["anmiet", "deletefundsachen"] },
+            "description": "FUNDSACHEN-Datensatz per nr löschen."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

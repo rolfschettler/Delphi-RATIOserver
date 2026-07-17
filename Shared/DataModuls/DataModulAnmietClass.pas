@@ -32,6 +32,14 @@ type
      procedure insertAnmiet;
      procedure updateAnmiet;
      procedure deleteAnmiet;
+
+     procedure getFundsachen;
+     procedure getFundsachenFiltered;
+     procedure getFundsachenById;
+     procedure getFundsachenKey;
+     procedure insertFundsachen;
+     procedure updateFundsachen;
+     procedure deleteFundsachen;
   end;
 
 
@@ -354,6 +362,122 @@ procedure TDataModulAnmiet.deleteAnmiet;
 // Body: { "nr": 42 }
 begin
   DoDelete('ANMIET', 'nr');
+end;
+
+// Route: /anmiet/getfundsachen  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getFundsachen;
+// Body: { "fields": ["nr","abgeholt_am",...] | "*", "orderby": "erfasst_am" }
+const
+  ALLOWED: array[0..18] of string = (
+    'nr','abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
+    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
+    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
+  );
+begin
+  DoSelect('FUNDSACHEN', ALLOWED);
+end;
+
+// Route: /anmiet/getfundsachenfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getFundsachenFiltered;
+// Body: { "fields": [...] | "*", "status": "offen", "verlustort": "Bahnhof", "orderby": "erfasst_am" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..18] of string = (
+    'nr','abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
+    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
+    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..18] of string = (
+    'nr = :nr',
+    'abgeholt_am = :abgeholt_am',
+    'abgeholt_von = :abgeholt_von',
+    'abholort = :abholort',
+    'bearbeitet_am = :bearbeitet_am',
+    'bearbeitet_von = :bearbeitet_von',
+    'beschreibung = :beschreibung',
+    'bilder = :bilder',
+    'bild_klein = :bild_klein',
+    'erfasst_am = :erfasst_am',
+    'erfasst_von = :erfasst_von',
+    'status = :status',
+    'text_intern = :text_intern',
+    'unterschrift = :unterschrift',
+    'verlustdatum = :verlustdatum',
+    'verlustort = :verlustort',
+    'zusatzfeld1 = :zusatzfeld1',
+    'zusatzfeld2 = :zusatzfeld2',
+    'zusatzfeld3 = :zusatzfeld3'
+  );
+  FILTER_PARAMS: array[0..18] of string = (
+    'nr','abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
+    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
+    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
+  );
+begin
+  DoSelectFilteredDynamic('FUNDSACHEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /anmiet/getfundsachenbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getFundsachenById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..18] of string = (
+    'nr','abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
+    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
+    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
+  );
+begin
+  DoSelectOne('FUNDSACHEN', ALLOWED, 'nr');
+end;
+
+// Route: /anmiet/getfundsachenkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getFundsachenKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(FUNDSACHEN_NR_GEN, 1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /anmiet/insertfundsachen  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.insertFundsachen;
+// Body: { "beschreibung": "...", "verlustort": "...", "status": "offen", ... }
+const
+  ALLOWED: array[0..17] of string = (
+    'abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
+    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
+    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
+  );
+begin
+  DoInsert('FUNDSACHEN', ALLOWED);
+end;
+
+// Route: /anmiet/updatefundsachen  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.updateFundsachen;
+// Body: { "nr": 42, "status": "abgeholt", "abgeholt_am": "2026-07-17", ... }
+const
+  ALLOWED: array[0..17] of string = (
+    'abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
+    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
+    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
+  );
+begin
+  DoUpdate('FUNDSACHEN', ALLOWED, 'nr');
+end;
+
+// Route: /anmiet/deletefundsachen  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.deleteFundsachen;
+// Body: { "nr": 42 }
+begin
+  DoDelete('FUNDSACHEN', 'nr');
 end;
 
 end.

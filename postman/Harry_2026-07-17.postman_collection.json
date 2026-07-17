@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "Harry_2026-07-17",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    }
+  ],
+  "item": [
+    {
+      "name": "REPVORGANG",
+      "item": [
+        {
+          "name": "getRepvorgang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"datum\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/getrepvorgang", "host": ["{{baseURL}}"], "path": ["fuhrpark", "getrepvorgang"] },
+            "description": "Alle Datensätze aus REPVORGANG abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "getRepvorgangFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"kennzeichen\": \"B-RX 123\",\n  \"erledigt\": \"N\",\n  \"orderby\": \"datum\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/getrepvorgangfiltered", "host": ["{{baseURL}}"], "path": ["fuhrpark", "getrepvorgangfiltered"] },
+            "description": "REPVORGANG gefiltert nach beliebigen Feldern abrufen (alle Filter optional)."
+          },
+          "response": []
+        },
+        {
+          "name": "getRepvorgangById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/getrepvorgangbyid", "host": ["{{baseURL}}"], "path": ["fuhrpark", "getrepvorgangbyid"] },
+            "description": "Einen REPVORGANG-Datensatz per Primärschlüssel (nr) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "getRepvorgangKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/getrepvorgangkey", "host": ["{{baseURL}}"], "path": ["fuhrpark", "getrepvorgangkey"] },
+            "description": "Nächsten Primärschlüssel via GEN_ID(REPVORGANG_NR_GEN,1) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "insertRepvorgang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kennzeichen\": \"B-RX 123\",\n  \"bezeichnung\": \"Reifenschaden\",\n  \"vorgangsart\": \"Reparatur\",\n  \"unfall\": \"N\",\n  \"erledigt\": \"N\",\n  \"datum\": \"2026-07-17\",\n  \"meldungam\": \"2026-07-17 08:00:00\",\n  \"meldungvon\": \"Mustermann\",\n  \"beschreibung\": \"Vorderreifen links defekt\",\n  \"dringlichkeit\": \"hoch\",\n  \"zyklischertermin\": \"N\",\n  \"wiedervorlage\": \"2026-07-24\",\n  \"notizen\": \"Werkstatt Muster GmbH beauftragt\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/insertrepvorgang", "host": ["{{baseURL}}"], "path": ["fuhrpark", "insertrepvorgang"] },
+            "description": "Neuen REPVORGANG-Datensatz einfügen."
+          },
+          "response": []
+        },
+        {
+          "name": "updateRepvorgang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"erledigt\": \"J\",\n  \"notizen\": \"Reparatur abgeschlossen\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/updaterepvorgang", "host": ["{{baseURL}}"], "path": ["fuhrpark", "updaterepvorgang"] },
+            "description": "Einen REPVORGANG-Datensatz per nr aktualisieren (nur übergebene Felder werden geschrieben)."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteRepvorgang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/deleterepvorgang", "host": ["{{baseURL}}"], "path": ["fuhrpark", "deleterepvorgang"] },
+            "description": "REPVORGANG-Datensatz per nr löschen."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

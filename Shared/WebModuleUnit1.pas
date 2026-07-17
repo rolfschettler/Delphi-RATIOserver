@@ -93,7 +93,8 @@ DataModulToupacClass,
 DataModulFuhrparkClass,
 DataModulIncomingClass,
 DataModulPublicClass,
-DataModulDokumenteClass;
+DataModulDokumenteClass,
+DataModulFibuClass;
 
 
 {$R *.dfm}
@@ -500,6 +501,37 @@ begin
   FRouter.AddRoute('/fuhrpark/insertfahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertFahrtenbuch);
   FRouter.AddRoute('/fuhrpark/updatefahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateFahrtenbuch);
   FRouter.AddRoute('/fuhrpark/deletefahrtenbuch',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteFahrtenbuch);
+  FRouter.AddRoute('/fuhrpark/getrepvorgang',           CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getRepvorgang);
+  FRouter.AddRoute('/fuhrpark/getrepvorgangfiltered',   CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getRepvorgangFiltered);
+  FRouter.AddRoute('/fuhrpark/getrepvorgangbyid',       CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getRepvorgangById);
+  FRouter.AddRoute('/fuhrpark/getrepvorgangkey',        CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getRepvorgangKey);
+  FRouter.AddRoute('/fuhrpark/insertrepvorgang',        CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertRepvorgang);
+  FRouter.AddRoute('/fuhrpark/updaterepvorgang',        CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateRepvorgang);
+  FRouter.AddRoute('/fuhrpark/deleterepvorgang',        CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteRepvorgang);
+  FRouter.AddRoute('/fuhrpark/gettankung',              CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getTankung);
+  FRouter.AddRoute('/fuhrpark/gettankungfiltered',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getTankungFiltered);
+  FRouter.AddRoute('/fuhrpark/gettankungbyid',          CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getTankungById);
+  FRouter.AddRoute('/fuhrpark/gettankungkey',           CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getTankungKey);
+  FRouter.AddRoute('/fuhrpark/inserttankung',           CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertTankung);
+  FRouter.AddRoute('/fuhrpark/updatetankung',           CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateTankung);
+  FRouter.AddRoute('/fuhrpark/deletetankung',           CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteTankung);
+
+    //FIBU
+  FRouter.AddRoute('/fibu/demo',                        CreateDataModulFibu, TDataModulFibu(nil).Demo);
+  FRouter.AddRoute('/fibu/getbruttolohn',                CreateDataModulFibu, TDataModulFibu(nil).getBruttolohn);
+  FRouter.AddRoute('/fibu/getbruttolohnfiltered',        CreateDataModulFibu, TDataModulFibu(nil).getBruttolohnFiltered);
+  FRouter.AddRoute('/fibu/getbruttolohnbyid',            CreateDataModulFibu, TDataModulFibu(nil).getBruttolohnById);
+  FRouter.AddRoute('/fibu/getbruttolohnkey',             CreateDataModulFibu, TDataModulFibu(nil).getBruttolohnKey);
+  FRouter.AddRoute('/fibu/insertbruttolohn',             CreateDataModulFibu, TDataModulFibu(nil).insertBruttolohn);
+  FRouter.AddRoute('/fibu/updatebruttolohn',             CreateDataModulFibu, TDataModulFibu(nil).updateBruttolohn);
+  FRouter.AddRoute('/fibu/deletebruttolohn',             CreateDataModulFibu, TDataModulFibu(nil).deleteBruttolohn);
+  FRouter.AddRoute('/fibu/getgutschein',                 CreateDataModulFibu, TDataModulFibu(nil).getGutschein);
+  FRouter.AddRoute('/fibu/getgutscheinfiltered',         CreateDataModulFibu, TDataModulFibu(nil).getGutscheinFiltered);
+  FRouter.AddRoute('/fibu/getgutscheinbyid',             CreateDataModulFibu, TDataModulFibu(nil).getGutscheinById);
+  FRouter.AddRoute('/fibu/getgutscheinkey',              CreateDataModulFibu, TDataModulFibu(nil).getGutscheinKey);
+  FRouter.AddRoute('/fibu/insertgutschein',              CreateDataModulFibu, TDataModulFibu(nil).insertGutschein);
+  FRouter.AddRoute('/fibu/updategutschein',              CreateDataModulFibu, TDataModulFibu(nil).updateGutschein);
+  FRouter.AddRoute('/fibu/deletegutschein',              CreateDataModulFibu, TDataModulFibu(nil).deleteGutschein);
 
 
   //ANMIET
@@ -511,6 +543,13 @@ begin
   FRouter.AddRoute('/anmiet/insertanmiet',       CreateDataModulAnmiet, TDataModulAnmiet(nil).insertAnmiet);
   FRouter.AddRoute('/anmiet/updateanmiet',       CreateDataModulAnmiet, TDataModulAnmiet(nil).updateAnmiet);
   FRouter.AddRoute('/anmiet/deleteanmiet',       CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteAnmiet);
+  FRouter.AddRoute('/anmiet/getfundsachen',           CreateDataModulAnmiet, TDataModulAnmiet(nil).getFundsachen);
+  FRouter.AddRoute('/anmiet/getfundsachenfiltered',   CreateDataModulAnmiet, TDataModulAnmiet(nil).getFundsachenFiltered);
+  FRouter.AddRoute('/anmiet/getfundsachenbyid',       CreateDataModulAnmiet, TDataModulAnmiet(nil).getFundsachenById);
+  FRouter.AddRoute('/anmiet/getfundsachenkey',        CreateDataModulAnmiet, TDataModulAnmiet(nil).getFundsachenKey);
+  FRouter.AddRoute('/anmiet/insertfundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).insertFundsachen);
+  FRouter.AddRoute('/anmiet/updatefundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).updateFundsachen);
+  FRouter.AddRoute('/anmiet/deletefundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteFundsachen);
 
   //DISPO
   FRouter.AddRoute('/dispo/demo', CreateDataModulDispo, TDataModulDispo(nil).Demo);

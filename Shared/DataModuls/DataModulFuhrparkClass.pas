@@ -23,6 +23,20 @@ type
     procedure insertFahrtenbuch;
     procedure updateFahrtenbuch;
     procedure deleteFahrtenbuch;
+    procedure getRepvorgang;
+    procedure getRepvorgangFiltered;
+    procedure getRepvorgangById;
+    procedure getRepvorgangKey;
+    procedure insertRepvorgang;
+    procedure updateRepvorgang;
+    procedure deleteRepvorgang;
+    procedure getTankung;
+    procedure getTankungFiltered;
+    procedure getTankungById;
+    procedure getTankungKey;
+    procedure insertTankung;
+    procedure updateTankung;
+    procedure deleteTankung;
   end;
 
 
@@ -247,6 +261,215 @@ procedure TDataModulFuhrpark.deleteFahrtenbuch;
 // Body: { "nr": 42 }
 begin
   DoDelete('FAHRTENBUCH', 'nr');
+end;
+
+// Route: /fuhrpark/getrepvorgang  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getRepvorgang;
+// Body: { "fields": ["nr","kennzeichen",...] | "*", "orderby": "datum" }
+const
+  ALLOWED: array[0..13] of string = (
+    'nr','kennzeichen','bezeichnung','vorgangsart','unfall','erledigt',
+    'datum','meldungam','meldungvon','beschreibung','dringlichkeit',
+    'zyklischertermin','wiedervorlage','notizen'
+  );
+begin
+  DoSelect('REPVORGANG', ALLOWED);
+end;
+
+// Route: /fuhrpark/getrepvorgangfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getRepvorgangFiltered;
+// Body: { "fields": [...] | "*", "kennzeichen": "B-RX 123", "erledigt": "N", "orderby": "datum" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..13] of string = (
+    'nr','kennzeichen','bezeichnung','vorgangsart','unfall','erledigt',
+    'datum','meldungam','meldungvon','beschreibung','dringlichkeit',
+    'zyklischertermin','wiedervorlage','notizen'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..13] of string = (
+    'nr = :nr',
+    'kennzeichen = :kennzeichen',
+    'bezeichnung = :bezeichnung',
+    'vorgangsart = :vorgangsart',
+    'unfall = :unfall',
+    'erledigt = :erledigt',
+    'datum = :datum',
+    'meldungam = :meldungam',
+    'meldungvon = :meldungvon',
+    'beschreibung = :beschreibung',
+    'dringlichkeit = :dringlichkeit',
+    'zyklischertermin = :zyklischertermin',
+    'wiedervorlage = :wiedervorlage',
+    'notizen = :notizen'
+  );
+  FILTER_PARAMS: array[0..13] of string = (
+    'nr','kennzeichen','bezeichnung','vorgangsart','unfall','erledigt',
+    'datum','meldungam','meldungvon','beschreibung','dringlichkeit',
+    'zyklischertermin','wiedervorlage','notizen'
+  );
+begin
+  DoSelectFilteredDynamic('REPVORGANG', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fuhrpark/getrepvorgangbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getRepvorgangById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..13] of string = (
+    'nr','kennzeichen','bezeichnung','vorgangsart','unfall','erledigt',
+    'datum','meldungam','meldungvon','beschreibung','dringlichkeit',
+    'zyklischertermin','wiedervorlage','notizen'
+  );
+begin
+  DoSelectOne('REPVORGANG', ALLOWED, 'nr');
+end;
+
+// Route: /fuhrpark/getrepvorgangkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getRepvorgangKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(REPVORGANG_NR_GEN, 1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /fuhrpark/insertrepvorgang  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.insertRepvorgang;
+// Body: { "kennzeichen": "B-RX 123", "bezeichnung": "...", "vorgangsart": "...", ... }
+const
+  ALLOWED: array[0..12] of string = (
+    'kennzeichen','bezeichnung','vorgangsart','unfall','erledigt',
+    'datum','meldungam','meldungvon','beschreibung','dringlichkeit',
+    'zyklischertermin','wiedervorlage','notizen'
+  );
+begin
+  DoInsert('REPVORGANG', ALLOWED);
+end;
+
+// Route: /fuhrpark/updaterepvorgang  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.updateRepvorgang;
+// Body: { "nr": 42, "kennzeichen": "B-RX 123", "bezeichnung": "...", ... }
+const
+  ALLOWED: array[0..12] of string = (
+    'kennzeichen','bezeichnung','vorgangsart','unfall','erledigt',
+    'datum','meldungam','meldungvon','beschreibung','dringlichkeit',
+    'zyklischertermin','wiedervorlage','notizen'
+  );
+begin
+  DoUpdate('REPVORGANG', ALLOWED, 'nr');
+end;
+
+// Route: /fuhrpark/deleterepvorgang  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.deleteRepvorgang;
+// Body: { "nr": 42 }
+begin
+  DoDelete('REPVORGANG', 'nr');
+end;
+
+// Route: /fuhrpark/gettankung  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getTankung;
+// Body: { "fields": ["nr","datum",...] | "*", "orderby": "datum" }
+const
+  ALLOWED: array[0..12] of string = (
+    'nr','datum','bezeichnung','kraftstoffart','menge','preis','km',
+    'landkennung','heimtankung','kennzeichen','lieferantennr',
+    'lieferantenname','exttanknr'
+  );
+begin
+  DoSelect('TANKUNG', ALLOWED);
+end;
+
+// Route: /fuhrpark/gettankungfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getTankungFiltered;
+// Body: { "fields": [...] | "*", "kennzeichen": "B-RX 123", "kraftstoffart": "Diesel", "orderby": "datum" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..12] of string = (
+    'nr','datum','bezeichnung','kraftstoffart','menge','preis','km',
+    'landkennung','heimtankung','kennzeichen','lieferantennr',
+    'lieferantenname','exttanknr'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..12] of string = (
+    'nr = :nr',
+    'datum = :datum',
+    'bezeichnung = :bezeichnung',
+    'kraftstoffart = :kraftstoffart',
+    'menge = :menge',
+    'preis = :preis',
+    'km = :km',
+    'landkennung = :landkennung',
+    'heimtankung = :heimtankung',
+    'kennzeichen = :kennzeichen',
+    'lieferantennr = :lieferantennr',
+    'lieferantenname = :lieferantenname',
+    'exttanknr = :exttanknr'
+  );
+  FILTER_PARAMS: array[0..12] of string = (
+    'nr','datum','bezeichnung','kraftstoffart','menge','preis','km',
+    'landkennung','heimtankung','kennzeichen','lieferantennr',
+    'lieferantenname','exttanknr'
+  );
+begin
+  DoSelectFilteredDynamic('TANKUNG', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fuhrpark/gettankungbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getTankungById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..12] of string = (
+    'nr','datum','bezeichnung','kraftstoffart','menge','preis','km',
+    'landkennung','heimtankung','kennzeichen','lieferantennr',
+    'lieferantenname','exttanknr'
+  );
+begin
+  DoSelectOne('TANKUNG', ALLOWED, 'nr');
+end;
+
+// Route: /fuhrpark/gettankungkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getTankungKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(TANKUNG_NR, 1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /fuhrpark/inserttankung  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.insertTankung;
+// Body: { "datum": "2026-07-17", "bezeichnung": "...", "kraftstoffart": "Diesel", ... }
+const
+  ALLOWED: array[0..11] of string = (
+    'datum','bezeichnung','kraftstoffart','menge','preis','km',
+    'landkennung','heimtankung','kennzeichen','lieferantennr',
+    'lieferantenname','exttanknr'
+  );
+begin
+  DoInsert('TANKUNG', ALLOWED);
+end;
+
+// Route: /fuhrpark/updatetankung  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.updateTankung;
+// Body: { "nr": 42, "datum": "2026-07-17", "menge": 50.5, ... }
+const
+  ALLOWED: array[0..11] of string = (
+    'datum','bezeichnung','kraftstoffart','menge','preis','km',
+    'landkennung','heimtankung','kennzeichen','lieferantennr',
+    'lieferantenname','exttanknr'
+  );
+begin
+  DoUpdate('TANKUNG', ALLOWED, 'nr');
+end;
+
+// Route: /fuhrpark/deletetankung  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.deleteTankung;
+// Body: { "nr": 42 }
+begin
+  DoDelete('TANKUNG', 'nr');
 end;
 
 end.

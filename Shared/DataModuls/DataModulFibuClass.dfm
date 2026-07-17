@@ -1,0 +1,2 @@
+inherited DataModulFibu: TDataModulFibu
+end

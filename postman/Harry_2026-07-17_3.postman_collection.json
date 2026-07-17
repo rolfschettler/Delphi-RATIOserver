@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "Harry_2026-07-17_3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    }
+  ],
+  "item": [
+    {
+      "name": "BRUTTOLOHN",
+      "item": [
+        {
+          "name": "getBruttolohn",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"datum\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fibu/getbruttolohn", "host": ["{{baseURL}}"], "path": ["fibu", "getbruttolohn"] },
+            "description": "Alle Datensätze aus BRUTTOLOHN abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "getBruttolohnFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"monteurzeichen\": \"MZ01\",\n  \"datum\": \"2026-07-17\",\n  \"orderby\": \"datum\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fibu/getbruttolohnfiltered", "host": ["{{baseURL}}"], "path": ["fibu", "getbruttolohnfiltered"] },
+            "description": "BRUTTOLOHN gefiltert nach beliebigen Feldern abrufen (alle Filter optional)."
+          },
+          "response": []
+        },
+        {
+          "name": "getBruttolohnById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fibu/getbruttolohnbyid", "host": ["{{baseURL}}"], "path": ["fibu", "getbruttolohnbyid"] },
+            "description": "Einen BRUTTOLOHN-Datensatz per Primärschlüssel (nr) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "getBruttolohnKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fibu/getbruttolohnkey", "host": ["{{baseURL}}"], "path": ["fibu", "getbruttolohnkey"] },
+            "description": "Nächsten Primärschlüssel via GEN_ID(BRUTTOLOHN,1) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "insertBruttolohn",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"monteurzeichen\": \"MZ01\",\n  \"lohnart\": 1,\n  \"datum\": \"2026-07-17\",\n  \"einheit\": 8.0,\n  \"satz\": 15.5,\n  \"gesamtbetrag\": 124.00,\n  \"auftragnr\": 4711,\n  \"kostenstelle\": 100,\n  \"positionsnr\": 1,\n  \"extauftragnr\": \"EXT-001\",\n  \"extpos\": 1,\n  \"positiosnr\": 1,\n  \"zuschlag\": 0.0,\n  \"herkunft\": \"Werkstatt\",\n  \"faktor\": 1,\n  \"bezeichnung\": \"Reparatur Bremsen\",\n  \"fahrzeug\": \"B-RX 123\",\n  \"kostenstelle1\": \"KST1\",\n  \"kostenstelle2\": \"KST2\",\n  \"vonzeit\": \"08:00\",\n  \"biszeit\": \"16:00\",\n  \"kmanfang\": 12000,\n  \"kmende\": 12050,\n  \"kmgesamt\": 50,\n  \"zusatzfeld1\": \"\",\n  \"zusatzfeld2\": \"\",\n  \"kommentar\": \"Testeintrag\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fibu/insertbruttolohn", "host": ["{{baseURL}}"], "path": ["fibu", "insertbruttolohn"] },
+            "description": "Neuen BRUTTOLOHN-Datensatz einfügen."
+          },
+          "response": []
+        },
+        {
+          "name": "updateBruttolohn",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"satz\": 16.0,\n  \"gesamtbetrag\": 128.00,\n  \"kommentar\": \"Korrigiert\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fibu/updatebruttolohn", "host": ["{{baseURL}}"], "path": ["fibu", "updatebruttolohn"] },
+            "description": "Einen BRUTTOLOHN-Datensatz per nr aktualisieren (nur übergebene Felder werden geschrieben)."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteBruttolohn",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fibu/deletebruttolohn", "host": ["{{baseURL}}"], "path": ["fibu", "deletebruttolohn"] },
+            "description": "BRUTTOLOHN-Datensatz per nr löschen."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
