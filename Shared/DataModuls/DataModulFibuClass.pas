@@ -395,14 +395,49 @@ const
     'fibu_archiv_am','nrkreis','entstehung','zahlungsart'
   );
 var
-  Cols, Vals, Field: string;
-  i, NewNr: Integer;
+  Cols, Vals, Field, Vorgang: string;
+  i, NewNr, NrKreisVal: Integer;
   ResultObj: TJSONObject;
+
+  // Migriert aus TGutscheinmaskeform.NextRechnungsNr (Desktop-Anwendung) auf FireDAC.
+  // Ermittelt den naechsten Wert des zum NRKreis gehoerenden Generators
+  // (Generatorname GS_NRKREIS<NRKreis>, Fallback GS_NRKREIS1, falls nicht vorhanden).
+  function NextRechnungsNr(NRKreis: Integer): Integer;
+  var
+    genName: string;
+    TmpQuery: TFDQuery;
+  begin
+    genName := 'GS_NRKREIS1';
+    TmpQuery := TFDQuery.Create(nil);
+    try
+      TmpQuery.Connection := Connection;
+
+      TmpQuery.SQL.Text := 'SELECT RDB$GENERATOR_NAME AS GENERATORNAME FROM RDB$GENERATORS ' +
+        'WHERE RDB$GENERATOR_NAME = ''GS_NRKREIS' + IntToStr(NRKreis) + '''';
+      TmpQuery.Open;
+
+      if TmpQuery.Eof then
+        raise Exception.Create('Generator nicht vorhanden.');
+
+      genName := TmpQuery.FieldByName('generatorname').AsString;
+
+      TmpQuery.Close;
+      TmpQuery.SQL.Text := 'SELECT GEN_ID(' + genName + ', 1) AS NR FROM RDB$DATABASE';
+      TmpQuery.Open;
+      Result := TmpQuery.FieldByName('nr').AsInteger;
+    finally
+      TmpQuery.Free;
+    end;
+  end;
+
 begin
-  Cols := 'nr'; Vals := ':nr';
+  // 'vorgang' wird nicht aus dem Body uebernommen, sondern immer serverseitig
+  // erzeugt (siehe Ermittlung von Vorgang weiter unten) und daher hier uebersprungen.
+  Cols := 'nr,vorgang'; Vals := ':nr,:vorgang';
   for i := Low(ALLOWED) to High(ALLOWED) do
   begin
     Field := ALLOWED[i];
+    if Field = 'vorgang' then Continue;
     if not isParamFromBody(Field) then Continue;
     Cols := Cols + ',' + Field;
     Vals := Vals + ',:' + Field;
@@ -416,11 +451,28 @@ begin
     NewNr := Query.FieldByName('nr').AsInteger;
     Query.Close;
 
+    // Migriert aus TGutscheinmaskeform: ist ein Nummernkreis (nrkreis > 0) angegeben,
+    // wird die Rechnungsnr. ueber dessen Generator (NextRechnungsNr) ermittelt,
+    // andernfalls ueber den Standardgenerator GUTSCHEIN_VORGANG_GEN.
+    NrKreisVal := StrToIntDef(getParamFromBody('nrkreis', '0'), 0);
+    if NrKreisVal > 0 then
+      Vorgang := 'GS' + IntToStr(NextRechnungsNr(NrKreisVal))
+    else
+    begin
+      Query.Close;
+      Query.SQL.Text := 'SELECT GEN_ID(GUTSCHEIN_VORGANG_GEN, 1) AS nr FROM RDB$DATABASE';
+      Query.Open;
+      Vorgang := 'GS' + Query.FieldByName('nr').AsString;
+      Query.Close;
+    end;
+
     Query.SQL.Text := 'INSERT INTO GUTSCHEIN (' + Cols + ') VALUES (' + Vals + ')';
     Query.ParamByName('nr').AsInteger := NewNr;
+    Query.ParamByName('vorgang').AsString := Vorgang;
     for i := Low(ALLOWED) to High(ALLOWED) do
     begin
       Field := ALLOWED[i];
+      if Field = 'vorgang' then Continue;
       if isParamFromBody(Field) then
         Query.ParamByName(Field).AsString := getParamFromBody(Field);
     end;
@@ -442,6 +494,7 @@ begin
   ResultObj := TJSONObject.Create;
   ResultObj.AddPair('status', 'OK');
   ResultObj.AddPair('nr', TJSONNumber.Create(NewNr));
+  ResultObj.AddPair('vorgang', Vorgang);
   SendJson(ResultObj);
 end;
 
