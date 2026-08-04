@@ -37,6 +37,13 @@ type
     procedure insertTankung;
     procedure updateTankung;
     procedure deleteTankung;
+    procedure getAuslandfahrt;
+    procedure getAuslandfahrtFiltered;
+    procedure getAuslandfahrtById;
+    procedure getAuslandfahrtKey;
+    procedure insertAuslandfahrt;
+    procedure updateAuslandfahrt;
+    procedure deleteAuslandfahrt;
   end;
 
 
@@ -372,10 +379,10 @@ end;
 procedure TDataModulFuhrpark.getTankung;
 // Body: { "fields": ["nr","datum",...] | "*", "orderby": "datum" }
 const
-  ALLOWED: array[0..12] of string = (
+  ALLOWED: array[0..15] of string = (
     'nr','datum','bezeichnung','kraftstoffart','menge','preis','km',
     'landkennung','heimtankung','kennzeichen','lieferantennr',
-    'lieferantenname','exttanknr'
+    'lieferantenname','exttanknr','einsatznr','mitarbeiter','waehrung'
   );
 begin
   DoSelect('TANKUNG', ALLOWED);
@@ -386,13 +393,13 @@ procedure TDataModulFuhrpark.getTankungFiltered;
 // Body: { "fields": [...] | "*", "kennzeichen": "B-RX 123", "kraftstoffart": "Diesel", "orderby": "datum" }
 // Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
 const
-  ALLOWED: array[0..12] of string = (
+  ALLOWED: array[0..15] of string = (
     'nr','datum','bezeichnung','kraftstoffart','menge','preis','km',
     'landkennung','heimtankung','kennzeichen','lieferantennr',
-    'lieferantenname','exttanknr'
+    'lieferantenname','exttanknr','einsatznr','mitarbeiter','waehrung'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
-  CONDITIONS: array[0..12] of string = (
+  CONDITIONS: array[0..15] of string = (
     'nr = :nr',
     'datum = :datum',
     'bezeichnung = :bezeichnung',
@@ -405,12 +412,15 @@ const
     'kennzeichen = :kennzeichen',
     'lieferantennr = :lieferantennr',
     'lieferantenname = :lieferantenname',
-    'exttanknr = :exttanknr'
+    'exttanknr = :exttanknr',
+    'einsatznr = :einsatznr',
+    'mitarbeiter = :mitarbeiter',
+    'waehrung = :waehrung'
   );
-  FILTER_PARAMS: array[0..12] of string = (
+  FILTER_PARAMS: array[0..15] of string = (
     'nr','datum','bezeichnung','kraftstoffart','menge','preis','km',
     'landkennung','heimtankung','kennzeichen','lieferantennr',
-    'lieferantenname','exttanknr'
+    'lieferantenname','exttanknr','einsatznr','mitarbeiter','waehrung'
   );
 begin
   DoSelectFilteredDynamic('TANKUNG', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -420,10 +430,10 @@ end;
 procedure TDataModulFuhrpark.getTankungById;
 // Body: { "nr": 42, "fields": [...] | "*" }
 const
-  ALLOWED: array[0..12] of string = (
+  ALLOWED: array[0..15] of string = (
     'nr','datum','bezeichnung','kraftstoffart','menge','preis','km',
     'landkennung','heimtankung','kennzeichen','lieferantennr',
-    'lieferantenname','exttanknr'
+    'lieferantenname','exttanknr','einsatznr','mitarbeiter','waehrung'
   );
 begin
   DoSelectOne('TANKUNG', ALLOWED, 'nr');
@@ -443,10 +453,10 @@ end;
 procedure TDataModulFuhrpark.insertTankung;
 // Body: { "datum": "2026-07-17", "bezeichnung": "...", "kraftstoffart": "Diesel", ... }
 const
-  ALLOWED: array[0..11] of string = (
+  ALLOWED: array[0..14] of string = (
     'datum','bezeichnung','kraftstoffart','menge','preis','km',
     'landkennung','heimtankung','kennzeichen','lieferantennr',
-    'lieferantenname','exttanknr'
+    'lieferantenname','exttanknr','einsatznr','mitarbeiter','waehrung'
   );
 begin
   DoInsert('TANKUNG', ALLOWED);
@@ -456,10 +466,10 @@ end;
 procedure TDataModulFuhrpark.updateTankung;
 // Body: { "nr": 42, "datum": "2026-07-17", "menge": 50.5, ... }
 const
-  ALLOWED: array[0..11] of string = (
+  ALLOWED: array[0..14] of string = (
     'datum','bezeichnung','kraftstoffart','menge','preis','km',
     'landkennung','heimtankung','kennzeichen','lieferantennr',
-    'lieferantenname','exttanknr'
+    'lieferantenname','exttanknr','einsatznr','mitarbeiter','waehrung'
   );
 begin
   DoUpdate('TANKUNG', ALLOWED, 'nr');
@@ -470,6 +480,110 @@ procedure TDataModulFuhrpark.deleteTankung;
 // Body: { "nr": 42 }
 begin
   DoDelete('TANKUNG', 'nr');
+end;
+
+// Route: /fuhrpark/getauslandfahrt  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getAuslandfahrt;
+// Body: { "fields": ["nr","fahrtnr",...] | "*", "orderby": "datum" }
+const
+  ALLOWED: array[0..12] of string = (
+    'nr','fahrtnr','landkennung','kmausland','transit','betrag','steuer',
+    'grenzeintritt','grenzaustritt','kmleer','grenzeintritt_am',
+    'grenzaustritt_am','datum'
+  );
+begin
+  DoSelect('AUSLANDFAHRT', ALLOWED);
+end;
+
+// Route: /fuhrpark/getauslandfahrtfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getAuslandfahrtFiltered;
+// Body: { "fields": [...] | "*", "fahrtnr": 100, "landkennung": "F", "orderby": "datum" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..12] of string = (
+    'nr','fahrtnr','landkennung','kmausland','transit','betrag','steuer',
+    'grenzeintritt','grenzaustritt','kmleer','grenzeintritt_am',
+    'grenzaustritt_am','datum'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..12] of string = (
+    'nr = :nr',
+    'fahrtnr = :fahrtnr',
+    'landkennung = :landkennung',
+    'kmausland = :kmausland',
+    'transit = :transit',
+    'betrag = :betrag',
+    'steuer = :steuer',
+    'grenzeintritt = :grenzeintritt',
+    'grenzaustritt = :grenzaustritt',
+    'kmleer = :kmleer',
+    'grenzeintritt_am = :grenzeintritt_am',
+    'grenzaustritt_am = :grenzaustritt_am',
+    'datum = :datum'
+  );
+  FILTER_PARAMS: array[0..12] of string = (
+    'nr','fahrtnr','landkennung','kmausland','transit','betrag','steuer',
+    'grenzeintritt','grenzaustritt','kmleer','grenzeintritt_am',
+    'grenzaustritt_am','datum'
+  );
+begin
+  DoSelectFilteredDynamic('AUSLANDFAHRT', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fuhrpark/getauslandfahrtbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getAuslandfahrtById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..12] of string = (
+    'nr','fahrtnr','landkennung','kmausland','transit','betrag','steuer',
+    'grenzeintritt','grenzaustritt','kmleer','grenzeintritt_am',
+    'grenzaustritt_am','datum'
+  );
+begin
+  DoSelectOne('AUSLANDFAHRT', ALLOWED, 'nr');
+end;
+
+// Route: /fuhrpark/getauslandfahrtkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getAuslandfahrtKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(AUSLANDFAHRT_NR, 1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /fuhrpark/insertauslandfahrt  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.insertAuslandfahrt;
+// Body: { "fahrtnr": 100, "landkennung": "F", "kmausland": 250, "betrag": 120.00, ... }
+const
+  ALLOWED: array[0..11] of string = (
+    'fahrtnr','landkennung','kmausland','transit','betrag','steuer',
+    'grenzeintritt','grenzaustritt','kmleer','grenzeintritt_am',
+    'grenzaustritt_am','datum'
+  );
+begin
+  DoInsert('AUSLANDFAHRT', ALLOWED);
+end;
+
+// Route: /fuhrpark/updateauslandfahrt  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.updateAuslandfahrt;
+// Body: { "nr": 42, "betrag": 150.00, "steuer": 28.50, ... }
+const
+  ALLOWED: array[0..11] of string = (
+    'fahrtnr','landkennung','kmausland','transit','betrag','steuer',
+    'grenzeintritt','grenzaustritt','kmleer','grenzeintritt_am',
+    'grenzaustritt_am','datum'
+  );
+begin
+  DoUpdate('AUSLANDFAHRT', ALLOWED, 'nr');
+end;
+
+// Route: /fuhrpark/deleteauslandfahrt  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.deleteAuslandfahrt;
+// Body: { "nr": 42 }
+begin
+  DoDelete('AUSLANDFAHRT', 'nr');
 end;
 
 end.

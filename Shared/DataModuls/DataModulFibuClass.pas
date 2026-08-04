@@ -30,6 +30,13 @@ type
      procedure insertGutschein;
      procedure updateGutschein;
      procedure deleteGutschein;
+     procedure getDevisenkasse;
+     procedure getDevisenkasseFiltered;
+     procedure getDevisenkasseById;
+     procedure getDevisenkasseKey;
+     procedure insertDevisenkasse;
+     procedure updateDevisenkasse;
+     procedure deleteDevisenkasse;
   end;
 
 
@@ -608,6 +615,125 @@ begin
   ResultObj.AddPair('status', 'OK');
   ResultObj.AddPair('nr', TJSONNumber.Create(NewNr));
   SendJson(ResultObj);
+end;
+
+// Route: /fibu/getdevisenkasse  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getDevisenkasse;
+// Body: { "fields": ["nr","belegnr",...] | "*", "orderby": "bdatum" }
+const
+  ALLOWED: array[0..21] of string = (
+    'nr','belegnr','bdatum','expedient','waehrung','betrag','referenznr',
+    'bereich','kostelle1','kostelle2','gesperrt','konto','gegenkonto',
+    'belegart','art','leistung','zusatzfeld1','bemerkung','wechselkurs',
+    'anmietnr','anmiet_uebertragung','fibu_uebertragung'
+  );
+begin
+  DoSelect('DEVISENKASSE', ALLOWED);
+end;
+
+// Route: /fibu/getdevisenkassefiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getDevisenkasseFiltered;
+// Body: { "fields": [...] | "*", "waehrung": "USD", "expedient": "MZ01", "orderby": "bdatum" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..21] of string = (
+    'nr','belegnr','bdatum','expedient','waehrung','betrag','referenznr',
+    'bereich','kostelle1','kostelle2','gesperrt','konto','gegenkonto',
+    'belegart','art','leistung','zusatzfeld1','bemerkung','wechselkurs',
+    'anmietnr','anmiet_uebertragung','fibu_uebertragung'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..21] of string = (
+    'nr = :nr',
+    'belegnr = :belegnr',
+    'bdatum = :bdatum',
+    'expedient = :expedient',
+    'waehrung = :waehrung',
+    'betrag = :betrag',
+    'referenznr = :referenznr',
+    'bereich = :bereich',
+    'kostelle1 = :kostelle1',
+    'kostelle2 = :kostelle2',
+    'gesperrt = :gesperrt',
+    'konto = :konto',
+    'gegenkonto = :gegenkonto',
+    'belegart = :belegart',
+    'art = :art',
+    'leistung = :leistung',
+    'zusatzfeld1 = :zusatzfeld1',
+    'bemerkung = :bemerkung',
+    'wechselkurs = :wechselkurs',
+    'anmietnr = :anmietnr',
+    'anmiet_uebertragung = :anmiet_uebertragung',
+    'fibu_uebertragung = :fibu_uebertragung'
+  );
+  FILTER_PARAMS: array[0..21] of string = (
+    'nr','belegnr','bdatum','expedient','waehrung','betrag','referenznr',
+    'bereich','kostelle1','kostelle2','gesperrt','konto','gegenkonto',
+    'belegart','art','leistung','zusatzfeld1','bemerkung','wechselkurs',
+    'anmietnr','anmiet_uebertragung','fibu_uebertragung'
+  );
+begin
+  DoSelectFilteredDynamic('DEVISENKASSE', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fibu/getdevisenkassebyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getDevisenkasseById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..21] of string = (
+    'nr','belegnr','bdatum','expedient','waehrung','betrag','referenznr',
+    'bereich','kostelle1','kostelle2','gesperrt','konto','gegenkonto',
+    'belegart','art','leistung','zusatzfeld1','bemerkung','wechselkurs',
+    'anmietnr','anmiet_uebertragung','fibu_uebertragung'
+  );
+begin
+  DoSelectOne('DEVISENKASSE', ALLOWED, 'nr');
+end;
+
+// Route: /fibu/getdevisenkassekey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getDevisenkasseKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(DEVISENKASSE_NR_GEN, 1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /fibu/insertdevisenkasse  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.insertDevisenkasse;
+// Body: { "belegnr": 100, "bdatum": "2026-07-24", "waehrung": "USD", "betrag": 250.00, ... }
+const
+  ALLOWED: array[0..20] of string = (
+    'belegnr','bdatum','expedient','waehrung','betrag','referenznr',
+    'bereich','kostelle1','kostelle2','gesperrt','konto','gegenkonto',
+    'belegart','art','leistung','zusatzfeld1','bemerkung','wechselkurs',
+    'anmietnr','anmiet_uebertragung','fibu_uebertragung'
+  );
+begin
+  DoInsert('DEVISENKASSE', ALLOWED);
+end;
+
+// Route: /fibu/updatedevisenkasse  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.updateDevisenkasse;
+// Body: { "nr": 42, "betrag": 300.00, "waehrung": "EUR", ... }
+const
+  ALLOWED: array[0..20] of string = (
+    'belegnr','bdatum','expedient','waehrung','betrag','referenznr',
+    'bereich','kostelle1','kostelle2','gesperrt','konto','gegenkonto',
+    'belegart','art','leistung','zusatzfeld1','bemerkung','wechselkurs',
+    'anmietnr','anmiet_uebertragung','fibu_uebertragung'
+  );
+begin
+  DoUpdate('DEVISENKASSE', ALLOWED, 'nr');
+end;
+
+// Route: /fibu/deletedevisenkasse  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.deleteDevisenkasse;
+// Body: { "nr": 42 }
+begin
+  DoDelete('DEVISENKASSE', 'nr');
 end;
 
 end.

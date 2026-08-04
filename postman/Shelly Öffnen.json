@@ -1,0 +1,70 @@
+{
+  "info": {
+    "_postman_id": "4b1ed4c9-f844-44a6-9d6b-66c89f44795d",
+    "name": "Shelly Pro 2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34192603"
+  },
+  "item": [
+    {
+      "name": "Öffnen-Gen1",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "auth_key",
+              "value": "NDRkMjNldWlk6611B99A1A7070C0CA93640FDB52D3C3E17861A985410D76EA61B360A7C15DC28F5537E3B24B6E60",
+              "type": "text",
+              "uuid": "55ab25cd-a47d-4dac-9fe3-bd46bfbfe8a1"
+            },
+            {
+              "key": "id",
+              "value": "38182bda6200",
+              "type": "text",
+              "uuid": "e694cb0f-8e72-4b64-9995-33be033a35ea"
+            },
+            {
+              "key": "channel",
+              "value": "0",
+              "type": "text",
+              "uuid": "79552d01-8a3b-44cb-97c1-49e47efaeefa"
+            },
+            {
+              "key": "turn",
+              "value": "off",
+              "type": "text",
+              "uuid": "ac2f8e52-c105-4ea4-b2f1-d5e55fd8e0d5"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://shelly-263-eu.shelly.cloud/device/relay/control",
+          "protocol": "https",
+          "host": [
+            "shelly-263-eu",
+            "shelly",
+            "cloud"
+          ],
+          "path": [
+            "device",
+            "relay",
+            "control"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

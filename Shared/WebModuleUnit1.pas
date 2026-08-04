@@ -515,6 +515,13 @@ begin
   FRouter.AddRoute('/fuhrpark/inserttankung',           CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertTankung);
   FRouter.AddRoute('/fuhrpark/updatetankung',           CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateTankung);
   FRouter.AddRoute('/fuhrpark/deletetankung',           CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteTankung);
+  FRouter.AddRoute('/fuhrpark/getauslandfahrt',         CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getAuslandfahrt);
+  FRouter.AddRoute('/fuhrpark/getauslandfahrtfiltered', CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getAuslandfahrtFiltered);
+  FRouter.AddRoute('/fuhrpark/getauslandfahrtbyid',     CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getAuslandfahrtById);
+  FRouter.AddRoute('/fuhrpark/getauslandfahrtkey',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getAuslandfahrtKey);
+  FRouter.AddRoute('/fuhrpark/insertauslandfahrt',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertAuslandfahrt);
+  FRouter.AddRoute('/fuhrpark/updateauslandfahrt',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateAuslandfahrt);
+  FRouter.AddRoute('/fuhrpark/deleteauslandfahrt',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteAuslandfahrt);
 
     //FIBU
   FRouter.AddRoute('/fibu/demo',                        CreateDataModulFibu, TDataModulFibu(nil).Demo);
@@ -532,6 +539,13 @@ begin
   FRouter.AddRoute('/fibu/insertgutschein',              CreateDataModulFibu, TDataModulFibu(nil).insertGutschein);
   FRouter.AddRoute('/fibu/updategutschein',              CreateDataModulFibu, TDataModulFibu(nil).updateGutschein);
   FRouter.AddRoute('/fibu/deletegutschein',              CreateDataModulFibu, TDataModulFibu(nil).deleteGutschein);
+  FRouter.AddRoute('/fibu/getdevisenkasse',              CreateDataModulFibu, TDataModulFibu(nil).getDevisenkasse);
+  FRouter.AddRoute('/fibu/getdevisenkassefiltered',      CreateDataModulFibu, TDataModulFibu(nil).getDevisenkasseFiltered);
+  FRouter.AddRoute('/fibu/getdevisenkassebyid',          CreateDataModulFibu, TDataModulFibu(nil).getDevisenkasseById);
+  FRouter.AddRoute('/fibu/getdevisenkassekey',           CreateDataModulFibu, TDataModulFibu(nil).getDevisenkasseKey);
+  FRouter.AddRoute('/fibu/insertdevisenkasse',           CreateDataModulFibu, TDataModulFibu(nil).insertDevisenkasse);
+  FRouter.AddRoute('/fibu/updatedevisenkasse',           CreateDataModulFibu, TDataModulFibu(nil).updateDevisenkasse);
+  FRouter.AddRoute('/fibu/deletedevisenkasse',           CreateDataModulFibu, TDataModulFibu(nil).deleteDevisenkasse);
 
 
   //ANMIET
@@ -548,6 +562,7 @@ begin
   FRouter.AddRoute('/anmiet/getfundsachenbyid',       CreateDataModulAnmiet, TDataModulAnmiet(nil).getFundsachenById);
   FRouter.AddRoute('/anmiet/getfundsachenkey',        CreateDataModulAnmiet, TDataModulAnmiet(nil).getFundsachenKey);
   FRouter.AddRoute('/anmiet/insertfundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).insertFundsachen);
+  FRouter.AddRoute('/anmiet/insertfundsachenmitbildern', CreateDataModulAnmiet, TDataModulAnmiet(nil).insertFundsachenMitBildern);
   FRouter.AddRoute('/anmiet/updatefundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).updateFundsachen);
   FRouter.AddRoute('/anmiet/deletefundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteFundsachen);
 

@@ -6,7 +6,8 @@ uses
   Web.HTTPApp,   System.JSON,
   DataModulTableBaseClass,
   System.SysUtils, System.Classes, DataModulBaseClass, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf,
-  FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Phys.IB, FireDAC.Phys.IBDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client, FireDAC.Comp.DataSet;
+  FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Phys.IB, FireDAC.Phys.IBDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
+  System.NetEncoding, System.RegularExpressions;
 
 type
   TDataModulAnmiet = class(TDataModulTableBase)
@@ -38,6 +39,7 @@ type
      procedure getFundsachenById;
      procedure getFundsachenKey;
      procedure insertFundsachen;
+     procedure insertFundsachenMitBildern;
      procedure updateFundsachen;
      procedure deleteFundsachen;
   end;
@@ -449,24 +451,144 @@ end;
 procedure TDataModulAnmiet.insertFundsachen;
 // Body: { "beschreibung": "...", "verlustort": "...", "status": "offen", ... }
 const
-  ALLOWED: array[0..17] of string = (
+  ALLOWED: array[0..14] of string = (
     'abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
-    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
-    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'bearbeitet_von','beschreibung','erfasst_am',
+    'erfasst_von','status','text_intern','verlustdatum',
     'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
   );
 begin
   DoInsert('FUNDSACHEN', ALLOWED);
 end;
 
+// Prueft, ob AValue syntaktisch gueltiges Base64 ist (Zeichensatz + Laenge/Padding).
+// Leerstring gilt als gueltig (entspricht einem leeren Blob).
+function IsValidBase64Value(const AValue: string): Boolean;
+begin
+  Result := (AValue = '') or
+    (((Length(AValue) mod 4) = 0) and
+     TRegEx.IsMatch(AValue, '^[A-Za-z0-9+/]*={0,2}$'));
+end;
+
+// Route: /anmiet/insertfundsachenmitbildern  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.insertFundsachenMitBildern;
+// Body: { "beschreibung": "...", "verlustort": "...", "status": "offen", ...,
+//         "bilder": "<Base64>", "bild_klein": "<Base64>", "unterschrift": "<Base64>" }
+// Erweiterte WhiteList von insertFundsachen: dieselben Felder plus die drei
+// Base64-codierten Blob-Felder. Alle Felder werden in einem einzigen INSERT
+// geschrieben. Die Blob-Felder sind optional; JSON-null ist erlaubt (Blob
+// bleibt dann NULL). Sind sie gesetzt, wird der Base64-Wert vor dem Schreiben
+// auf syntaktische Gueltigkeit geprueft.
+const
+  ALLOWED: array[0..14] of string = (
+    'abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
+    'bearbeitet_von','beschreibung','erfasst_am',
+    'erfasst_von','status','text_intern','verlustdatum',
+    'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
+  );
+  BLOB_ALLOWED: array[0..2] of string = ('bilder','bild_klein','unterschrift');
+var
+  Q: TFDQuery;
+  Cols, Vals, Field, Base64Value: string;
+  Count, i: Integer;
+  Bytes: TBytes;
+  Stream: TMemoryStream;
+begin
+  Q := TFDQuery.Create(nil);
+  try
+    Q.Connection := Connection;
+    Cols := ''; Vals := ''; Count := 0;
+
+    for i := Low(ALLOWED) to High(ALLOWED) do
+      if isParamFromBody(ALLOWED[i]) then
+      begin
+        if Count > 0 then begin Cols := Cols + ','; Vals := Vals + ','; end;
+        Cols := Cols + ALLOWED[i];
+        Vals := Vals + ':' + ALLOWED[i];
+        Inc(Count);
+      end;
+
+    for i := Low(BLOB_ALLOWED) to High(BLOB_ALLOWED) do
+      if isKeyInBody(BLOB_ALLOWED[i]) then
+      begin
+        if Count > 0 then begin Cols := Cols + ','; Vals := Vals + ','; end;
+        Cols := Cols + BLOB_ALLOWED[i];
+        Vals := Vals + ':' + BLOB_ALLOWED[i];
+        Inc(Count);
+      end;
+
+    if Count = 0 then
+      raise Exception.Create('Keine gueltigen Felder uebergeben.');
+
+    Q.SQL.Text := 'INSERT INTO FUNDSACHEN (' + Cols + ') VALUES (' + Vals + ')';
+
+    for i := Low(ALLOWED) to High(ALLOWED) do
+      if isParamFromBody(ALLOWED[i]) then
+        Q.ParamByName(ALLOWED[i]).Value := getParamFromBody(ALLOWED[i]);
+
+    for i := Low(BLOB_ALLOWED) to High(BLOB_ALLOWED) do
+    begin
+      Field := BLOB_ALLOWED[i];
+      if not isKeyInBody(Field) then Continue;
+
+      if not isParamFromBody(Field) then
+      begin
+        // Feld war im Body vorhanden, aber JSON-null -> Blob bleibt NULL.
+        Q.ParamByName(Field).Clear;
+        Continue;
+      end;
+
+      Base64Value := getParamFromBody(Field);
+      if not IsValidBase64Value(Base64Value) then
+        raise Exception.Create('Feld "' + Field + '": kein gueltiger Base64-Wert.');
+
+      try
+        Bytes := TNetEncoding.Base64.DecodeStringToBytes(Base64Value);
+      except
+        on E: Exception do
+          raise Exception.Create('Feld "' + Field + '": Base64-Dekodierung fehlgeschlagen (' + E.Message + ').');
+      end;
+
+      Stream := TMemoryStream.Create;
+      try
+        if Length(Bytes) > 0 then
+          Stream.WriteBuffer(Bytes[0], Length(Bytes));
+        Stream.Position := 0;
+        Q.ParamByName(Field).LoadFromStream(Stream, ftBlob);
+      finally
+        Stream.Free;
+      end;
+    end;
+
+    Connection.StartTransaction;
+    try
+      Q.ExecSQL;
+      Connection.Commit;
+    except
+      on E: Exception do
+      begin
+        if Connection.InTransaction then
+          Connection.Rollback;
+        raise;
+      end;
+    end;
+
+    Response.ContentType := 'application/json';
+    Response.StatusCode  := 200;
+    Response.Content     := '{"status":"OK"}';
+  finally
+    Q.Free;
+  end;
+end;
+
 // Route: /anmiet/updatefundsachen  |  Auth: true  |  LocalOnly: false
 procedure TDataModulAnmiet.updateFundsachen;
 // Body: { "nr": 42, "status": "abgeholt", "abgeholt_am": "2026-07-17", ... }
 const
-  ALLOWED: array[0..17] of string = (
+  ALLOWED: array[0..14] of string = (
     'abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
-    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
-    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'bearbeitet_von','beschreibung','erfasst_am',
+    'erfasst_von','status','text_intern','verlustdatum',
     'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
   );
 begin
