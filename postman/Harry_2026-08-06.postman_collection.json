@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "Harry_2026-08-06",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    }
+  ],
+  "item": [
+    {
+      "name": "FAHRZEUG",
+      "item": [
+        {
+          "name": "getFahrzeug",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": [\"kennzeichen\", \"bezeichnung\", \"hersteller\", \"typ\", \"fahrzeugart\", \"baujahr\", \"standort\", \"status\", \"personen\", \"km\"],\n  \"orderby\": \"kennzeichen\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/getfahrzeug", "host": ["{{baseURL}}"], "path": ["fuhrpark", "getfahrzeug"] },
+            "description": "Alle Datensaetze aus FAHRZEUG abrufen. Hinweis: bei \"fields\": \"*\" werden auch die BLOB-Felder text und bild mitgeliefert - besser nur die benoetigten Felder anfordern."
+          },
+          "response": []
+        },
+        {
+          "name": "getFahrzeugFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": [\"kennzeichen\", \"bezeichnung\", \"hersteller\", \"typ\", \"fahrzeugart\", \"baujahr\", \"standort\", \"status\"],\n  \"hersteller\": \"Setra\",\n  \"fahrzeugart\": \"Reisebus\",\n  \"status\": \"A\",\n  \"betrieb\": \"1\",\n  \"orderby\": \"kennzeichen\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/getfahrzeugfiltered", "host": ["{{baseURL}}"], "path": ["fuhrpark", "getfahrzeugfiltered"] },
+            "description": "FAHRZEUG gefiltert abrufen. Filterbar sind 47 Felder: kennzeichen, bezeichnung, hersteller, typ, fahrzeugart, baujahr, leistung, hubraum, fahrgestellnr, motornr, briefnr, scheinnr, standort, angeschaft, abgeschaft, status, treibstoff, sitzplatz, achsen, sitznummern, sitzgesperrt, personen, gesperrt, zusatzfeld1, zusatzfeld2, kmsatz, sortierung, reihen, betrieb, profil, zuschlag1, zuschlag2, zuschlagarten, pin, telematikdevice, xkoord, ykoord, standort_aktuell, sv_fahrzeugprofil, din_norm, hinweise, km, lift, rueckfahrkamera, stammfahrer1, stammfahrer2, telematik_gelesen_am. Alle Filter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt. Die BLOB-Felder text und bild sind nicht filterbar (koennen aber ueber \"fields\" ausgelesen werden)."
+          },
+          "response": []
+        },
+        {
+          "name": "getFahrzeugById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kennzeichen\": \"B-RX 123\",\n  \"fields\": \"*\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/getfahrzeugbyid", "host": ["{{baseURL}}"], "path": ["fuhrpark", "getfahrzeugbyid"] },
+            "description": "Einen FAHRZEUG-Datensatz per Primaerschluessel (kennzeichen) abrufen."
+          },
+          "response": []
+        },
+        {
+          "name": "updateFahrzeug",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kennzeichen\": \"B-RX 123\",\n  \"bezeichnung\": \"Reisebus 1\",\n  \"hersteller\": \"Setra\",\n  \"typ\": \"S 516 HD\",\n  \"fahrzeugart\": \"Reisebus\",\n  \"baujahr\": 2019,\n  \"leistung\": \"290 kW\",\n  \"hubraum\": \"12800\",\n  \"fahrgestellnr\": \"WEB12345678901234\",\n  \"motornr\": \"M-987654\",\n  \"briefnr\": \"BR-4711\",\n  \"scheinnr\": \"SC-4711\",\n  \"standort\": \"Zentrale\",\n  \"angeschaft\": \"2019-04-01\",\n  \"abgeschaft\": null,\n  \"status\": \"A\",\n  \"treibstoff\": \"Diesel\",\n  \"sitzplatz\": \"49\",\n  \"achsen\": 2,\n  \"personen\": 49,\n  \"gesperrt\": \"N\",\n  \"zusatzfeld1\": \"\",\n  \"zusatzfeld2\": \"\",\n  \"kmsatz\": 1.25,\n  \"sortierung\": 10,\n  \"reihen\": \"13\",\n  \"betrieb\": \"1\",\n  \"profil\": \"Standard\",\n  \"zuschlag1\": 0,\n  \"zuschlag2\": 0,\n  \"zuschlagarten\": \"\",\n  \"pin\": \"1234\",\n  \"telematikdevice\": \"TD-001\",\n  \"xkoord\": \"9.1829\",\n  \"ykoord\": \"48.7758\",\n  \"standort_aktuell\": \"Stuttgart\",\n  \"sv_fahrzeugprofil\": \"Bus\",\n  \"din_norm\": \"DIN EN 13816\",\n  \"hinweise\": \"WC an Bord\",\n  \"km\": 412000,\n  \"lift\": \"N\",\n  \"rueckfahrkamera\": \"J\",\n  \"stammfahrer1\": \"Mueller\",\n  \"stammfahrer2\": \"Schmidt\",\n  \"telematik_gelesen_am\": \"2026-08-06T07:30:00\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/updatefahrzeug", "host": ["{{baseURL}}"], "path": ["fuhrpark", "updatefahrzeug"] },
+            "description": "Einen FAHRZEUG-Datensatz aktualisieren. kennzeichen ist der Primaerschluessel (WHERE) und wird nicht veraendert; alle uebrigen Felder sind optional - nur mitgesendete Felder werden gesetzt. Die BLOB-Felder text und sitznummern/bild koennen ebenfalls uebergeben werden."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteFahrzeug",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kennzeichen\": \"B-RX 123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fuhrpark/deletefahrzeug", "host": ["{{baseURL}}"], "path": ["fuhrpark", "deletefahrzeug"] },
+            "description": "Einen FAHRZEUG-Datensatz per Primaerschluessel (kennzeichen) loeschen."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

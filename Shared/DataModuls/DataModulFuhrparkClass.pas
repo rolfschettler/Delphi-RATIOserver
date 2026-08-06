@@ -44,6 +44,11 @@ type
     procedure insertAuslandfahrt;
     procedure updateAuslandfahrt;
     procedure deleteAuslandfahrt;
+    procedure getFahrzeug;
+    procedure getFahrzeugFiltered;
+    procedure getFahrzeugById;
+    procedure updateFahrzeug;
+    procedure deleteFahrzeug;
   end;
 
 
@@ -584,6 +589,151 @@ procedure TDataModulFuhrpark.deleteAuslandfahrt;
 // Body: { "nr": 42 }
 begin
   DoDelete('AUSLANDFAHRT', 'nr');
+end;
+
+// Route: /fuhrpark/getfahrzeug  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getFahrzeug;
+// Body: { "fields": ["kennzeichen","bezeichnung",...] | "*", "orderby": "kennzeichen" }
+const
+  ALLOWED: array[0..48] of string = (
+    'kennzeichen','bezeichnung','hersteller','typ','fahrzeugart','baujahr',
+    'leistung','hubraum','fahrgestellnr','motornr','briefnr','scheinnr',
+    'standort','angeschaft','abgeschaft','status','treibstoff','sitzplatz',
+    'achsen','text','bild','sitznummern','sitzgesperrt','personen',
+    'gesperrt','zusatzfeld1','zusatzfeld2','kmsatz','sortierung','reihen',
+    'betrieb','profil','zuschlag1','zuschlag2','zuschlagarten','pin',
+    'telematikdevice','xkoord','ykoord','standort_aktuell','sv_fahrzeugprofil','din_norm',
+    'hinweise','km','lift','rueckfahrkamera','stammfahrer1','stammfahrer2',
+    'telematik_gelesen_am'
+  );
+begin
+  DoSelect('FAHRZEUG', ALLOWED);
+end;
+
+// Route: /fuhrpark/getfahrzeugfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getFahrzeugFiltered;
+// Body: { "fields": [...] | "*", "kennzeichen": "B-RX 123", "hersteller": "Setra", "orderby": "kennzeichen" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..48] of string = (
+    'kennzeichen','bezeichnung','hersteller','typ','fahrzeugart','baujahr',
+    'leistung','hubraum','fahrgestellnr','motornr','briefnr','scheinnr',
+    'standort','angeschaft','abgeschaft','status','treibstoff','sitzplatz',
+    'achsen','text','bild','sitznummern','sitzgesperrt','personen',
+    'gesperrt','zusatzfeld1','zusatzfeld2','kmsatz','sortierung','reihen',
+    'betrieb','profil','zuschlag1','zuschlag2','zuschlagarten','pin',
+    'telematikdevice','xkoord','ykoord','standort_aktuell','sv_fahrzeugprofil','din_norm',
+    'hinweise','km','lift','rueckfahrkamera','stammfahrer1','stammfahrer2',
+    'telematik_gelesen_am'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  // Hinweis: die BLOB-Felder text und bild sind bewusst NICHT filterbar –
+  // ein Gleichheitsvergleich auf BLOBs wird von InterBase nicht unterstuetzt.
+  CONDITIONS: array[0..46] of string = (
+    'kennzeichen = :kennzeichen',
+    'bezeichnung = :bezeichnung',
+    'hersteller = :hersteller',
+    'typ = :typ',
+    'fahrzeugart = :fahrzeugart',
+    'baujahr = :baujahr',
+    'leistung = :leistung',
+    'hubraum = :hubraum',
+    'fahrgestellnr = :fahrgestellnr',
+    'motornr = :motornr',
+    'briefnr = :briefnr',
+    'scheinnr = :scheinnr',
+    'standort = :standort',
+    'angeschaft = :angeschaft',
+    'abgeschaft = :abgeschaft',
+    'status = :status',
+    'treibstoff = :treibstoff',
+    'sitzplatz = :sitzplatz',
+    'achsen = :achsen',
+    'sitznummern = :sitznummern',
+    'sitzgesperrt = :sitzgesperrt',
+    'personen = :personen',
+    'gesperrt = :gesperrt',
+    'zusatzfeld1 = :zusatzfeld1',
+    'zusatzfeld2 = :zusatzfeld2',
+    'kmsatz = :kmsatz',
+    'sortierung = :sortierung',
+    'reihen = :reihen',
+    'betrieb = :betrieb',
+    'profil = :profil',
+    'zuschlag1 = :zuschlag1',
+    'zuschlag2 = :zuschlag2',
+    'zuschlagarten = :zuschlagarten',
+    'pin = :pin',
+    'telematikdevice = :telematikdevice',
+    'xkoord = :xkoord',
+    'ykoord = :ykoord',
+    'standort_aktuell = :standort_aktuell',
+    'sv_fahrzeugprofil = :sv_fahrzeugprofil',
+    'din_norm = :din_norm',
+    'hinweise = :hinweise',
+    'km = :km',
+    'lift = :lift',
+    'rueckfahrkamera = :rueckfahrkamera',
+    'stammfahrer1 = :stammfahrer1',
+    'stammfahrer2 = :stammfahrer2',
+    'telematik_gelesen_am = :telematik_gelesen_am'
+  );
+  FILTER_PARAMS: array[0..46] of string = (
+    'kennzeichen','bezeichnung','hersteller','typ','fahrzeugart','baujahr',
+    'leistung','hubraum','fahrgestellnr','motornr','briefnr','scheinnr',
+    'standort','angeschaft','abgeschaft','status','treibstoff','sitzplatz',
+    'achsen','sitznummern','sitzgesperrt','personen','gesperrt','zusatzfeld1',
+    'zusatzfeld2','kmsatz','sortierung','reihen','betrieb','profil',
+    'zuschlag1','zuschlag2','zuschlagarten','pin','telematikdevice','xkoord',
+    'ykoord','standort_aktuell','sv_fahrzeugprofil','din_norm','hinweise','km',
+    'lift','rueckfahrkamera','stammfahrer1','stammfahrer2','telematik_gelesen_am'
+  );
+begin
+  DoSelectFilteredDynamic('FAHRZEUG', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fuhrpark/getfahrzeugbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getFahrzeugById;
+// Body: { "kennzeichen": "B-RX 123", "fields": [...] | "*" }
+const
+  ALLOWED: array[0..48] of string = (
+    'kennzeichen','bezeichnung','hersteller','typ','fahrzeugart','baujahr',
+    'leistung','hubraum','fahrgestellnr','motornr','briefnr','scheinnr',
+    'standort','angeschaft','abgeschaft','status','treibstoff','sitzplatz',
+    'achsen','text','bild','sitznummern','sitzgesperrt','personen',
+    'gesperrt','zusatzfeld1','zusatzfeld2','kmsatz','sortierung','reihen',
+    'betrieb','profil','zuschlag1','zuschlag2','zuschlagarten','pin',
+    'telematikdevice','xkoord','ykoord','standort_aktuell','sv_fahrzeugprofil','din_norm',
+    'hinweise','km','lift','rueckfahrkamera','stammfahrer1','stammfahrer2',
+    'telematik_gelesen_am'
+  );
+begin
+  DoSelectOne('FAHRZEUG', ALLOWED, 'kennzeichen');
+end;
+
+// Route: /fuhrpark/updatefahrzeug  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.updateFahrzeug;
+// Body: { "kennzeichen": "B-RX 123", "bezeichnung": "...", "standort": "...", ... }
+const
+  ALLOWED: array[0..47] of string = (
+    'bezeichnung','hersteller','typ','fahrzeugart','baujahr','leistung',
+    'hubraum','fahrgestellnr','motornr','briefnr','scheinnr','standort',
+    'angeschaft','abgeschaft','status','treibstoff','sitzplatz','achsen',
+    'text','bild','sitznummern','sitzgesperrt','personen','gesperrt',
+    'zusatzfeld1','zusatzfeld2','kmsatz','sortierung','reihen','betrieb',
+    'profil','zuschlag1','zuschlag2','zuschlagarten','pin','telematikdevice',
+    'xkoord','ykoord','standort_aktuell','sv_fahrzeugprofil','din_norm','hinweise',
+    'km','lift','rueckfahrkamera','stammfahrer1','stammfahrer2','telematik_gelesen_am'
+  );
+begin
+  DoUpdate('FAHRZEUG', ALLOWED, 'kennzeichen');
+end;
+
+// Route: /fuhrpark/deletefahrzeug  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.deleteFahrzeug;
+// Body: { "kennzeichen": "B-RX 123" }
+begin
+  DoDelete('FAHRZEUG', 'kennzeichen');
 end;
 
 end.

@@ -522,6 +522,11 @@ begin
   FRouter.AddRoute('/fuhrpark/insertauslandfahrt',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).insertAuslandfahrt);
   FRouter.AddRoute('/fuhrpark/updateauslandfahrt',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateAuslandfahrt);
   FRouter.AddRoute('/fuhrpark/deleteauslandfahrt',      CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteAuslandfahrt);
+  FRouter.AddRoute('/fuhrpark/getfahrzeug',             CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrzeug);
+  FRouter.AddRoute('/fuhrpark/getfahrzeugfiltered',     CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrzeugFiltered);
+  FRouter.AddRoute('/fuhrpark/getfahrzeugbyid',         CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrzeugById);
+  FRouter.AddRoute('/fuhrpark/updatefahrzeug',          CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateFahrzeug);
+  FRouter.AddRoute('/fuhrpark/deletefahrzeug',          CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteFahrzeug);
 
     //FIBU
   FRouter.AddRoute('/fibu/demo',                        CreateDataModulFibu, TDataModulFibu(nil).Demo);
