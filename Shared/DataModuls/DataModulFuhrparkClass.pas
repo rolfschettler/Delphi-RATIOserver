@@ -49,6 +49,9 @@ type
     procedure getFahrzeugById;
     procedure updateFahrzeug;
     procedure deleteFahrzeug;
+    procedure getLand;
+    procedure getLandFiltered;
+    procedure getLandById;
   end;
 
 
@@ -734,6 +737,61 @@ procedure TDataModulFuhrpark.deleteFahrzeug;
 // Body: { "kennzeichen": "B-RX 123" }
 begin
   DoDelete('FAHRZEUG', 'kennzeichen');
+end;
+
+// Route: /fuhrpark/getland  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getLand;
+// Body: { "fields": ["code","staat",...] | "*", "orderby": "sortierung" }
+const
+  ALLOWED: array[0..10] of string = (
+    'code','staat','steuer','fiskel','euland','inland','formular','iso2',
+    'iso3','sortierung','sachkonto'
+  );
+begin
+  DoSelect('LAND', ALLOWED);
+end;
+
+// Route: /fuhrpark/getlandfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getLandFiltered;
+// Body: { "fields": [...] | "*", "code": "D", "euland": "J", "orderby": "staat" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..10] of string = (
+    'code','staat','steuer','fiskel','euland','inland','formular','iso2',
+    'iso3','sortierung','sachkonto'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
+  CONDITIONS: array[0..10] of string = (
+    'code = :code',
+    'staat = :staat',
+    'steuer = :steuer',
+    'fiskel = :fiskel',
+    'euland = :euland',
+    'inland = :inland',
+    'formular = :formular',
+    'iso2 = :iso2',
+    'iso3 = :iso3',
+    'sortierung = :sortierung',
+    'sachkonto = :sachkonto'
+  );
+  FILTER_PARAMS: array[0..10] of string = (
+    'code','staat','steuer','fiskel','euland','inland','formular','iso2',
+    'iso3','sortierung','sachkonto'
+  );
+begin
+  DoSelectFilteredDynamic('LAND', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fuhrpark/getlandbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFuhrpark.getLandById;
+// Body: { "code": "D", "fields": [...] | "*" }
+const
+  ALLOWED: array[0..10] of string = (
+    'code','staat','steuer','fiskel','euland','inland','formular','iso2',
+    'iso3','sortierung','sachkonto'
+  );
+begin
+  DoSelectOne('LAND', ALLOWED, 'code');
 end;
 
 end.

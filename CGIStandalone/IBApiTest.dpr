@@ -30,7 +30,8 @@ uses
   DataModulToupacClass in '..\Shared\DataModuls\DataModulToupacClass.pas' {DataModulToupac: TDataModule},
   DataModulFuhrparkClass in '..\Shared\DataModuls\DataModulFuhrparkClass.pas' {DataModulFuhrpark: TDataModule},
   DataModulDokumenteClass in '..\Shared\DataModuls\DataModulDokumenteClass.pas' {DataModulDokumente: TDataModule},
-  DataModulFibuClass in '..\Shared\DataModuls\DataModulFibuClass.pas' {DataModulFibu: TDataModule};
+  DataModulFibuClass in '..\Shared\DataModuls\DataModulFibuClass.pas' {DataModulFibu: TDataModule},
+  DataModulRegistrierungClass in '..\Shared\DataModuls\DataModulRegistrierungClass.pas' {DataModulRegistrierung: TDataModule};
 
 {$R *.res}
 

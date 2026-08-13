@@ -30,6 +30,13 @@ type
      procedure insertF_Fahrtauftrag;
      procedure updateF_Fahrtauftrag;
      procedure deleteF_Fahrtauftrag;
+     procedure getT_Kalender;
+     procedure getT_KalenderFiltered;
+     procedure getT_KalenderById;
+     procedure getT_KalenderKey;
+     procedure insertT_Kalender;
+     procedure updateT_Kalender;
+     procedure deleteT_Kalender;
   end;
 
 
@@ -374,6 +381,123 @@ procedure TDataModulToupac.deleteF_Fahrtauftrag;
 // Body: { "nr": 42 }
 begin
   DoDelete('F_FAHRTAUFTRAG', 'nr');
+end;
+
+// Route: /toupac/gett_kalender  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_Kalender;
+// Body: { "fields": ["nr","aufgabe",...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..19] of string = (
+    'nr','aufgabe','erstellt','terminam','vorlaufzeit','text','bereich',
+    'reftable','refnr','benutzer','benutzergruppe','status','von_name',
+    'an_name','suchbegriff','prio','typ','zusatzfeld1','zusatzfeld2',
+    'erstelltvon'
+  );
+begin
+  DoSelect('T_KALENDER', ALLOWED);
+end;
+
+// Route: /toupac/gett_kalenderfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_KalenderFiltered;
+// Body: { "fields": [...] | "*", "nr": 42, "bereich": "...", "orderby": "nr" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..19] of string = (
+    'nr','aufgabe','erstellt','terminam','vorlaufzeit','text','bereich',
+    'reftable','refnr','benutzer','benutzergruppe','status','von_name',
+    'an_name','suchbegriff','prio','typ','zusatzfeld1','zusatzfeld2',
+    'erstelltvon'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
+  CONDITIONS: array[0..19] of string = (
+    'nr = :nr',
+    'aufgabe = :aufgabe',
+    'erstellt = :erstellt',
+    'terminam = :terminam',
+    'vorlaufzeit = :vorlaufzeit',
+    'text = :text',
+    'bereich = :bereich',
+    'reftable = :reftable',
+    'refnr = :refnr',
+    'benutzer = :benutzer',
+    'benutzergruppe = :benutzergruppe',
+    'status = :status',
+    'von_name = :von_name',
+    'an_name = :an_name',
+    'suchbegriff = :suchbegriff',
+    'prio = :prio',
+    'typ = :typ',
+    'zusatzfeld1 = :zusatzfeld1',
+    'zusatzfeld2 = :zusatzfeld2',
+    'erstelltvon = :erstelltvon'
+  );
+  FILTER_PARAMS: array[0..19] of string = (
+    'nr','aufgabe','erstellt','terminam','vorlaufzeit','text','bereich',
+    'reftable','refnr','benutzer','benutzergruppe','status','von_name',
+    'an_name','suchbegriff','prio','typ','zusatzfeld1','zusatzfeld2',
+    'erstelltvon'
+  );
+begin
+  DoSelectFilteredDynamic('T_KALENDER', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /toupac/gett_kalenderbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_KalenderById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..19] of string = (
+    'nr','aufgabe','erstellt','terminam','vorlaufzeit','text','bereich',
+    'reftable','refnr','benutzer','benutzergruppe','status','von_name',
+    'an_name','suchbegriff','prio','typ','zusatzfeld1','zusatzfeld2',
+    'erstelltvon'
+  );
+begin
+  DoSelectOne('T_KALENDER', ALLOWED, 'nr');
+end;
+
+// Route: /toupac/gett_kalenderkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_KalenderKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(T_KALENDER_NR_GEN,1) AS NR FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /toupac/insertt_kalender  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.insertT_Kalender;
+// Body: { "nr": 42, "aufgabe": "...", ... }
+const
+  ALLOWED: array[0..19] of string = (
+    'nr','aufgabe','erstellt','terminam','vorlaufzeit','text','bereich',
+    'reftable','refnr','benutzer','benutzergruppe','status','von_name',
+    'an_name','suchbegriff','prio','typ','zusatzfeld1','zusatzfeld2',
+    'erstelltvon'
+  );
+begin
+  DoInsert('T_KALENDER', ALLOWED);
+end;
+
+// Route: /toupac/updatet_kalender  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.updateT_Kalender;
+// Body: { "nr": 42, "aufgabe": "...", ... }
+const
+  ALLOWED: array[0..19] of string = (
+    'nr','aufgabe','erstellt','terminam','vorlaufzeit','text','bereich',
+    'reftable','refnr','benutzer','benutzergruppe','status','von_name',
+    'an_name','suchbegriff','prio','typ','zusatzfeld1','zusatzfeld2',
+    'erstelltvon'
+  );
+begin
+  DoUpdate('T_KALENDER', ALLOWED, 'nr');
+end;
+
+// Route: /toupac/deletet_kalender  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.deleteT_Kalender;
+// Body: { "nr": 42 }
+begin
+  DoDelete('T_KALENDER', 'nr');
 end;
 
 end.

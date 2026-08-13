@@ -1,0 +1,76 @@
+{
+  "info": {
+    "name": "Harry_2026-08-13_2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost/ratioserver"
+    }
+  ],
+  "item": [
+    {
+      "name": "ZEITRAUM",
+      "item": [
+        {
+          "name": "getZeitraum",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/getzeitraum", "host": ["{{baseURL}}"], "path": ["dispo", "getzeitraum"] },
+            "description": "Alle Datensaetze aus ZEITRAUM abrufen. \"fields\" akzeptiert eine Feldliste oder \"*\"; \"orderby\" ist optional."
+          },
+          "response": []
+        },
+        {
+          "name": "getZeitraumFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"art\": \"U\",\n  \"orderby\": \"von\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/getzeitraumfiltered", "host": ["{{baseURL}}"], "path": ["dispo", "getzeitraumfiltered"] },
+            "description": "Gefilterte Abfrage. Alle 9 Felder sind als Filter nutzbar (nr, von, bis, bezeichnung, farbe, art, code, gueltig_bis, gueltig_von). Alle Filter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung (Gleichheit) eingesetzt."
+          },
+          "response": []
+        },
+        {
+          "name": "getZeitraumById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{jwttoken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/dispo/getzeitraumbyid", "host": ["{{baseURL}}"], "path": ["dispo", "getzeitraumbyid"] },
+            "description": "Einen einzelnen Datensatz ueber den Primaerschluessel nr abrufen."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

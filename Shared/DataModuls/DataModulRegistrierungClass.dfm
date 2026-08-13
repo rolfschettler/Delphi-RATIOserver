@@ -1,0 +1,2 @@
+inherited DataModulRegistrierung: TDataModulRegistrierung
+end

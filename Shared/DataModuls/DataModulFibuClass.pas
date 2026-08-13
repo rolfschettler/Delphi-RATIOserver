@@ -37,6 +37,9 @@ type
      procedure insertDevisenkasse;
      procedure updateDevisenkasse;
      procedure deleteDevisenkasse;
+     procedure getLohnart;
+     procedure getLohnartFiltered;
+     procedure getLohnartById;
   end;
 
 
@@ -734,6 +737,60 @@ procedure TDataModulFibu.deleteDevisenkasse;
 // Body: { "nr": 42 }
 begin
   DoDelete('DEVISENKASSE', 'nr');
+end;
+
+// Route: /fibu/getlohnart  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getLohnart;
+// Body: { "fields": ["lohnart","bezeichnung",...] | "*", "orderby": "reihenfolge" }
+const
+  ALLOWED: array[0..9] of string = (
+    'lohnart','bezeichnung','stdlohn','vorgabe','zuschlag','fest',
+    'kalkuliertauf','faktor','reihenfolge','saldouebernahme'
+  );
+begin
+  DoSelect('LOHNART', ALLOWED);
+end;
+
+// Route: /fibu/getlohnartfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getLohnartFiltered;
+// Body: { "fields": [...] | "*", "lohnart": 10, "fest": "J", "orderby": "reihenfolge" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..9] of string = (
+    'lohnart','bezeichnung','stdlohn','vorgabe','zuschlag','fest',
+    'kalkuliertauf','faktor','reihenfolge','saldouebernahme'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
+  CONDITIONS: array[0..9] of string = (
+    'lohnart = :lohnart',
+    'bezeichnung = :bezeichnung',
+    'stdlohn = :stdlohn',
+    'vorgabe = :vorgabe',
+    'zuschlag = :zuschlag',
+    'fest = :fest',
+    'kalkuliertauf = :kalkuliertauf',
+    'faktor = :faktor',
+    'reihenfolge = :reihenfolge',
+    'saldouebernahme = :saldouebernahme'
+  );
+  FILTER_PARAMS: array[0..9] of string = (
+    'lohnart','bezeichnung','stdlohn','vorgabe','zuschlag','fest',
+    'kalkuliertauf','faktor','reihenfolge','saldouebernahme'
+  );
+begin
+  DoSelectFilteredDynamic('LOHNART', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fibu/getlohnartbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getLohnartById;
+// Body: { "lohnart": 10, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..9] of string = (
+    'lohnart','bezeichnung','stdlohn','vorgabe','zuschlag','fest',
+    'kalkuliertauf','faktor','reihenfolge','saldouebernahme'
+  );
+begin
+  DoSelectOne('LOHNART', ALLOWED, 'lohnart');
 end;
 
 end.

@@ -413,10 +413,10 @@ const
     'zusatzfeld2 = :zusatzfeld2',
     'zusatzfeld3 = :zusatzfeld3'
   );
-  FILTER_PARAMS: array[0..18] of string = (
+  FILTER_PARAMS: array[0..15] of string = (
     'nr','abgeholt_am','abgeholt_von','abholort','bearbeitet_am',
-    'bearbeitet_von','beschreibung','bilder','bild_klein','erfasst_am',
-    'erfasst_von','status','text_intern','unterschrift','verlustdatum',
+    'bearbeitet_von','beschreibung','erfasst_am',
+    'erfasst_von','status','text_intern','verlustdatum',
     'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
   );
 begin

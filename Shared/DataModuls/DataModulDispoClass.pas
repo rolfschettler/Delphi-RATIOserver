@@ -37,6 +37,9 @@ type
     procedure insertFis_Log;
     procedure updateFis_Log;
     procedure deleteFis_Log;
+    procedure getZeitraum;
+    procedure getZeitraumFiltered;
+    procedure getZeitraumById;
   end;
 
 function CreateDataModulDispo(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -380,7 +383,7 @@ end;
 procedure TDataModulDispo.getpersonalstammfiltered;
 // Body: { "fields": [...] | "*", "zeichen": "MU", "orderby": "name2" }
 const
-  ALLOWED: array[0..67] of string = (
+  ALLOWED: array[0..64] of string = (
     'nr','anrede','name1','name2','zeichen','strasse','land','plz','ort',
     'telefon1','telefon2','fsnummer','pbs_gueltig_bis','verwendung','geburtstag',
     'bemerkung','angestellt_seit','urlaubgesamt','resturlaub','gesperrt','fahrzeug',
@@ -388,9 +391,9 @@ const
     'alterurlaub','altefreietage','freietagegesamt','restfreietage','betrieb','profil',
     'feiertagsberechtigt','zulageberechtigt','mindestregelungsberechtigt',
     'arbeitsvertragsart','urlaubsstunden','krankheitsstunden','durchschnittsstunden',
-    'ausgeschieden_am','sprache','versicherungsnummer','passwort','zusatzinfo',
-    'kennziffer','passwort2','versuche','zeitsperre','freistunden','pushid',
-    'wochenende','abteilung','kostelle1','personalnummer','apikey','urlaubsgruppe',
+    'ausgeschieden_am','sprache','versicherungsnummer','zusatzinfo',
+    'kennziffer','versuche','zeitsperre','freistunden','pushid',
+    'wochenende','abteilung','kostelle1','personalnummer','urlaubsgruppe',
     'vertretung','resturlaub_aktuell','altefreietage2','alterurlaub2','nation',
     'xkoord','ykoord','koords_erfasst_am','pushid_fis','pushid_dispo','pushid_tickets'
   );
@@ -626,6 +629,59 @@ end;
 procedure TDataModulDispo.deleteFis_Log;
 begin
   DoDelete('FIS_LOG', 'nr');
+end;
+
+// Route: /dispo/getzeitraum  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getZeitraum;
+// Body: { "fields": ["nr","von",...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','von','bis','bezeichnung','farbe',
+    'art','code','gueltig_bis','gueltig_von'
+  );
+begin
+  DoSelect('ZEITRAUM', ALLOWED);
+end;
+
+// Route: /dispo/getzeitraumfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getZeitraumFiltered;
+// Body: { "fields": [...] | "*", "nr": 1, "art": "U", "orderby": "von" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','von','bis','bezeichnung','farbe',
+    'art','code','gueltig_bis','gueltig_von'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
+  CONDITIONS: array[0..8] of string = (
+    'nr = :nr',
+    'von = :von',
+    'bis = :bis',
+    'bezeichnung = :bezeichnung',
+    'farbe = :farbe',
+    'art = :art',
+    'code = :code',
+    'gueltig_bis = :gueltig_bis',
+    'gueltig_von = :gueltig_von'
+  );
+  FILTER_PARAMS: array[0..8] of string = (
+    'nr','von','bis','bezeichnung','farbe',
+    'art','code','gueltig_bis','gueltig_von'
+  );
+begin
+  DoSelectFilteredDynamic('ZEITRAUM', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /dispo/getzeitraumbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getZeitraumById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','von','bis','bezeichnung','farbe',
+    'art','code','gueltig_bis','gueltig_von'
+  );
+begin
+  DoSelectOne('ZEITRAUM', ALLOWED, 'nr');
 end;
 
 end.

@@ -94,7 +94,8 @@ DataModulFuhrparkClass,
 DataModulIncomingClass,
 DataModulPublicClass,
 DataModulDokumenteClass,
-DataModulFibuClass;
+DataModulFibuClass,
+DataModulRegistrierungClass;
 
 
 {$R *.dfm}
@@ -436,8 +437,8 @@ begin
 
   FRouter.AddRoute('/update', CreateDataModulSQL, TDataModulSQL(nil).update,true,true);
 
-  FRouter.AddRoute('/filetoblob', CreateDataModulSQL, TDataModulSQL(nil).filetoblob,true,false);  // LocalOnly=fase
-  FRouter.AddRoute('/base64toblob', CreateDataModulSQL, TDataModulSQL(nil).base64toblob,true,false); // LocalOnly=fase
+  FRouter.AddRoute('/filetoblob', CreateDataModulSQL, TDataModulSQL(nil).filetoblob,true,true);
+  FRouter.AddRoute('/base64toblob', CreateDataModulSQL, TDataModulSQL(nil).base64toblob,true,true);
 
   FRouter.AddRoute('/insert', CreateDataModulSQL, TDataModulSQL(nil).insert,true,true);
 
@@ -463,7 +464,7 @@ begin
   FRouter.AddRoute('/calculateroute',     CreateDataModulAddOn, TDataModulAddOn(nil).calculateroute); // TODO: LocalOnly=true ergänzen
   FRouter.AddRoute('/ki_getteilnehmer',   CreateDataModulAddOn, TDataModulAddOn(nil).KI_GetTeilnehmer);
   FRouter.AddRoute('/teilnehmerfromcsv', CreateDataModulAddOn, TDataModulAddOn(nil).teilnehmerformcsv);
-  FRouter.AddRoute('/getdokument', CreateDataModulAddOn, TDataModulAddOn(nil).getdokument,false,false);
+  FRouter.AddRoute('/getdokument', CreateDataModulAddOn, TDataModulAddOn(nil).getdokument);
 
   //PUBLIC API: Diese Api können auch von außerhalb des localhost aufgerufen werden
 
@@ -527,6 +528,9 @@ begin
   FRouter.AddRoute('/fuhrpark/getfahrzeugbyid',         CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getFahrzeugById);
   FRouter.AddRoute('/fuhrpark/updatefahrzeug',          CreateDataModulFuhrpark, TDataModulFuhrpark(nil).updateFahrzeug);
   FRouter.AddRoute('/fuhrpark/deletefahrzeug',          CreateDataModulFuhrpark, TDataModulFuhrpark(nil).deleteFahrzeug);
+  FRouter.AddRoute('/fuhrpark/getland',                 CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getLand);
+  FRouter.AddRoute('/fuhrpark/getlandfiltered',         CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getLandFiltered);
+  FRouter.AddRoute('/fuhrpark/getlandbyid',             CreateDataModulFuhrpark, TDataModulFuhrpark(nil).getLandById);
 
     //FIBU
   FRouter.AddRoute('/fibu/demo',                        CreateDataModulFibu, TDataModulFibu(nil).Demo);
@@ -551,6 +555,9 @@ begin
   FRouter.AddRoute('/fibu/insertdevisenkasse',           CreateDataModulFibu, TDataModulFibu(nil).insertDevisenkasse);
   FRouter.AddRoute('/fibu/updatedevisenkasse',           CreateDataModulFibu, TDataModulFibu(nil).updateDevisenkasse);
   FRouter.AddRoute('/fibu/deletedevisenkasse',           CreateDataModulFibu, TDataModulFibu(nil).deleteDevisenkasse);
+  FRouter.AddRoute('/fibu/getlohnart',                   CreateDataModulFibu, TDataModulFibu(nil).getLohnart);
+  FRouter.AddRoute('/fibu/getlohnartfiltered',           CreateDataModulFibu, TDataModulFibu(nil).getLohnartFiltered);
+  FRouter.AddRoute('/fibu/getlohnartbyid',               CreateDataModulFibu, TDataModulFibu(nil).getLohnartById);
 
 
   //ANMIET
@@ -570,6 +577,15 @@ begin
   FRouter.AddRoute('/anmiet/insertfundsachenmitbildern', CreateDataModulAnmiet, TDataModulAnmiet(nil).insertFundsachenMitBildern);
   FRouter.AddRoute('/anmiet/updatefundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).updateFundsachen);
   FRouter.AddRoute('/anmiet/deletefundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteFundsachen);
+
+  //REGISTRIERUNG
+  FRouter.AddRoute('/registrierung/getregistrierung',         CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getRegistrierung);
+  FRouter.AddRoute('/registrierung/getregistrierungfiltered', CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getRegistrierungFiltered);
+  FRouter.AddRoute('/registrierung/getregistrierungbyid',     CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getRegistrierungById);
+  FRouter.AddRoute('/registrierung/getregistrierungkey',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getRegistrierungKey);
+  FRouter.AddRoute('/registrierung/insertregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).insertRegistrierung);
+  FRouter.AddRoute('/registrierung/updateregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).updateRegistrierung);
+  FRouter.AddRoute('/registrierung/deleteregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).deleteRegistrierung);
 
   //DISPO
   FRouter.AddRoute('/dispo/demo', CreateDataModulDispo, TDataModulDispo(nil).Demo);
@@ -593,6 +609,9 @@ begin
   FRouter.AddRoute('/dispo/insertfis_log',      CreateDataModulDispo, TDataModulDispo(nil).insertFis_Log,true,false);
   FRouter.AddRoute('/dispo/updatefis_log',      CreateDataModulDispo, TDataModulDispo(nil).updateFis_Log,true,false);
   FRouter.AddRoute('/dispo/deletefis_log',      CreateDataModulDispo, TDataModulDispo(nil).deleteFis_Log,true,false);
+  FRouter.AddRoute('/dispo/getzeitraum',           CreateDataModulDispo, TDataModulDispo(nil).getZeitraum);
+  FRouter.AddRoute('/dispo/getzeitraumfiltered',   CreateDataModulDispo, TDataModulDispo(nil).getZeitraumFiltered);
+  FRouter.AddRoute('/dispo/getzeitraumbyid',       CreateDataModulDispo, TDataModulDispo(nil).getZeitraumById);
 
   //TOUPAC
   FRouter.AddRoute('/toupac/demo',                CreateDataModulToupac, TDataModulToupac(nil).Demo);
@@ -610,6 +629,13 @@ begin
   FRouter.AddRoute('/toupac/insertf_fahrtauftrag',      CreateDataModulToupac, TDataModulToupac(nil).insertF_Fahrtauftrag);
   FRouter.AddRoute('/toupac/updatef_fahrtauftrag',      CreateDataModulToupac, TDataModulToupac(nil).updateF_Fahrtauftrag);
   FRouter.AddRoute('/toupac/deletef_fahrtauftrag',      CreateDataModulToupac, TDataModulToupac(nil).deleteF_Fahrtauftrag);
+  FRouter.AddRoute('/toupac/gett_kalender',         CreateDataModulToupac, TDataModulToupac(nil).getT_Kalender,true,false);
+  FRouter.AddRoute('/toupac/gett_kalenderfiltered', CreateDataModulToupac, TDataModulToupac(nil).getT_KalenderFiltered,true,false);
+  FRouter.AddRoute('/toupac/gett_kalenderbyid',     CreateDataModulToupac, TDataModulToupac(nil).getT_KalenderById,true,false);
+  FRouter.AddRoute('/toupac/gett_kalenderkey',      CreateDataModulToupac, TDataModulToupac(nil).getT_KalenderKey,true,false);
+  FRouter.AddRoute('/toupac/insertt_kalender',      CreateDataModulToupac, TDataModulToupac(nil).insertT_Kalender,true,false);
+  FRouter.AddRoute('/toupac/updatet_kalender',      CreateDataModulToupac, TDataModulToupac(nil).updateT_Kalender,true,false);
+  FRouter.AddRoute('/toupac/deletet_kalender',      CreateDataModulToupac, TDataModulToupac(nil).deleteT_Kalender,true,false);
 
 
 
