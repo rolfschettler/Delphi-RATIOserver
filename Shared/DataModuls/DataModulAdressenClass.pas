@@ -26,6 +26,13 @@ type
     procedure insertAdresse;
     procedure updateAdresse;
     procedure deleteAdresse;
+    procedure getZusatztabelle;
+    procedure getZusatztabelleFiltered;
+    procedure getZusatztabelleById;
+    procedure getZusatztabelleKey;
+    procedure insertZusatztabelle;
+    procedure updateZusatztabelle;
+    procedure deleteZusatztabelle;
   end;
 
 function CreateDataModulAdressen(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -297,6 +304,163 @@ procedure TDataModulAdressen.deleteAdresse;
 // Body: { "kennziffer": 42 }
 begin
   DoDelete('ADRESSEN', 'kennziffer');
+end;
+
+// Route: /adressen/getzusatztabelle  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getZusatztabelle;
+// Body: { "fields": ["nr","reftable",...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..33] of string = (
+    'nr','reftable','refnr','modul','bereich',
+    'zusatzfeld1','zusatzfeld2','zusatzfeld3','zusatzfeld4','zusatzfeld5',
+    'zusatzfeld6','zusatzfeld7','zusatzfeld8','zusatzfeld9','zusatzfeld10',
+    'zusatzdatum1','zusatzdatum2','zusatzdatum3',
+    'zusatzzahl1','zusatzzahl2','zusatzzahl3',
+    'zusatznum1','zusatznum2','zusatznum3',
+    'zusatzblob1','zusatzblob2','zusatzblob3',
+    'erstellt','geaendert','erfasstvon','geaendertvon',
+    'kennziffer','sortierung','bemerkung'
+  );
+begin
+  DoSelect('ZUSATZTABELLE', ALLOWED);
+end;
+
+// Route: /adressen/getzusatztabellefiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getZusatztabelleFiltered;
+// Body: { "fields": [...] | "*", "reftable": "ADRESSEN", "refnr": 42, "orderby": "nr" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+// zusatzblob1/2/3 sind Blob-Felder und daher nur in ALLOWED, nicht in CONDITIONS/FILTER_PARAMS.
+const
+  ALLOWED: array[0..33] of string = (
+    'nr','reftable','refnr','modul','bereich',
+    'zusatzfeld1','zusatzfeld2','zusatzfeld3','zusatzfeld4','zusatzfeld5',
+    'zusatzfeld6','zusatzfeld7','zusatzfeld8','zusatzfeld9','zusatzfeld10',
+    'zusatzdatum1','zusatzdatum2','zusatzdatum3',
+    'zusatzzahl1','zusatzzahl2','zusatzzahl3',
+    'zusatznum1','zusatznum2','zusatznum3',
+    'zusatzblob1','zusatzblob2','zusatzblob3',
+    'erstellt','geaendert','erfasstvon','geaendertvon',
+    'kennziffer','sortierung','bemerkung'
+  );
+  CONDITIONS: array[0..30] of string = (
+    'nr = :nr',
+    'reftable = :reftable',
+    'refnr = :refnr',
+    'modul = :modul',
+    'bereich = :bereich',
+    'zusatzfeld1 = :zusatzfeld1',
+    'zusatzfeld2 = :zusatzfeld2',
+    'zusatzfeld3 = :zusatzfeld3',
+    'zusatzfeld4 = :zusatzfeld4',
+    'zusatzfeld5 = :zusatzfeld5',
+    'zusatzfeld6 = :zusatzfeld6',
+    'zusatzfeld7 = :zusatzfeld7',
+    'zusatzfeld8 = :zusatzfeld8',
+    'zusatzfeld9 = :zusatzfeld9',
+    'zusatzfeld10 = :zusatzfeld10',
+    'zusatzdatum1 = :zusatzdatum1',
+    'zusatzdatum2 = :zusatzdatum2',
+    'zusatzdatum3 = :zusatzdatum3',
+    'zusatzzahl1 = :zusatzzahl1',
+    'zusatzzahl2 = :zusatzzahl2',
+    'zusatzzahl3 = :zusatzzahl3',
+    'zusatznum1 = :zusatznum1',
+    'zusatznum2 = :zusatznum2',
+    'zusatznum3 = :zusatznum3',
+    'erstellt = :erstellt',
+    'geaendert = :geaendert',
+    'erfasstvon = :erfasstvon',
+    'geaendertvon = :geaendertvon',
+    'kennziffer = :kennziffer',
+    'sortierung = :sortierung',
+    'bemerkung = :bemerkung'
+  );
+  FILTER_PARAMS: array[0..30] of string = (
+    'nr','reftable','refnr','modul','bereich',
+    'zusatzfeld1','zusatzfeld2','zusatzfeld3','zusatzfeld4','zusatzfeld5',
+    'zusatzfeld6','zusatzfeld7','zusatzfeld8','zusatzfeld9','zusatzfeld10',
+    'zusatzdatum1','zusatzdatum2','zusatzdatum3',
+    'zusatzzahl1','zusatzzahl2','zusatzzahl3',
+    'zusatznum1','zusatznum2','zusatznum3',
+    'erstellt','geaendert','erfasstvon','geaendertvon',
+    'kennziffer','sortierung','bemerkung'
+  );
+begin
+  DoSelectFilteredDynamic('ZUSATZTABELLE', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /adressen/getzusatztabellebyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getZusatztabelleById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..33] of string = (
+    'nr','reftable','refnr','modul','bereich',
+    'zusatzfeld1','zusatzfeld2','zusatzfeld3','zusatzfeld4','zusatzfeld5',
+    'zusatzfeld6','zusatzfeld7','zusatzfeld8','zusatzfeld9','zusatzfeld10',
+    'zusatzdatum1','zusatzdatum2','zusatzdatum3',
+    'zusatzzahl1','zusatzzahl2','zusatzzahl3',
+    'zusatznum1','zusatznum2','zusatznum3',
+    'zusatzblob1','zusatzblob2','zusatzblob3',
+    'erstellt','geaendert','erfasstvon','geaendertvon',
+    'kennziffer','sortierung','bemerkung'
+  );
+begin
+  DoSelectOne('ZUSATZTABELLE', ALLOWED, 'nr');
+end;
+
+// Route: /adressen/getzusatztabellekey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getZusatztabelleKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(ZUSATZTABELLE_NR_GEN, 1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /adressen/insertzusatztabelle  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.insertZusatztabelle;
+// Body: { "reftable": "ADRESSEN", "refnr": 42, "modul": "...", ... }
+const
+  ALLOWED: array[0..32] of string = (
+    'reftable','refnr','modul','bereich',
+    'zusatzfeld1','zusatzfeld2','zusatzfeld3','zusatzfeld4','zusatzfeld5',
+    'zusatzfeld6','zusatzfeld7','zusatzfeld8','zusatzfeld9','zusatzfeld10',
+    'zusatzdatum1','zusatzdatum2','zusatzdatum3',
+    'zusatzzahl1','zusatzzahl2','zusatzzahl3',
+    'zusatznum1','zusatznum2','zusatznum3',
+    'zusatzblob1','zusatzblob2','zusatzblob3',
+    'erstellt','geaendert','erfasstvon','geaendertvon',
+    'kennziffer','sortierung','bemerkung'
+  );
+begin
+  DoInsert('ZUSATZTABELLE', ALLOWED);
+end;
+
+// Route: /adressen/updatezusatztabelle  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.updateZusatztabelle;
+// Body: { "nr": 42, "bemerkung": "...", ... }
+const
+  ALLOWED: array[0..32] of string = (
+    'reftable','refnr','modul','bereich',
+    'zusatzfeld1','zusatzfeld2','zusatzfeld3','zusatzfeld4','zusatzfeld5',
+    'zusatzfeld6','zusatzfeld7','zusatzfeld8','zusatzfeld9','zusatzfeld10',
+    'zusatzdatum1','zusatzdatum2','zusatzdatum3',
+    'zusatzzahl1','zusatzzahl2','zusatzzahl3',
+    'zusatznum1','zusatznum2','zusatznum3',
+    'zusatzblob1','zusatzblob2','zusatzblob3',
+    'erstellt','geaendert','erfasstvon','geaendertvon',
+    'kennziffer','sortierung','bemerkung'
+  );
+begin
+  DoUpdate('ZUSATZTABELLE', ALLOWED, 'nr');
+end;
+
+// Route: /adressen/deletezusatztabelle  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.deleteZusatztabelle;
+// Body: { "nr": 42 }
+begin
+  DoDelete('ZUSATZTABELLE', 'nr');
 end;
 
 end.

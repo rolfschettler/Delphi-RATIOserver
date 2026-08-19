@@ -40,6 +40,13 @@ type
      procedure getLohnart;
      procedure getLohnartFiltered;
      procedure getLohnartById;
+     procedure getFibu;
+     procedure getFibuFiltered;
+     procedure getFibuById;
+     procedure getFibuKey;
+     procedure insertFibu;
+     procedure updateFibu;
+     procedure deleteFibu;
   end;
 
 
@@ -791,6 +798,171 @@ const
   );
 begin
   DoSelectOne('LOHNART', ALLOWED, 'lohnart');
+end;
+
+// Route: /fibu/getfibu  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getFibu;
+// Body: { "fields": ["nr","betrag",...] | "*", "orderby": "belegdatum" }
+const
+  ALLOWED: array[0..43] of string = (
+    'nr','betrag','soll','haben','belegfeld1','belegfeld2','belegdatum',
+    'kostelle1','kostelle2','skonto','text','gebucht','art','rechnungnr',
+    'stschl','ustbetrag','steuerkonto','stkontotyp','stsatz','stapel','opos',
+    'journalnr','erfasstdurch','vorlaufnr','archiv','text2','freigabe',
+    'uebertragung','fwbetrag','waehrung','kurs','zugeordnetzu','erfasst_am',
+    'laufnummer','belegart','journalisierungsnr','stand',
+    'fortlaufnr_provorgang','pkguid','leistungsdatum','iban','swift',
+    'kontoinhaber','mandant'
+  );
+begin
+  DoSelect('FIBU', ALLOWED);
+end;
+
+// Route: /fibu/getfibufiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getFibuFiltered;
+// Body: { "fields": [...] | "*", "belegfeld1": "RE1001", "gebucht": "N", "orderby": "belegdatum" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..43] of string = (
+    'nr','betrag','soll','haben','belegfeld1','belegfeld2','belegdatum',
+    'kostelle1','kostelle2','skonto','text','gebucht','art','rechnungnr',
+    'stschl','ustbetrag','steuerkonto','stkontotyp','stsatz','stapel','opos',
+    'journalnr','erfasstdurch','vorlaufnr','archiv','text2','freigabe',
+    'uebertragung','fwbetrag','waehrung','kurs','zugeordnetzu','erfasst_am',
+    'laufnummer','belegart','journalisierungsnr','stand',
+    'fortlaufnr_provorgang','pkguid','leistungsdatum','iban','swift',
+    'kontoinhaber','mandant'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
+  CONDITIONS: array[0..43] of string = (
+    'nr = :nr',
+    'betrag = :betrag',
+    'soll = :soll',
+    'haben = :haben',
+    'belegfeld1 = :belegfeld1',
+    'belegfeld2 = :belegfeld2',
+    'belegdatum = :belegdatum',
+    'kostelle1 = :kostelle1',
+    'kostelle2 = :kostelle2',
+    'skonto = :skonto',
+    'text = :text',
+    'gebucht = :gebucht',
+    'art = :art',
+    'rechnungnr = :rechnungnr',
+    'stschl = :stschl',
+    'ustbetrag = :ustbetrag',
+    'steuerkonto = :steuerkonto',
+    'stkontotyp = :stkontotyp',
+    'stsatz = :stsatz',
+    'stapel = :stapel',
+    'opos = :opos',
+    'journalnr = :journalnr',
+    'erfasstdurch = :erfasstdurch',
+    'vorlaufnr = :vorlaufnr',
+    'archiv = :archiv',
+    'text2 = :text2',
+    'freigabe = :freigabe',
+    'uebertragung = :uebertragung',
+    'fwbetrag = :fwbetrag',
+    'waehrung = :waehrung',
+    'kurs = :kurs',
+    'zugeordnetzu = :zugeordnetzu',
+    'erfasst_am = :erfasst_am',
+    'laufnummer = :laufnummer',
+    'belegart = :belegart',
+    'journalisierungsnr = :journalisierungsnr',
+    'stand = :stand',
+    'fortlaufnr_provorgang = :fortlaufnr_provorgang',
+    'pkguid = :pkguid',
+    'leistungsdatum = :leistungsdatum',
+    'iban = :iban',
+    'swift = :swift',
+    'kontoinhaber = :kontoinhaber',
+    'mandant = :mandant'
+  );
+  FILTER_PARAMS: array[0..43] of string = (
+    'nr','betrag','soll','haben','belegfeld1','belegfeld2','belegdatum',
+    'kostelle1','kostelle2','skonto','text','gebucht','art','rechnungnr',
+    'stschl','ustbetrag','steuerkonto','stkontotyp','stsatz','stapel','opos',
+    'journalnr','erfasstdurch','vorlaufnr','archiv','text2','freigabe',
+    'uebertragung','fwbetrag','waehrung','kurs','zugeordnetzu','erfasst_am',
+    'laufnummer','belegart','journalisierungsnr','stand',
+    'fortlaufnr_provorgang','pkguid','leistungsdatum','iban','swift',
+    'kontoinhaber','mandant'
+  );
+begin
+  DoSelectFilteredDynamic('FIBU', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fibu/getfibubyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getFibuById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..43] of string = (
+    'nr','betrag','soll','haben','belegfeld1','belegfeld2','belegdatum',
+    'kostelle1','kostelle2','skonto','text','gebucht','art','rechnungnr',
+    'stschl','ustbetrag','steuerkonto','stkontotyp','stsatz','stapel','opos',
+    'journalnr','erfasstdurch','vorlaufnr','archiv','text2','freigabe',
+    'uebertragung','fwbetrag','waehrung','kurs','zugeordnetzu','erfasst_am',
+    'laufnummer','belegart','journalisierungsnr','stand',
+    'fortlaufnr_provorgang','pkguid','leistungsdatum','iban','swift',
+    'kontoinhaber','mandant'
+  );
+begin
+  DoSelectOne('FIBU', ALLOWED, 'nr');
+end;
+
+// Route: /fibu/getfibukey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getFibuKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(FIBU_NR_GEN, 1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /fibu/insertfibu  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.insertFibu;
+// Body: { "betrag": 100.00, "soll": "1000", "haben": "8400", ... }
+const
+  ALLOWED: array[0..42] of string = (
+    'betrag','soll','haben','belegfeld1','belegfeld2','belegdatum',
+    'kostelle1','kostelle2','skonto','text','gebucht','art','rechnungnr',
+    'stschl','ustbetrag','steuerkonto','stkontotyp','stsatz','stapel','opos',
+    'journalnr','erfasstdurch','vorlaufnr','archiv','text2','freigabe',
+    'uebertragung','fwbetrag','waehrung','kurs','zugeordnetzu','erfasst_am',
+    'laufnummer','belegart','journalisierungsnr','stand',
+    'fortlaufnr_provorgang','pkguid','leistungsdatum','iban','swift',
+    'kontoinhaber','mandant'
+  );
+begin
+  DoInsert('FIBU', ALLOWED);
+end;
+
+// Route: /fibu/updatefibu  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.updateFibu;
+// Body: { "nr": 42, "gebucht": "J", "betrag": 120.00, ... }
+const
+  ALLOWED: array[0..42] of string = (
+    'betrag','soll','haben','belegfeld1','belegfeld2','belegdatum',
+    'kostelle1','kostelle2','skonto','text','gebucht','art','rechnungnr',
+    'stschl','ustbetrag','steuerkonto','stkontotyp','stsatz','stapel','opos',
+    'journalnr','erfasstdurch','vorlaufnr','archiv','text2','freigabe',
+    'uebertragung','fwbetrag','waehrung','kurs','zugeordnetzu','erfasst_am',
+    'laufnummer','belegart','journalisierungsnr','stand',
+    'fortlaufnr_provorgang','pkguid','leistungsdatum','iban','swift',
+    'kontoinhaber','mandant'
+  );
+begin
+  DoUpdate('FIBU', ALLOWED, 'nr');
+end;
+
+// Route: /fibu/deletefibu  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.deleteFibu;
+// Body: { "nr": 42 }
+begin
+  DoDelete('FIBU', 'nr');
 end;
 
 end.

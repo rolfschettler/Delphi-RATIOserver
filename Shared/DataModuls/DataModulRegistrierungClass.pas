@@ -20,6 +20,7 @@ type
     procedure getRegistrierungById;
     procedure getRegistrierungKey;
     procedure insertRegistrierung;
+    procedure insertRegistrierungLocal;
     procedure updateRegistrierung;
     procedure deleteRegistrierung;
   end;
@@ -123,6 +124,16 @@ const
     'erstellt','geaendert','gesperrt','pwd2','versuche',
     'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
   );
+begin
+  DoInsert('REGISTRIERUNG', ALLOWED);
+end;
+
+// Route: /registrierung/insertregistrierunglocal  |  Auth: false  |  LocalOnly: true
+procedure TDataModulRegistrierung.insertRegistrierungLocal;
+// Body: { "kennziffer": 42, "username": "...", ... }
+const
+  ALLOWED: array[0..1] of string = (
+    'username','pwd2');
 begin
   DoInsert('REGISTRIERUNG', ALLOWED);
 end;

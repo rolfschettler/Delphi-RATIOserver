@@ -485,6 +485,14 @@ begin
   FRouter.AddRoute('/adressen/updatekategorie',     CreateDataModulAdressen, TDataModulAdressen(nil).updateKategorie);
   FRouter.AddRoute('/adressen/deletekategorie',     CreateDataModulAdressen, TDataModulAdressen(nil).deleteKategorie);
 
+  FRouter.AddRoute('/adressen/getzusatztabelle',         CreateDataModulAdressen, TDataModulAdressen(nil).getZusatztabelle);
+  FRouter.AddRoute('/adressen/getzusatztabellefiltered', CreateDataModulAdressen, TDataModulAdressen(nil).getZusatztabelleFiltered);
+  FRouter.AddRoute('/adressen/getzusatztabellebyid',     CreateDataModulAdressen, TDataModulAdressen(nil).getZusatztabelleById);
+  FRouter.AddRoute('/adressen/getzusatztabellekey',      CreateDataModulAdressen, TDataModulAdressen(nil).getZusatztabelleKey);
+  FRouter.AddRoute('/adressen/insertzusatztabelle',      CreateDataModulAdressen, TDataModulAdressen(nil).insertZusatztabelle);
+  FRouter.AddRoute('/adressen/updatezusatztabelle',      CreateDataModulAdressen, TDataModulAdressen(nil).updateZusatztabelle);
+  FRouter.AddRoute('/adressen/deletezusatztabelle',      CreateDataModulAdressen, TDataModulAdressen(nil).deleteZusatztabelle);
+
   //PUBLIC
   FRouter.AddRoute('/public/checkmailtoken',     CreateDataModulPublic, TDataModulPublic(nil).checkmailtoken,false,true); //Auth=false,LocalOnly=true
 
@@ -559,6 +567,14 @@ begin
   FRouter.AddRoute('/fibu/getlohnartfiltered',           CreateDataModulFibu, TDataModulFibu(nil).getLohnartFiltered);
   FRouter.AddRoute('/fibu/getlohnartbyid',               CreateDataModulFibu, TDataModulFibu(nil).getLohnartById);
 
+  FRouter.AddRoute('/fibu/getfibu',                      CreateDataModulFibu, TDataModulFibu(nil).getFibu);
+  FRouter.AddRoute('/fibu/getfibufiltered',              CreateDataModulFibu, TDataModulFibu(nil).getFibuFiltered);
+  FRouter.AddRoute('/fibu/getfibubyid',                  CreateDataModulFibu, TDataModulFibu(nil).getFibuById);
+  FRouter.AddRoute('/fibu/getfibukey',                   CreateDataModulFibu, TDataModulFibu(nil).getFibuKey);
+  FRouter.AddRoute('/fibu/insertfibu',                   CreateDataModulFibu, TDataModulFibu(nil).insertFibu);
+  FRouter.AddRoute('/fibu/updatefibu',                   CreateDataModulFibu, TDataModulFibu(nil).updateFibu);
+  FRouter.AddRoute('/fibu/deletefibu',                   CreateDataModulFibu, TDataModulFibu(nil).deleteFibu);
+
 
   //ANMIET
   FRouter.AddRoute('/anmiet/demo', CreateDataModulAnmiet, TDataModulAnmiet(nil).Demo);
@@ -584,6 +600,7 @@ begin
   FRouter.AddRoute('/registrierung/getregistrierungbyid',     CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getRegistrierungById);
   FRouter.AddRoute('/registrierung/getregistrierungkey',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getRegistrierungKey);
   FRouter.AddRoute('/registrierung/insertregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).insertRegistrierung);
+  FRouter.AddRoute('/registrierung/insertregistrierunglocal', CreateDataModulRegistrierung, TDataModulRegistrierung(nil).insertRegistrierungLocal, false, true); //Auth=false,LocalOnly=true
   FRouter.AddRoute('/registrierung/updateregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).updateRegistrierung);
   FRouter.AddRoute('/registrierung/deleteregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).deleteRegistrierung);
 
@@ -595,6 +612,8 @@ begin
   FRouter.AddRoute('/dispo/getfahrergruppen', CreateDataModulDispo, TDataModulDispo(nil).getfahrergruppen,true,false);
   FRouter.AddRoute('/dispo/getpersonalstamm', CreateDataModulDispo, TDataModulDispo(nil).getpersonalstamm,true,false);
   FRouter.AddRoute('/dispo/getpersonalstammfiltered', CreateDataModulDispo, TDataModulDispo(nil).getpersonalstammfiltered,true,false);
+  FRouter.AddRoute('/dispo/updatepersonalstamm', CreateDataModulDispo, TDataModulDispo(nil).updatepersonalstamm,true,false);
+  FRouter.AddRoute('/dispo/deletepersonalstamm', CreateDataModulDispo, TDataModulDispo(nil).deletepersonalstamm,true,false);
   FRouter.AddRoute('/dispo/getFreiesPersonal', CreateDataModulDispo, TDataModulDispo(nil).getFreiesPersonal,true,false);
 
   FRouter.AddRoute('/dispo/geteinsatzarten', CreateDataModulDispo, TDataModulDispo(nil).geteinsatzarten,true,false);
@@ -612,6 +631,14 @@ begin
   FRouter.AddRoute('/dispo/getzeitraum',           CreateDataModulDispo, TDataModulDispo(nil).getZeitraum);
   FRouter.AddRoute('/dispo/getzeitraumfiltered',   CreateDataModulDispo, TDataModulDispo(nil).getZeitraumFiltered);
   FRouter.AddRoute('/dispo/getzeitraumbyid',       CreateDataModulDispo, TDataModulDispo(nil).getZeitraumById);
+
+  FRouter.AddRoute('/dispo/geturlaubsantrag',         CreateDataModulDispo, TDataModulDispo(nil).getUrlaubsantrag,true,false);
+  FRouter.AddRoute('/dispo/geturlaubsantragfiltered', CreateDataModulDispo, TDataModulDispo(nil).getUrlaubsantragFiltered,true,false);
+  FRouter.AddRoute('/dispo/geturlaubsantragbyid',     CreateDataModulDispo, TDataModulDispo(nil).getUrlaubsantragById,true,false);
+  FRouter.AddRoute('/dispo/geturlaubsantragkey',      CreateDataModulDispo, TDataModulDispo(nil).getUrlaubsantragKey,true,false);
+  FRouter.AddRoute('/dispo/inserturlaubsantrag',      CreateDataModulDispo, TDataModulDispo(nil).insertUrlaubsantrag,true,false);
+  FRouter.AddRoute('/dispo/updateurlaubsantrag',      CreateDataModulDispo, TDataModulDispo(nil).updateUrlaubsantrag,true,false);
+  FRouter.AddRoute('/dispo/deleteurlaubsantrag',      CreateDataModulDispo, TDataModulDispo(nil).deleteUrlaubsantrag,true,false);
 
   //TOUPAC
   FRouter.AddRoute('/toupac/demo',                CreateDataModulToupac, TDataModulToupac(nil).Demo);

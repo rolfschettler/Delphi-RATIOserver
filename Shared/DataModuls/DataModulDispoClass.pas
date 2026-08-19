@@ -24,6 +24,8 @@ type
     procedure getfahrergruppen;
     procedure getpersonalstamm;
     procedure getpersonalstammfiltered;
+    procedure updatepersonalstamm;
+    procedure deletepersonalstamm;
     procedure geteinsatzarten;
     procedure getnextEinsatzkey;
     procedure insertEinsatz;
@@ -40,6 +42,13 @@ type
     procedure getZeitraum;
     procedure getZeitraumFiltered;
     procedure getZeitraumById;
+    procedure getUrlaubsantrag;
+    procedure getUrlaubsantragFiltered;
+    procedure getUrlaubsantragById;
+    procedure getUrlaubsantragKey;
+    procedure insertUrlaubsantrag;
+    procedure updateUrlaubsantrag;
+    procedure deleteUrlaubsantrag;
   end;
 
 function CreateDataModulDispo(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -405,6 +414,35 @@ begin
   DoSelectFilteredDynamic('PERSONALSTAMM', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 
+// Route: /dispo/updatepersonalstamm  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.updatepersonalstamm;
+// Body: { "nr": 42, "name1": "...", ... }
+const
+  ALLOWED: array[0..64] of string = (
+    'nr','anrede','name1','name2','zeichen','strasse','land','plz','ort',
+    'telefon1','telefon2','fsnummer','pbs_gueltig_bis','verwendung','geburtstag',
+    'bemerkung','angestellt_seit','urlaubgesamt','resturlaub','gesperrt','fahrzeug',
+    'sortierung','stundenlohn','stundenlohn2','zuschlag','kostenstelle','urlaubsjahr',
+    'alterurlaub','altefreietage','freietagegesamt','restfreietage','betrieb','profil',
+    'feiertagsberechtigt','zulageberechtigt','mindestregelungsberechtigt',
+    'arbeitsvertragsart','urlaubsstunden','krankheitsstunden','durchschnittsstunden',
+    'ausgeschieden_am','sprache','versicherungsnummer','zusatzinfo',
+    'kennziffer','versuche','zeitsperre','freistunden','pushid',
+    'wochenende','abteilung','kostelle1','personalnummer','urlaubsgruppe',
+    'vertretung','resturlaub_aktuell','altefreietage2','alterurlaub2','nation',
+    'xkoord','ykoord','koords_erfasst_am','pushid_fis','pushid_dispo','pushid_tickets'
+  );
+begin
+  DoUpdate('PERSONALSTAMM', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/deletepersonalstamm  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.deletepersonalstamm;
+// Body: { "nr": 42 }
+begin
+  DoDelete('PERSONALSTAMM', 'nr');
+end;
+
 procedure TDataModulDispo.geteinsatzarten;
 begin
   Try
@@ -682,6 +720,101 @@ const
   );
 begin
   DoSelectOne('ZEITRAUM', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/geturlaubsantrag  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getUrlaubsantrag;
+// Body: { "fields": [...] | "*", "orderby": "von" }
+const
+  ALLOWED: array[0..14] of string = (
+    'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
+    'bemerkung','text1','text2','text3','status','statusam','statusvon','vertretung'
+  );
+begin
+  DoSelect('URLAUBSANTRAG', ALLOWED);
+end;
+
+// Route: /dispo/geturlaubsantragfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getUrlaubsantragFiltered;
+// Body: { "fields": [...] | "*", "nr": 1, "mitarbeiter": "MM", "orderby": "von" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+// bemerkung ist ein Blob-Feld und daher nur in ALLOWED, nicht in CONDITIONS/FILTER_PARAMS.
+const
+  ALLOWED: array[0..14] of string = (
+    'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
+    'bemerkung','text1','text2','text3','status','statusam','statusvon','vertretung'
+  );
+  CONDITIONS: array[0..13] of string = (
+    'nr = :nr',
+    'mitarbeiter = :mitarbeiter',
+    'von = :von',
+    'bis = :bis',
+    'beantragtam = :beantragtam',
+    'genehmigtam = :genehmigtam',
+    'genehmigtvon = :genehmigtvon',
+    'text1 = :text1',
+    'text2 = :text2',
+    'text3 = :text3',
+    'status = :status',
+    'statusam = :statusam',
+    'statusvon = :statusvon',
+    'vertretung = :vertretung'
+  );
+  FILTER_PARAMS: array[0..13] of string = (
+    'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
+    'text1','text2','text3','status','statusam','statusvon','vertretung'
+  );
+begin
+  DoSelectFilteredDynamic('URLAUBSANTRAG', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /dispo/geturlaubsantragbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getUrlaubsantragById;
+const
+  ALLOWED: array[0..14] of string = (
+    'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
+    'bemerkung','text1','text2','text3','status','statusam','statusvon','vertretung'
+  );
+begin
+  DoSelectOne('URLAUBSANTRAG', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/geturlaubsantragkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getUrlaubsantragKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(NEXT_EINSATZ_NR,1) as NR FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /dispo/inserturlaubsantrag  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.insertUrlaubsantrag;
+const
+  ALLOWED: array[0..14] of string = (
+    'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
+    'bemerkung','text1','text2','text3','status','statusam','statusvon','vertretung'
+  );
+begin
+  DoInsert('URLAUBSANTRAG', ALLOWED);
+end;
+
+// Route: /dispo/updateurlaubsantrag  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.updateUrlaubsantrag;
+const
+  ALLOWED: array[0..14] of string = (
+    'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
+    'bemerkung','text1','text2','text3','status','statusam','statusvon','vertretung'
+  );
+begin
+  DoUpdate('URLAUBSANTRAG', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/deleteurlaubsantrag  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.deleteUrlaubsantrag;
+begin
+  DoDelete('URLAUBSANTRAG', 'nr');
 end;
 
 end.

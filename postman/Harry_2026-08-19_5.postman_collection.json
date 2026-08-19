@@ -1,0 +1,290 @@
+{
+  "info": {
+    "name": "Harry 2026-08-19 - Zusatztabelle (CRUD)",
+    "description": "Neue Endpunkte dieser Session: vollstaendiges CRUD fuer die Tabelle ZUSATZTABELLE im Adressen-Controller.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Zusatztabelle",
+      "item": [
+        {
+          "name": "getZusatztabelle",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/getzusatztabelle",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "adressen",
+                "getzusatztabelle"
+              ]
+            },
+            "description": "Liefert alle Datensaetze aus ZUSATZTABELLE."
+          },
+          "response": []
+        },
+        {
+          "name": "getZusatztabelleFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"reftable\": \"ADRESSEN\",\n  \"refnr\": 42,\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/getzusatztabellefiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "adressen",
+                "getzusatztabellefiltered"
+              ]
+            },
+            "description": "Liefert gefilterte Datensaetze aus ZUSATZTABELLE. Alle Felder ausser den Blob-Feldern zusatzblob1/2/3 sind als Filter nutzbar; nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt."
+          },
+          "response": []
+        },
+        {
+          "name": "getZusatztabelleById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/getzusatztabellebyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "adressen",
+                "getzusatztabellebyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen Datensatz aus ZUSATZTABELLE anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getZusatztabelleKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/getzusatztabellekey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "adressen",
+                "getzusatztabellekey"
+              ]
+            },
+            "description": "Liefert den naechsten Schluesselwert (Generator ZUSATZTABELLE_NR_GEN) fuer einen neuen ZUSATZTABELLE-Datensatz."
+          },
+          "response": []
+        },
+        {
+          "name": "insertZusatztabelle",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reftable\": \"ADRESSEN\",\n  \"refnr\": 42,\n  \"modul\": \"CRM\",\n  \"bereich\": \"\",\n  \"zusatzfeld1\": \"\",\n  \"zusatzfeld2\": \"\",\n  \"zusatzfeld3\": \"\",\n  \"zusatzfeld4\": \"\",\n  \"zusatzfeld5\": \"\",\n  \"zusatzfeld6\": \"\",\n  \"zusatzfeld7\": \"\",\n  \"zusatzfeld8\": \"\",\n  \"zusatzfeld9\": \"\",\n  \"zusatzfeld10\": \"\",\n  \"zusatzdatum1\": null,\n  \"zusatzdatum2\": null,\n  \"zusatzdatum3\": null,\n  \"zusatzzahl1\": 0,\n  \"zusatzzahl2\": 0,\n  \"zusatzzahl3\": 0,\n  \"zusatznum1\": 0,\n  \"zusatznum2\": 0,\n  \"zusatznum3\": 0,\n  \"zusatzblob1\": \"\",\n  \"zusatzblob2\": \"\",\n  \"zusatzblob3\": \"\",\n  \"erstellt\": \"2026-08-19 10:00:00\",\n  \"geaendert\": \"2026-08-19 10:00:00\",\n  \"erfasstvon\": \"HW\",\n  \"geaendertvon\": \"HW\",\n  \"kennziffer\": 0,\n  \"sortierung\": 0,\n  \"bemerkung\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/insertzusatztabelle",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "adressen",
+                "insertzusatztabelle"
+              ]
+            },
+            "description": "Legt einen neuen Datensatz in ZUSATZTABELLE an."
+          },
+          "response": []
+        },
+        {
+          "name": "updateZusatztabelle",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42,\n  \"bemerkung\": \"aktualisiert\",\n  \"geaendert\": \"2026-08-19 11:00:00\",\n  \"geaendertvon\": \"HW\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/updatezusatztabelle",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "adressen",
+                "updatezusatztabelle"
+              ]
+            },
+            "description": "Aktualisiert einen bestehenden Datensatz in ZUSATZTABELLE anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteZusatztabelle",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/deletezusatztabelle",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "adressen",
+                "deletezusatztabelle"
+              ]
+            },
+            "description": "Loescht den Datensatz in ZUSATZTABELLE mit dem angegebenen Primaerschluessel nr."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

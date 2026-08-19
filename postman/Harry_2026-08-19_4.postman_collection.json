@@ -1,0 +1,290 @@
+{
+  "info": {
+    "name": "Harry 2026-08-19 - Fibu (CRUD)",
+    "description": "Neue Endpunkte dieser Session: vollstaendiges CRUD fuer die Tabelle FIBU im Fibu-Controller.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Fibu",
+      "item": [
+        {
+          "name": "getFibu",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"belegdatum\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getfibu",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "getfibu"
+              ]
+            },
+            "description": "Liefert alle Datensaetze aus FIBU."
+          },
+          "response": []
+        },
+        {
+          "name": "getFibuFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"belegfeld1\": \"RE1001\",\n  \"gebucht\": \"N\",\n  \"orderby\": \"belegdatum\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getfibufiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "getfibufiltered"
+              ]
+            },
+            "description": "Liefert gefilterte Datensaetze aus FIBU. Alle Felder sind als Filter nutzbar; nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt."
+          },
+          "response": []
+        },
+        {
+          "name": "getFibuById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getfibubyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "getfibubyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen Datensatz aus FIBU anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getFibuKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getfibukey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "getfibukey"
+              ]
+            },
+            "description": "Liefert den naechsten Schluesselwert (Generator FIBU_NR_GEN) fuer einen neuen FIBU-Datensatz."
+          },
+          "response": []
+        },
+        {
+          "name": "insertFibu",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"betrag\": 100.00,\n  \"soll\": \"1000\",\n  \"haben\": \"8400\",\n  \"belegfeld1\": \"RE1001\",\n  \"belegfeld2\": null,\n  \"belegdatum\": \"2026-08-19 00:00:00\",\n  \"kostelle1\": \"\",\n  \"kostelle2\": \"\",\n  \"skonto\": 0,\n  \"text\": \"Testbuchung\",\n  \"gebucht\": \"N\",\n  \"art\": \"\",\n  \"rechnungnr\": 1001,\n  \"stschl\": \"\",\n  \"ustbetrag\": 0,\n  \"steuerkonto\": \"\",\n  \"stkontotyp\": \"\",\n  \"stsatz\": 19,\n  \"stapel\": 1,\n  \"opos\": \"\",\n  \"journalnr\": 0,\n  \"erfasstdurch\": \"HW\",\n  \"vorlaufnr\": 0,\n  \"archiv\": \"N\",\n  \"text2\": \"\",\n  \"freigabe\": 0,\n  \"uebertragung\": 0,\n  \"fwbetrag\": 0,\n  \"waehrung\": \"EUR\",\n  \"kurs\": 1,\n  \"zugeordnetzu\": \"\",\n  \"erfasst_am\": \"2026-08-19 10:00:00\",\n  \"laufnummer\": 0,\n  \"belegart\": \"\",\n  \"journalisierungsnr\": 0,\n  \"stand\": 0,\n  \"fortlaufnr_provorgang\": 0,\n  \"pkguid\": \"\",\n  \"leistungsdatum\": \"2026-08-19 00:00:00\",\n  \"iban\": \"\",\n  \"swift\": \"\",\n  \"kontoinhaber\": \"\",\n  \"mandant\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/insertfibu",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "insertfibu"
+              ]
+            },
+            "description": "Legt einen neuen Datensatz in FIBU an."
+          },
+          "response": []
+        },
+        {
+          "name": "updateFibu",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42,\n  \"gebucht\": \"J\",\n  \"betrag\": 120.00\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/updatefibu",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "updatefibu"
+              ]
+            },
+            "description": "Aktualisiert einen bestehenden Datensatz in FIBU anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteFibu",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/deletefibu",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "deletefibu"
+              ]
+            },
+            "description": "Loescht den Datensatz in FIBU mit dem angegebenen Primaerschluessel nr."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

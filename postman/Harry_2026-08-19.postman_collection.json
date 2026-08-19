@@ -1,0 +1,62 @@
+{
+  "info": {
+    "name": "Harry 2026-08-19 - Registrierung (Local Insert)",
+    "description": "Neue Endpunkte dieser Session: lokaler Insert-Endpunkt fuer die Tabelle REGISTRIERUNG (ohne Authentifizierung, nur vom lokalen Server erreichbar).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Registrierung",
+      "item": [
+        {
+          "name": "insertRegistrierungLocal",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kennziffer\": 42,\n  \"pwd\": \"5f4dcc3b5aa765d61d8327deb882cf99\",\n  \"username\": \"neuer.benutzer@example.com\",\n  \"erstellt\": \"2026-08-19 10:00:00\",\n  \"geaendert\": \"2026-08-19 10:00:00\",\n  \"gesperrt\": \"N\",\n  \"pwd2\": \"\",\n  \"versuche\": 0,\n  \"zeitsperre\": null,\n  \"pushid\": \"\",\n  \"letzter_login\": null,\n  \"hauptregistrierung\": 0,\n  \"typ\": \"USER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/registrierung/insertregistrierunglocal",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "registrierung",
+                "insertregistrierunglocal"
+              ]
+            },
+            "description": "Legt einen neuen Datensatz in REGISTRIERUNG an. Identisch zu /registrierung/insertregistrierung, jedoch ohne Authentifizierung und nur vom lokalen Server (localhost) aufrufbar - Aufrufe von aussen werden mit HTTP 403 abgewiesen. Der Primaerschluessel nr wird nicht mitgegeben."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

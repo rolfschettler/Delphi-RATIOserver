@@ -119,8 +119,8 @@ const
     'refnr = :refnr',
     'mandant = :mandant'
   );
-  FILTER_PARAMS: array[0..9] of string = (
-    'art','name','bereich','doktyp','dokkategorie','archiv','versteckt','reftable','refnr','mandant'
+  FILTER_PARAMS: array[0..10] of string = (
+    'art','name','bereich','doktyp','dokkategorie','archiv','versteckt','reftable','refnr','mandant','text2'
   );
 begin
   DoSelectFilteredDynamic('VORLAGEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
