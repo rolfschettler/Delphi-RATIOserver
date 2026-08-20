@@ -107,7 +107,7 @@ const
     'datumfeld1','datumfeld2','zusatzfeld1','zusatzfeld2','anmietnr',
     'senderemail','empfaengeremail','dateiname','mandant'
   );
-  CONDITIONS: array[0..9] of string = (
+  CONDITIONS: array[0..10] of string = (
     'art = :art',
     'name = :name',
     'bereich = :bereich',
@@ -117,7 +117,8 @@ const
     'versteckt = :versteckt',
     'reftable = :reftable',
     'refnr = :refnr',
-    'mandant = :mandant'
+    'mandant = :mandant',
+    'text2 = :text2'
   );
   FILTER_PARAMS: array[0..10] of string = (
     'art','name','bereich','doktyp','dokkategorie','archiv','versteckt','reftable','refnr','mandant','text2'

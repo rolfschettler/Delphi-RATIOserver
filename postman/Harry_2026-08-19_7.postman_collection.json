@@ -1,0 +1,100 @@
+{
+  "info": {
+    "name": "Harry 2026-08-19_7 - Registrierung Dublettensperre",
+    "description": "Dublettensperre fuer /registrierung/insertregistrierunglocal (HTTP 409 bei bereits vergebenem username) und der neue Pruef-Endpunkt /registrierung/checkusernamelocal. Beide ohne Authentifizierung, nur vom lokalen Server aufrufbar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Registrierung",
+      "item": [
+        {
+          "name": "checkUsernameLocal",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"max.mustermann@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/registrierung/checkusernamelocal",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "registrierung",
+                "checkusernamelocal"
+              ]
+            },
+            "description": "Prueft case-insensitiv (UPPER), ob ein Benutzername in REGISTRIERUNG noch frei ist. Gedacht fuer die Formularpruefung, bevor insertregistrierunglocal aufgerufen wird.\n\nFrei: {\"status\":\"OK\",\"username\":\"...\",\"frei\":true,\"nr\":null}\nBelegt: {\"status\":\"error\",\"username\":\"...\",\"frei\":false,\"message\":\"Der Benutzername ist bereits registriert.\",\"nr\":<vorhandene nr>}\n\nHTTP-Status ist in beiden Faellen 200 - die Auskunft steckt im status-Feld. Fehlendes username -> Fehler."
+          },
+          "response": []
+        },
+        {
+          "name": "insertRegistrierungLocal - Dublette (erwartet HTTP 409)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"max.mustermann@example.com\",\n  \"pwd2\": \"GeheimesPasswort\",\n  \"anrede\": \"Herr\",\n  \"name1\": \"Mustermann\",\n  \"name2\": \"Max\",\n  \"strasse\": \"Musterweg 1\",\n  \"plz\": \"70173\",\n  \"ort\": \"Stuttgart\",\n  \"telefon1\": \"0711 123456\",\n  \"email\": \"max.mustermann@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/registrierung/insertregistrierunglocal",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "registrierung",
+                "insertregistrierunglocal"
+              ]
+            },
+            "description": "Zweiter Aufruf mit demselben username: der Endpunkt antwortet jetzt mit HTTP 409 und {\"status\":\"error\",\"message\":\"Der Benutzername ist bereits registriert.\",\"username\":\"...\",\"nr\":<vorhandene nr>}. Es wird weder eine Registrierung noch eine Adresse geschrieben. Vergleich case-insensitiv per UPPER."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

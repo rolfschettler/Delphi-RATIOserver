@@ -601,6 +601,7 @@ begin
   FRouter.AddRoute('/registrierung/getregistrierungkey',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getRegistrierungKey);
   FRouter.AddRoute('/registrierung/insertregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).insertRegistrierung);
   FRouter.AddRoute('/registrierung/insertregistrierunglocal', CreateDataModulRegistrierung, TDataModulRegistrierung(nil).insertRegistrierungLocal, false, true); //Auth=false,LocalOnly=true
+  FRouter.AddRoute('/registrierung/checkusernamelocal',       CreateDataModulRegistrierung, TDataModulRegistrierung(nil).checkUsernameLocal, false, true); //Auth=false,LocalOnly=true
   FRouter.AddRoute('/registrierung/updateregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).updateRegistrierung);
   FRouter.AddRoute('/registrierung/deleteregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).deleteRegistrierung);
 

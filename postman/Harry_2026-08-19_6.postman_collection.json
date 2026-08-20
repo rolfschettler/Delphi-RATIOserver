@@ -1,0 +1,100 @@
+{
+  "info": {
+    "name": "Harry 2026-08-19_6 - Registrierung + Adresse (Local, Transaktion)",
+    "description": "Erweiterter lokaler Endpunkt /registrierung/insertregistrierunglocal: schreibt REGISTRIERUNG und ADRESSEN in einer Transaktion. Ohne Authentifizierung, nur vom lokalen Server aufrufbar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Registrierung",
+      "item": [
+        {
+          "name": "insertRegistrierungLocal - neue Adresse (ohne kennziffer)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"max.mustermann@example.com\",\n  \"pwd2\": \"GeheimesPasswort\",\n  \"anrede\": \"Herr\",\n  \"name1\": \"Mustermann\",\n  \"name2\": \"Max\",\n  \"strasse\": \"Musterweg 1\",\n  \"plz\": \"70173\",\n  \"ort\": \"Stuttgart\",\n  \"telefon1\": \"0711 123456\",\n  \"email\": \"max.mustermann@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/registrierung/insertregistrierunglocal",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "registrierung",
+                "insertregistrierunglocal"
+              ]
+            },
+            "description": "Ohne kennziffer im Body wird immer eine neue Adresse angelegt (gruppe = 1, Kennziffer aus ADRESSEN_NEXTKENNZIFFER) und die Registrierung mit dieser Kennziffer als Fremdschluessel verknuepft. Antwort: {status, nr, kennziffer, adresse:\"neu\"}. Pflichtfelder: anrede, name1, name2. username sollte der email entsprechen, sonst legt der DB-Trigger TIA_ADRESSEN_REGISTRIERUNG eine zweite Registrierung an."
+          },
+          "response": []
+        },
+        {
+          "name": "insertRegistrierungLocal - Adress-Suche (mit kennziffer)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"max.mustermann@example.com\",\n  \"pwd2\": \"GeheimesPasswort\",\n  \"kennziffer\": 176905,\n  \"anrede\": \"Herr\",\n  \"name1\": \"Mustermann\",\n  \"name2\": \"Max\",\n  \"strasse\": \"Musterweg 1\",\n  \"plz\": \"70173\",\n  \"ort\": \"Stuttgart\",\n  \"telefon1\": \"0711 123456\",\n  \"email\": \"max.mustermann@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/registrierung/insertregistrierunglocal",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "registrierung",
+                "insertregistrierunglocal"
+              ]
+            },
+            "description": "Mit kennziffer im Body wird in ADRESSEN nach kennziffer + name1 + name2 gesucht (nativ, lowercase, uppercase). Treffer: die gefundene Kennziffer wird als Fremdschluessel in REGISTRIERUNG eingetragen, die Adresse bleibt unveraendert (Antwort adresse:\"gefunden\"). Kein Treffer: neue Adresse mit neuer Kennziffer (Antwort adresse:\"neu\")."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
