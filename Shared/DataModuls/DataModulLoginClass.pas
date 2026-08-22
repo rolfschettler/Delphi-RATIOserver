@@ -24,7 +24,7 @@ implementation
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 
-uses rechtelib, webUtils, System.JSON;
+uses rechtelib, webUtils, PHPSupport, System.JSON;
 
 {$R *.dfm}
 
@@ -43,9 +43,16 @@ function TDataModulLoginClass.login(sl: TStringList): boolean;
     3. GET URL-Parameter:    ?user=hans&password=xxx
   Priorität: JSON → Form-encoded → URL-Parameter
 
+  Prüfung:
+    Der Benutzer wird in der Tabelle REGISTRIERUNG über das Feld USERNAME gesucht
+    (case-insensitiv per UPPER, da InterBase kein LOWER kennt).
+    Das Passwort wird im Klartext erwartet (keine Codierung) und NICHT mehr in
+    Delphi verglichen, sondern über den PHP-Endpunkt /checkcryptedpassword
+    geprüft: dieser verifiziert das Passwort per password_verify() gegen den
+    bcrypt-Hash aus REGISTRIERUNG.PWD2.
+
   Hinweis URL-Encoding:
-    Bei GET und POST Form-encoded dekodiert Delphi URL-Encoding automatisch,
-    bevor der Wert an DeCodieren() übergeben wird.
+    Bei GET und POST Form-encoded dekodiert Delphi URL-Encoding automatisch.
     Ein "+" im Passwort wird dabei als Leerzeichen interpretiert —
     der Aufrufer muss in diesem Fall "+" als "%2B" kodieren.
     Bei JSON-Body kann "+" direkt verwendet werden.
@@ -53,6 +60,7 @@ function TDataModulLoginClass.login(sl: TStringList): boolean;
 var
   username: string;
   password: string;
+  hash: string;
   JSONObject: TJSONObject;
 
   procedure ReadFromJson;
@@ -65,6 +73,42 @@ var
       password := JSONObject.GetValue<string>('password', '');
     finally
       JSONObject.Free;
+    end;
+  end;
+
+  // Prüft das Klartext-Passwort über den PHP-Endpunkt /checkcryptedpassword
+  // gegen den bcrypt-Hash. Erwartete Antwort: {"status":"OK","data":{"match":true}}
+  function CheckPasswordViaPHP(const APlain, AHash: string): boolean;
+  var
+    Params: TJSONObject;
+    ResponseObj: TJSONObject;
+    DataValue: TJSONValue;
+    MatchValue: TJSONValue;
+    ResponseText: string;
+  begin
+    Result := false;
+
+    Params := TJSONObject.Create;
+    try
+      Params.AddPair('password', APlain);
+      Params.AddPair('hash', AHash);
+      ResponseText := PHP_Call('checkcryptedpassword', Params);
+    finally
+      Params.Free;
+    end;
+
+    ResponseObj := ParseJSONObject(ResponseText);
+    if not Assigned(ResponseObj) then Exit;
+    try
+      if not SameText(ResponseObj.GetValue<string>('status', ''), 'OK') then Exit;
+
+      DataValue := ResponseObj.GetValue('data');
+      if not (DataValue is TJSONObject) then Exit;
+
+      MatchValue := TJSONObject(DataValue).GetValue('match');
+      Result := Assigned(MatchValue) and (MatchValue is TJSONTrue);
+    finally
+      ResponseObj.Free;
     end;
   end;
 
@@ -94,16 +138,25 @@ begin
     with query do
     begin
       close;
-      sql.text := 'select loginname,username,passwort,gruppe,zugruppe,agenturcode,kennziffer,filiale,abteilung from users where UPPER(loginname)= UPPER(:username) and ((passwort= :password) or (passwort is null) or (passwort =''''))';
+      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,pwd2 from registrierung where UPPER(username)= UPPER(:username)';
       ParamByName('username').AsString := username;
-      ParamByName('password').AsString := DeCodieren(password);
       open;
       if (eof and bof) then
         raise Exception.Create('Benutzername oder Passwort sind falsch');
+      hash := trim(FieldByName('pwd2').AsString);
     end;
 
+    if hash = '' then
+      raise Exception.Create('Benutzername oder Passwort sind falsch');
+
+    // Hashprüfung durch den PHP-Endpunkt /checkcryptedpassword
+    if not CheckPasswordViaPHP(password, hash) then
+      raise Exception.Create('Benutzername oder Passwort sind falsch');
+
+    // pwd2 (Hash) gehört nicht in die Role bzw. in den Token
     for var i := 0 to query.FieldCount - 1 do
-      sl.add(lowercase(query.fields[i].FieldName) + '=' + query.fields[i].AsString);
+      if not SameText(query.fields[i].FieldName, 'pwd2') then
+        sl.add(lowercase(query.fields[i].FieldName) + '=' + trim(query.fields[i].AsString));
     result:=true;
   except
     on e: Exception do

@@ -22,6 +22,7 @@ type
     procedure insertRegistrierung;
     procedure insertRegistrierungLocal;
     procedure checkUsernameLocal;
+    procedure getUserLocal;
     procedure updateRegistrierung;
     procedure deleteRegistrierung;
   end;
@@ -47,9 +48,9 @@ end;
 procedure TDataModulRegistrierung.getRegistrierung;
 // Body: { "fields": ["nr","kennziffer",...] | "*", "orderby": "nr" }
 const
-  ALLOWED: array[0..14] of string = (
-    'nr','kennziffer','pwd','username','userkonfig',
-    'erstellt','geaendert','gesperrt','pwd2','versuche',
+  ALLOWED: array[0..12] of string = (
+    'nr','kennziffer','username','userkonfig',
+    'erstellt','geaendert','gesperrt','versuche',
     'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
   );
 begin
@@ -61,22 +62,20 @@ procedure TDataModulRegistrierung.getRegistrierungFiltered;
 // Body: { "fields": [...] | "*", "nr": 1, "kennziffer": 42, "username": "...", ..., "orderby": "nr" }
 // Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
 const
-  ALLOWED: array[0..14] of string = (
-    'nr','kennziffer','pwd','username','userkonfig',
-    'erstellt','geaendert','gesperrt','pwd2','versuche',
+  ALLOWED: array[0..12] of string = (
+    'nr','kennziffer','username','userkonfig',
+    'erstellt','geaendert','gesperrt','versuche',
     'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
   // userkonfig (Blob) ist bewusst nicht filterbar.
-  CONDITIONS: array[0..13] of string = (
+  CONDITIONS: array[0..11] of string = (
     'nr = :nr',
     'kennziffer = :kennziffer',
-    'pwd = :pwd',
     'username = :username',
     'erstellt = :erstellt',
     'geaendert = :geaendert',
     'gesperrt = :gesperrt',
-    'pwd2 = :pwd2',
     'versuche = :versuche',
     'zeitsperre = :zeitsperre',
     'pushid = :pushid',
@@ -84,9 +83,9 @@ const
     'hauptregistrierung = :hauptregistrierung',
     'typ = :typ'
   );
-  FILTER_PARAMS: array[0..13] of string = (
-    'nr','kennziffer','pwd','username',
-    'erstellt','geaendert','gesperrt','pwd2','versuche',
+  FILTER_PARAMS: array[0..11] of string = (
+    'nr','kennziffer','username',
+    'erstellt','geaendert','gesperrt','versuche',
     'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
   );
 begin
@@ -97,9 +96,9 @@ end;
 procedure TDataModulRegistrierung.getRegistrierungById;
 // Body: { "nr": 42, "fields": [...] | "*" }
 const
-  ALLOWED: array[0..14] of string = (
-    'nr','kennziffer','pwd','username','userkonfig',
-    'erstellt','geaendert','gesperrt','pwd2','versuche',
+  ALLOWED: array[0..12] of string = (
+    'nr','kennziffer','username','userkonfig',
+    'erstellt','geaendert','gesperrt','versuche',
     'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
   );
 begin
@@ -131,25 +130,33 @@ end;
 
 // Route: /registrierung/insertregistrierunglocal  |  Auth: false  |  LocalOnly: true
 procedure TDataModulRegistrierung.insertRegistrierungLocal;
-// Body: { "username": "...", "pwd2": "...",
+// Body: { "username": "...", "pwd2": "...", "typ": "kunde",
 //         "anrede": "Herr", "name1": "Mustermann", "name2": "Max",
 //         "strasse": "...", "plz": "...", "ort": "...", "telefon1": "...",
 //         "email": "...", "kennziffer": 12345 }
 //
-// Schreibt REGISTRIERUNG und ADRESSEN in EINER Transaktion.
-// anrede, name1 und name2 sind Pflichtfelder; ADRESSEN.gruppe ist immer 1.
-// Ist eine kennziffer angegeben, wird die Adresse ueber kennziffer + name1 +
-// name2 gesucht (nativ, lowercase und uppercase). Bei einem Treffer wird diese
-// Kennziffer als Fremdschluessel in REGISTRIERUNG eingetragen und die Adresse
-// bleibt unveraendert; ohne Treffer wird eine neue Adresse angelegt.
+// Adressbehandlung ausschliesslich bei typ=kunde (Vergleich case-insensitiv):
+//   Schreibt REGISTRIERUNG und ADRESSEN in EINER Transaktion.
+//   anrede, name1 und name2 sind dann Pflichtfelder; ADRESSEN.gruppe ist immer 1.
+//   Ist eine kennziffer angegeben, wird die Adresse ueber kennziffer + name1 +
+//   name2 gesucht (nativ, lowercase und uppercase). Bei einem Treffer wird diese
+//   Kennziffer als Fremdschluessel in REGISTRIERUNG eingetragen und die Adresse
+//   bleibt unveraendert; ohne Treffer wird eine neue Adresse angelegt.
+//
+// Bei jedem anderen typ (z.B. mitarbeiter) und bei fehlendem typ wird KEINE
+// Adresse angelegt oder verknuepft: anrede, name1 und name2 sind nicht
+// erforderlich und werden ignoriert, REGISTRIERUNG.kennziffer bleibt NULL.
+// Die Antwort liefert dann "kennziffer": null und "adresse": "keine".
 const
-  ALLOWED: array[0..1] of string = (
-    'username','pwd2');
+  ALLOWED: array[0..2] of string = (
+    'username','pwd2','typ');
   ADR_ALLOWED: array[0..7] of string = (
     'anrede','name1','name2','strasse','plz','ort','telefon1','email');
 var
   Q:            TFDQuery;
   Cols, Vals:   string;
+  Typ:          string;
+  IstKunde:     Boolean;
   Anrede:       string;
   Name1, Name2: string;
   Username:     string;
@@ -160,12 +167,17 @@ var
   Res:          TJSONObject;
   i:            Integer;
 begin
+  Typ      := Trim(getParamFromBody('typ'));
+  IstKunde := SameText(Typ, 'kunde');
+
   Anrede := Trim(getParamFromBody('anrede'));
   Name1  := Trim(getParamFromBody('name1'));
   Name2  := Trim(getParamFromBody('name2'));
 
-  if (Anrede = '') or (Name1 = '') or (Name2 = '') then
-    raise Exception.Create('Die Felder anrede, name1 und name2 sind Pflichtfelder.');
+  // anrede, name1 und name2 braucht nur typ=kunde -- nur dort wird ueberhaupt
+  // eine Adresse angelegt bzw. verknuepft.
+  if IstKunde and ((Anrede = '') or (Name1 = '') or (Name2 = '')) then
+    raise Exception.Create('Die Felder anrede, name1 und name2 sind bei typ=kunde Pflichtfelder.');
 
   Username := Trim(getParamFromBody('username'));
 
@@ -199,7 +211,9 @@ begin
 
   SuchKennziffer := StrToIntDef(getParamFromBody('kennziffer', '0'), 0);
   Kennziffer     := 0;
-  AdresseNeu     := True;
+  // Nur typ=kunde bekommt ueberhaupt eine Adresse; bei allen anderen Typen
+  // bleiben Adresssuche und Adress-Insert aus und kennziffer bleibt NULL.
+  AdresseNeu     := IstKunde;
 
   Connection.StartTransaction;
   try
@@ -212,7 +226,7 @@ begin
       //    lowercase (komplett kleingeschriebener Feldinhalt) und uppercase
       //    (beide Seiten per UPPER normalisiert -- der eigentliche
       //    case-insensitive Vergleich). LOWER() kennt InterBase hier nicht.
-      if SuchKennziffer > 0 then
+      if IstKunde and (SuchKennziffer > 0) then
       begin
         Q.SQL.Text := 'SELECT kennziffer FROM ADRESSEN' +
                       ' WHERE kennziffer = :kennziffer' +
@@ -230,12 +244,16 @@ begin
         begin
           Kennziffer := Q.FieldByName('kennziffer').AsInteger;
           AdresseNeu := False;
-        end;
+        end
+        else
+          raise Exception.Create('Diese Kennziffer existiert nicht für diesen Namen.');
+
         Q.Close;
       end;
 
       // 2. Kein Treffer -> neue Kennziffer ziehen (gleicher Generator wie der
-      //    Insert-Trigger TI_ADRESSEN verwendet)
+      //    Insert-Trigger TI_ADRESSEN verwendet). AdresseNeu ist nur bei
+      //    typ=kunde gesetzt.
       if AdresseNeu then
       begin
         Q.SQL.Text := 'SELECT kennziffer FROM ADRESSEN_NEXTKENNZIFFER';
@@ -251,9 +269,15 @@ begin
       Q.Close;
 
       // 4. Registrierung schreiben -- bewusst VOR der Adresse, damit der
-      //    Trigger TIA_ADRESSEN_REGISTRIERUNG keine zweite Registrierung anlegt
-      Cols := 'nr,kennziffer';
-      Vals := ':nr,:kennziffer';
+      //    Trigger TIA_ADRESSEN_REGISTRIERUNG keine zweite Registrierung anlegt.
+      //    kennziffer nur schreiben, wenn eine Adresse verknuepft wird.
+      Cols := 'nr';
+      Vals := ':nr';
+      if Kennziffer > 0 then
+      begin
+        Cols := Cols + ',kennziffer';
+        Vals := Vals + ',:kennziffer';
+      end;
       for i := Low(ALLOWED) to High(ALLOWED) do
         if isParamFromBody(ALLOWED[i]) then
         begin
@@ -262,8 +286,9 @@ begin
         end;
 
       Q.SQL.Text := 'INSERT INTO REGISTRIERUNG (' + Cols + ') VALUES (' + Vals + ')';
-      Q.ParamByName('nr').AsInteger         := RegNr;
-      Q.ParamByName('kennziffer').AsInteger := Kennziffer;
+      Q.ParamByName('nr').AsInteger := RegNr;
+      if Kennziffer > 0 then
+        Q.ParamByName('kennziffer').AsInteger := Kennziffer;
       for i := Low(ALLOWED) to High(ALLOWED) do
         if isParamFromBody(ALLOWED[i]) then
           Q.ParamByName(ALLOWED[i]).Value := getParamFromBody(ALLOWED[i]);
@@ -305,8 +330,10 @@ begin
   Res := TJSONObject.Create;
   Res.AddPair('status', 'OK');
   Res.AddPair('nr', TJSONNumber.Create(RegNr));
-  Res.AddPair('kennziffer', TJSONNumber.Create(Kennziffer));
-  if AdresseNeu then
+  Res.AddPair('kennziffer', JsonOrNull(Kennziffer > 0, Kennziffer));
+  if not IstKunde then
+    Res.AddPair('adresse', 'keine')
+  else if AdresseNeu then
     Res.AddPair('adresse', 'neu')
   else
     Res.AddPair('adresse', 'gefunden');
@@ -322,7 +349,7 @@ procedure TDataModulRegistrierung.checkUsernameLocal;
 //                   "nr": null }
 // Antwort belegt:  { "status": "error", "username": "...", "frei": false,
 //                   "message": "...", "nr": <vorhandene nr> }
-// Vergleich case-insensitiv per UPPER (LOWER() kennt InterBase hier nicht).
+// Vergleich auf USERS.loginname case-insensitiv per UPPER (LOWER() kennt InterBase hier nicht).
 var
   Q:        TFDQuery;
   Username: string;
@@ -355,6 +382,55 @@ begin
     begin
       Res.AddPair('message', 'Der Benutzername ist bereits registriert.');
       Res.AddPair('nr', TJSONNumber.Create(Q.FieldByName('nr').AsInteger));
+    end;
+    SendJson(Res);
+  finally
+    Q.Free;
+  end;
+end;
+
+// Route: /users/getuserlocal  |  Auth: false  |  LocalOnly: true
+procedure TDataModulRegistrierung.getUserLocal;
+// Body: { "loginname": "ABL" }
+// Liefert das codierte Passwort (USERS.passwort, XOR-Codierung aus rechtelib.pas)
+// und den Sperrstatus zu einem Loginnamen. Nur fuer lokale Aufrufer (LocalOnly),
+// damit die Passwortpruefung dort per DeCodieren erfolgen kann.
+// Antwort Treffer:   { "status": "OK", "passwort": "<codiert>", "gesperrt": "NEIN" }
+// Antwort unbekannt: { "status": "error", "gefunden": false }
+// Vergleich auf USERS.loginname case-insensitiv per UPPER (LOWER() kennt InterBase hier nicht).
+// Ist gesperrt leer bzw. NULL, wird 'NEIN' geliefert.
+var
+  Q:         TFDQuery;
+  Loginname: string;
+  Gesperrt:  string;
+  Res:       TJSONObject;
+begin
+  Loginname := Trim(getParamFromBody('loginname'));
+  if Loginname = '' then
+    raise Exception.Create('Das Feld loginname ist ein Pflichtfeld.');
+
+  Q := TFDQuery.Create(nil);
+  try
+    Q.Connection := Connection;
+    Q.SQL.Text := 'SELECT passwort, gesperrt FROM USERS' +
+                  ' WHERE UPPER(loginname) = :loginname_up';
+    Q.ParamByName('loginname_up').AsString := UpperCase(Loginname);
+    Q.Open;
+
+    Res := TJSONObject.Create;
+    if Q.IsEmpty then
+    begin
+      Res.AddPair('status', 'error');
+      Res.AddPair('gefunden', TJSONBool.Create(False));
+    end
+    else
+    begin
+      Gesperrt := Trim(Q.FieldByName('gesperrt').AsString);
+      if Gesperrt = '' then
+        Gesperrt := 'NEIN';
+      Res.AddPair('status', 'OK');
+      Res.AddPair('passwort', Trim(Q.FieldByName('passwort').AsString));
+      Res.AddPair('gesperrt', Gesperrt);
     end;
     SendJson(Res);
   finally
