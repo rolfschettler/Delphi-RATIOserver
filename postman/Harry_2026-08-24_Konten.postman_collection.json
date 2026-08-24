@@ -1,0 +1,76 @@
+{
+  "info": {
+    "name": "Harry_2026-08-24_Konten",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseURL", "value": "http://localhost/ratioserver" }
+  ],
+  "item": [
+    {
+      "name": "Konten",
+      "item": [
+        {
+          "name": "getKonten",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{jwttoken}}", "type": "string" } ] },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"konto\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getkonten",
+              "host": [ "{{baseURL}}" ],
+              "path": [ "fibu", "getkonten" ]
+            },
+            "description": "Liefert alle Konten-Datensaetze."
+          },
+          "response": []
+        },
+        {
+          "name": "getKontenFiltered",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{jwttoken}}", "type": "string" } ] },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"kontenart\": 1,\n  \"orderby\": \"konto\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getkontenfiltered",
+              "host": [ "{{baseURL}}" ],
+              "path": [ "fibu", "getkontenfiltered" ]
+            },
+            "description": "Liefert Konten-Datensaetze gefiltert nach beliebigen Feldern (alle Felder sind als Filter nutzbar)."
+          },
+          "response": []
+        },
+        {
+          "name": "getKontenById",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{jwttoken}}", "type": "string" } ] },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"konto\": \"1000\",\n  \"fields\": \"*\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getkontenbyid",
+              "host": [ "{{baseURL}}" ],
+              "path": [ "fibu", "getkontenbyid" ]
+            },
+            "description": "Liefert einen einzelnen Konten-Datensatz anhand von konto."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

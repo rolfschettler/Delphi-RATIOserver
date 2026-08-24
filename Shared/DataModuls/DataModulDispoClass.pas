@@ -49,6 +49,16 @@ type
     procedure insertUrlaubsantrag;
     procedure updateUrlaubsantrag;
     procedure deleteUrlaubsantrag;
+    procedure getFahrtablauf;
+    procedure getFahrtablaufFiltered;
+    procedure getFahrtablaufById;
+    procedure getFahrtablaufKey;
+    procedure insertFahrtablauf;
+    procedure updateFahrtablauf;
+    procedure deleteFahrtablauf;
+    procedure getLiniewegeobjekte;
+    procedure getLiniewegeobjekteFiltered;
+    procedure getLiniewegeobjekteById;
   end;
 
 function CreateDataModulDispo(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -815,6 +825,222 @@ end;
 procedure TDataModulDispo.deleteUrlaubsantrag;
 begin
   DoDelete('URLAUBSANTRAG', 'nr');
+end;
+
+// Route: /dispo/getfahrtablauf  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getFahrtablauf;
+// Body: { "fields": [...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..69] of string = (
+    'nr','datum','von_soll','von_ist','bis_soll','bis_ist','bereich','art','xkoord','ykoord',
+    'sortierung','disponr','zeichen','kennzeichen','eart','dienstelementnr','dienstelementart',
+    'bemerkung','zusatzfeld1','zusatzfeld2','zusatzfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'zustiege_soll','zustiege_ist','ausstiege_soll','ausstiege_ist','reftable','refnr','hinweis',
+    'typ','einsatznr','haltnr','bezeichnung','sv_tournummer','sv_fahrtnummer','sv_abrechnungsstatus',
+    'geprueft','einsatznr_ist','disponr_ist','tag','von_kalk','bis_kalk','strasse','plz','ort',
+    'ortsteil','region','land','meter_soll','meter_ist','meter_kalk','sekunden_soll','sekunden_ist',
+    'sekunden_kalk','fahrzeugprofil','anzahl_fahrer','kosten','leerfahrt','wochenende','feiertag',
+    'dienstnr','umlaufnr','sv_teilnehmernr','sv_typ','sv_abrechenbar','sv_streckenpreis','freigabe',
+    'umlauf'
+  );
+begin
+  DoSelect('FAHRTABLAUF', ALLOWED);
+end;
+
+// Route: /dispo/getfahrtablauffiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getFahrtablaufFiltered;
+// Body: { "fields": [...] | "*", "nr": 1, "einsatznr": 42, "orderby": "datum" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..69] of string = (
+    'nr','datum','von_soll','von_ist','bis_soll','bis_ist','bereich','art','xkoord','ykoord',
+    'sortierung','disponr','zeichen','kennzeichen','eart','dienstelementnr','dienstelementart',
+    'bemerkung','zusatzfeld1','zusatzfeld2','zusatzfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'zustiege_soll','zustiege_ist','ausstiege_soll','ausstiege_ist','reftable','refnr','hinweis',
+    'typ','einsatznr','haltnr','bezeichnung','sv_tournummer','sv_fahrtnummer','sv_abrechnungsstatus',
+    'geprueft','einsatznr_ist','disponr_ist','tag','von_kalk','bis_kalk','strasse','plz','ort',
+    'ortsteil','region','land','meter_soll','meter_ist','meter_kalk','sekunden_soll','sekunden_ist',
+    'sekunden_kalk','fahrzeugprofil','anzahl_fahrer','kosten','leerfahrt','wochenende','feiertag',
+    'dienstnr','umlaufnr','sv_teilnehmernr','sv_typ','sv_abrechenbar','sv_streckenpreis','freigabe',
+    'umlauf'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
+  CONDITIONS: array[0..69] of string = (
+    'nr = :nr','datum = :datum','von_soll = :von_soll','von_ist = :von_ist',
+    'bis_soll = :bis_soll','bis_ist = :bis_ist','bereich = :bereich','art = :art',
+    'xkoord = :xkoord','ykoord = :ykoord','sortierung = :sortierung','disponr = :disponr',
+    'zeichen = :zeichen','kennzeichen = :kennzeichen','eart = :eart',
+    'dienstelementnr = :dienstelementnr','dienstelementart = :dienstelementart',
+    'bemerkung = :bemerkung','zusatzfeld1 = :zusatzfeld1','zusatzfeld2 = :zusatzfeld2',
+    'zusatzfeld3 = :zusatzfeld3','datumfeld1 = :datumfeld1','datumfeld2 = :datumfeld2',
+    'datumfeld3 = :datumfeld3','zustiege_soll = :zustiege_soll','zustiege_ist = :zustiege_ist',
+    'ausstiege_soll = :ausstiege_soll','ausstiege_ist = :ausstiege_ist','reftable = :reftable',
+    'refnr = :refnr','hinweis = :hinweis','typ = :typ','einsatznr = :einsatznr',
+    'haltnr = :haltnr','bezeichnung = :bezeichnung','sv_tournummer = :sv_tournummer',
+    'sv_fahrtnummer = :sv_fahrtnummer','sv_abrechnungsstatus = :sv_abrechnungsstatus',
+    'geprueft = :geprueft','einsatznr_ist = :einsatznr_ist','disponr_ist = :disponr_ist',
+    'tag = :tag','von_kalk = :von_kalk','bis_kalk = :bis_kalk','strasse = :strasse',
+    'plz = :plz','ort = :ort','ortsteil = :ortsteil','region = :region','land = :land',
+    'meter_soll = :meter_soll','meter_ist = :meter_ist','meter_kalk = :meter_kalk',
+    'sekunden_soll = :sekunden_soll','sekunden_ist = :sekunden_ist','sekunden_kalk = :sekunden_kalk',
+    'fahrzeugprofil = :fahrzeugprofil','anzahl_fahrer = :anzahl_fahrer','kosten = :kosten',
+    'leerfahrt = :leerfahrt','wochenende = :wochenende','feiertag = :feiertag',
+    'dienstnr = :dienstnr','umlaufnr = :umlaufnr','sv_teilnehmernr = :sv_teilnehmernr',
+    'sv_typ = :sv_typ','sv_abrechenbar = :sv_abrechenbar','sv_streckenpreis = :sv_streckenpreis',
+    'freigabe = :freigabe','umlauf = :umlauf'
+  );
+  FILTER_PARAMS: array[0..69] of string = (
+    'nr','datum','von_soll','von_ist','bis_soll','bis_ist','bereich','art','xkoord','ykoord',
+    'sortierung','disponr','zeichen','kennzeichen','eart','dienstelementnr','dienstelementart',
+    'bemerkung','zusatzfeld1','zusatzfeld2','zusatzfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'zustiege_soll','zustiege_ist','ausstiege_soll','ausstiege_ist','reftable','refnr','hinweis',
+    'typ','einsatznr','haltnr','bezeichnung','sv_tournummer','sv_fahrtnummer','sv_abrechnungsstatus',
+    'geprueft','einsatznr_ist','disponr_ist','tag','von_kalk','bis_kalk','strasse','plz','ort',
+    'ortsteil','region','land','meter_soll','meter_ist','meter_kalk','sekunden_soll','sekunden_ist',
+    'sekunden_kalk','fahrzeugprofil','anzahl_fahrer','kosten','leerfahrt','wochenende','feiertag',
+    'dienstnr','umlaufnr','sv_teilnehmernr','sv_typ','sv_abrechenbar','sv_streckenpreis','freigabe',
+    'umlauf'
+  );
+begin
+  DoSelectFilteredDynamic('FAHRTABLAUF', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /dispo/getfahrtablaufbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getFahrtablaufById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..69] of string = (
+    'nr','datum','von_soll','von_ist','bis_soll','bis_ist','bereich','art','xkoord','ykoord',
+    'sortierung','disponr','zeichen','kennzeichen','eart','dienstelementnr','dienstelementart',
+    'bemerkung','zusatzfeld1','zusatzfeld2','zusatzfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'zustiege_soll','zustiege_ist','ausstiege_soll','ausstiege_ist','reftable','refnr','hinweis',
+    'typ','einsatznr','haltnr','bezeichnung','sv_tournummer','sv_fahrtnummer','sv_abrechnungsstatus',
+    'geprueft','einsatznr_ist','disponr_ist','tag','von_kalk','bis_kalk','strasse','plz','ort',
+    'ortsteil','region','land','meter_soll','meter_ist','meter_kalk','sekunden_soll','sekunden_ist',
+    'sekunden_kalk','fahrzeugprofil','anzahl_fahrer','kosten','leerfahrt','wochenende','feiertag',
+    'dienstnr','umlaufnr','sv_teilnehmernr','sv_typ','sv_abrechenbar','sv_streckenpreis','freigabe',
+    'umlauf'
+  );
+begin
+  DoSelectOne('FAHRTABLAUF', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/getfahrtablaufkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getFahrtablaufKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(FAHRTABLAUF_NR_GEN,1) AS NR FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /dispo/insertfahrtablauf  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.insertFahrtablauf;
+// Body: { "nr": 42, "datum": "...", ... }
+const
+  ALLOWED: array[0..69] of string = (
+    'nr','datum','von_soll','von_ist','bis_soll','bis_ist','bereich','art','xkoord','ykoord',
+    'sortierung','disponr','zeichen','kennzeichen','eart','dienstelementnr','dienstelementart',
+    'bemerkung','zusatzfeld1','zusatzfeld2','zusatzfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'zustiege_soll','zustiege_ist','ausstiege_soll','ausstiege_ist','reftable','refnr','hinweis',
+    'typ','einsatznr','haltnr','bezeichnung','sv_tournummer','sv_fahrtnummer','sv_abrechnungsstatus',
+    'geprueft','einsatznr_ist','disponr_ist','tag','von_kalk','bis_kalk','strasse','plz','ort',
+    'ortsteil','region','land','meter_soll','meter_ist','meter_kalk','sekunden_soll','sekunden_ist',
+    'sekunden_kalk','fahrzeugprofil','anzahl_fahrer','kosten','leerfahrt','wochenende','feiertag',
+    'dienstnr','umlaufnr','sv_teilnehmernr','sv_typ','sv_abrechenbar','sv_streckenpreis','freigabe',
+    'umlauf'
+  );
+begin
+  DoInsert('FAHRTABLAUF', ALLOWED);
+end;
+
+// Route: /dispo/updatefahrtablauf  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.updateFahrtablauf;
+// Body: { "nr": 42, "datum": "...", ... }
+const
+  ALLOWED: array[0..69] of string = (
+    'nr','datum','von_soll','von_ist','bis_soll','bis_ist','bereich','art','xkoord','ykoord',
+    'sortierung','disponr','zeichen','kennzeichen','eart','dienstelementnr','dienstelementart',
+    'bemerkung','zusatzfeld1','zusatzfeld2','zusatzfeld3','datumfeld1','datumfeld2','datumfeld3',
+    'zustiege_soll','zustiege_ist','ausstiege_soll','ausstiege_ist','reftable','refnr','hinweis',
+    'typ','einsatznr','haltnr','bezeichnung','sv_tournummer','sv_fahrtnummer','sv_abrechnungsstatus',
+    'geprueft','einsatznr_ist','disponr_ist','tag','von_kalk','bis_kalk','strasse','plz','ort',
+    'ortsteil','region','land','meter_soll','meter_ist','meter_kalk','sekunden_soll','sekunden_ist',
+    'sekunden_kalk','fahrzeugprofil','anzahl_fahrer','kosten','leerfahrt','wochenende','feiertag',
+    'dienstnr','umlaufnr','sv_teilnehmernr','sv_typ','sv_abrechenbar','sv_streckenpreis','freigabe',
+    'umlauf'
+  );
+begin
+  DoUpdate('FAHRTABLAUF', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/deletefahrtablauf  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.deleteFahrtablauf;
+begin
+  DoDelete('FAHRTABLAUF', 'nr');
+end;
+
+// Route: /dispo/getliniewegeobjekte  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getLiniewegeobjekte;
+// Body: { "fields": ["nr","art",...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..13] of string = (
+    'nr','art','beschreibung','imageindex','dauer','farbe','fahrerkostenkm',
+    'fahrerkostenstd','fahrzeugkostenkm','fahrzeugkostenstd','profil','system',
+    'eart','lohnart'
+  );
+begin
+  DoSelect('LINIEWEGEOBJEKTE', ALLOWED);
+end;
+
+// Route: /dispo/getliniewegeobjektefiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getLiniewegeobjekteFiltered;
+// Body: { "fields": [...] | "*", "art": "HALT", "profil": 1, "orderby": "nr" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..13] of string = (
+    'nr','art','beschreibung','imageindex','dauer','farbe','fahrerkostenkm',
+    'fahrerkostenstd','fahrzeugkostenkm','fahrzeugkostenstd','profil','system',
+    'eart','lohnart'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
+  CONDITIONS: array[0..13] of string = (
+    'nr = :nr',
+    'art = :art',
+    'beschreibung = :beschreibung',
+    'imageindex = :imageindex',
+    'dauer = :dauer',
+    'farbe = :farbe',
+    'fahrerkostenkm = :fahrerkostenkm',
+    'fahrerkostenstd = :fahrerkostenstd',
+    'fahrzeugkostenkm = :fahrzeugkostenkm',
+    'fahrzeugkostenstd = :fahrzeugkostenstd',
+    'profil = :profil',
+    'system = :system',
+    'eart = :eart',
+    'lohnart = :lohnart'
+  );
+  FILTER_PARAMS: array[0..13] of string = (
+    'nr','art','beschreibung','imageindex','dauer','farbe','fahrerkostenkm',
+    'fahrerkostenstd','fahrzeugkostenkm','fahrzeugkostenstd','profil','system',
+    'eart','lohnart'
+  );
+begin
+  DoSelectFilteredDynamic('LINIEWEGEOBJEKTE', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /dispo/getliniewegeobjektebyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getLiniewegeobjekteById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..13] of string = (
+    'nr','art','beschreibung','imageindex','dauer','farbe','fahrerkostenkm',
+    'fahrerkostenstd','fahrzeugkostenkm','fahrzeugkostenstd','profil','system',
+    'eart','lohnart'
+  );
+begin
+  DoSelectOne('LINIEWEGEOBJEKTE', ALLOWED, 'nr');
 end;
 
 end.

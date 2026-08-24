@@ -575,6 +575,10 @@ begin
   FRouter.AddRoute('/fibu/updatefibu',                   CreateDataModulFibu, TDataModulFibu(nil).updateFibu);
   FRouter.AddRoute('/fibu/deletefibu',                   CreateDataModulFibu, TDataModulFibu(nil).deleteFibu);
 
+  FRouter.AddRoute('/fibu/getkonten',                    CreateDataModulFibu, TDataModulFibu(nil).getKonten);
+  FRouter.AddRoute('/fibu/getkontenfiltered',            CreateDataModulFibu, TDataModulFibu(nil).getKontenFiltered);
+  FRouter.AddRoute('/fibu/getkontenbyid',                CreateDataModulFibu, TDataModulFibu(nil).getKontenById);
+
 
   //ANMIET
   FRouter.AddRoute('/anmiet/demo', CreateDataModulAnmiet, TDataModulAnmiet(nil).Demo);
@@ -641,6 +645,18 @@ begin
   FRouter.AddRoute('/dispo/inserturlaubsantrag',      CreateDataModulDispo, TDataModulDispo(nil).insertUrlaubsantrag,true,false);
   FRouter.AddRoute('/dispo/updateurlaubsantrag',      CreateDataModulDispo, TDataModulDispo(nil).updateUrlaubsantrag,true,false);
   FRouter.AddRoute('/dispo/deleteurlaubsantrag',      CreateDataModulDispo, TDataModulDispo(nil).deleteUrlaubsantrag,true,false);
+
+  FRouter.AddRoute('/dispo/getfahrtablauf',         CreateDataModulDispo, TDataModulDispo(nil).getFahrtablauf,true,false);
+  FRouter.AddRoute('/dispo/getfahrtablauffiltered', CreateDataModulDispo, TDataModulDispo(nil).getFahrtablaufFiltered,true,false);
+  FRouter.AddRoute('/dispo/getfahrtablaufbyid',     CreateDataModulDispo, TDataModulDispo(nil).getFahrtablaufById,true,false);
+  FRouter.AddRoute('/dispo/getfahrtablaufkey',      CreateDataModulDispo, TDataModulDispo(nil).getFahrtablaufKey,true,false);
+  FRouter.AddRoute('/dispo/insertfahrtablauf',      CreateDataModulDispo, TDataModulDispo(nil).insertFahrtablauf,true,false);
+  FRouter.AddRoute('/dispo/updatefahrtablauf',      CreateDataModulDispo, TDataModulDispo(nil).updateFahrtablauf,true,false);
+  FRouter.AddRoute('/dispo/deletefahrtablauf',      CreateDataModulDispo, TDataModulDispo(nil).deleteFahrtablauf,true,false);
+
+  FRouter.AddRoute('/dispo/getliniewegeobjekte',         CreateDataModulDispo, TDataModulDispo(nil).getLiniewegeobjekte,true,false);
+  FRouter.AddRoute('/dispo/getliniewegeobjektefiltered', CreateDataModulDispo, TDataModulDispo(nil).getLiniewegeobjekteFiltered,true,false);
+  FRouter.AddRoute('/dispo/getliniewegeobjektebyid',     CreateDataModulDispo, TDataModulDispo(nil).getLiniewegeobjekteById,true,false);
 
   //TOUPAC
   FRouter.AddRoute('/toupac/demo',                CreateDataModulToupac, TDataModulToupac(nil).Demo);

@@ -47,6 +47,9 @@ type
      procedure insertFibu;
      procedure updateFibu;
      procedure deleteFibu;
+     procedure getKonten;
+     procedure getKontenFiltered;
+     procedure getKontenById;
   end;
 
 
@@ -963,6 +966,79 @@ procedure TDataModulFibu.deleteFibu;
 // Body: { "nr": 42 }
 begin
   DoDelete('FIBU', 'nr');
+end;
+
+// Route: /fibu/getkonten  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getKonten;
+// Body: { "fields": ["konto","bezeichnung",...] | "*", "orderby": "konto" }
+const
+  ALLOWED: array[0..20] of string = (
+    'konto','bezeichnung','stschluessel','steuer','kontenart','kontengruppe',
+    'automatik','steuerkonto','ustpos','klasse','zahlung','gutscheinkonto',
+    'aktiva','passiva','eu','waehrung','op','babzuordnung','ebvortragskonto',
+    'gesperrt','mandant'
+  );
+begin
+  DoSelect('KONTEN', ALLOWED);
+end;
+
+// Route: /fibu/getkontenfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getKontenFiltered;
+// Body: { "fields": [...] | "*", "konto": "1000", "kontenart": 1, "orderby": "konto" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..20] of string = (
+    'konto','bezeichnung','stschluessel','steuer','kontenart','kontengruppe',
+    'automatik','steuerkonto','ustpos','klasse','zahlung','gutscheinkonto',
+    'aktiva','passiva','eu','waehrung','op','babzuordnung','ebvortragskonto',
+    'gesperrt','mandant'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
+  CONDITIONS: array[0..20] of string = (
+    'konto = :konto',
+    'bezeichnung = :bezeichnung',
+    'stschluessel = :stschluessel',
+    'steuer = :steuer',
+    'kontenart = :kontenart',
+    'kontengruppe = :kontengruppe',
+    'automatik = :automatik',
+    'steuerkonto = :steuerkonto',
+    'ustpos = :ustpos',
+    'klasse = :klasse',
+    'zahlung = :zahlung',
+    'gutscheinkonto = :gutscheinkonto',
+    'aktiva = :aktiva',
+    'passiva = :passiva',
+    'eu = :eu',
+    'waehrung = :waehrung',
+    'op = :op',
+    'babzuordnung = :babzuordnung',
+    'ebvortragskonto = :ebvortragskonto',
+    'gesperrt = :gesperrt',
+    'mandant = :mandant'
+  );
+  FILTER_PARAMS: array[0..20] of string = (
+    'konto','bezeichnung','stschluessel','steuer','kontenart','kontengruppe',
+    'automatik','steuerkonto','ustpos','klasse','zahlung','gutscheinkonto',
+    'aktiva','passiva','eu','waehrung','op','babzuordnung','ebvortragskonto',
+    'gesperrt','mandant'
+  );
+begin
+  DoSelectFilteredDynamic('KONTEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /fibu/getkontenbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulFibu.getKontenById;
+// Body: { "konto": "1000", "fields": [...] | "*" }
+const
+  ALLOWED: array[0..20] of string = (
+    'konto','bezeichnung','stschluessel','steuer','kontenart','kontengruppe',
+    'automatik','steuerkonto','ustpos','klasse','zahlung','gutscheinkonto',
+    'aktiva','passiva','eu','waehrung','op','babzuordnung','ebvortragskonto',
+    'gesperrt','mandant'
+  );
+begin
+  DoSelectOne('KONTEN', ALLOWED, 'konto');
 end;
 
 end.
