@@ -3768,6 +3768,377 @@
             "description": "Loescht den Datensatz in URLAUBSANTRAG mit dem angegebenen Primaerschluessel nr."
           },
           "response": []
+        },
+        {
+          "name": "updateFahrtablauf",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42,\n  \"bemerkung\": \"Geaendert\",\n  \"von_ist\": \"2026-08-24 08:05:00\",\n  \"bis_ist\": \"2026-08-24 09:05:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/updatefahrtablauf",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "updatefahrtablauf"
+              ]
+            },
+            "description": "Aktualisiert einen bestehenden Fahrtablauf-Datensatz anhand von nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getFahrtablaufFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"einsatznr\": 42,\n  \"orderby\": \"datum\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getfahrtablauffiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getfahrtablauffiltered"
+              ]
+            },
+            "description": "Liefert Fahrtablauf-Datensaetze gefiltert nach beliebigen Feldern (alle Felder sind als Filter nutzbar)."
+          },
+          "response": []
+        },
+        {
+          "name": "getFahrtablaufById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getfahrtablaufbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getfahrtablaufbyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen Fahrtablauf-Datensatz anhand von nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getFahrtablauf",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getfahrtablauf",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getfahrtablauf"
+              ]
+            },
+            "description": "Liefert alle Fahrtablauf-Datensaetze."
+          },
+          "response": []
+        },
+        {
+          "name": "getFahrtablaufKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/dispo/getfahrtablaufkey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getfahrtablaufkey"
+              ]
+            },
+            "description": "Liefert den naechsten Schluesselwert aus GEN_ID(FAHRTABLAUF_NR_GEN,1)."
+          },
+          "response": []
+        },
+        {
+          "name": "insertFahrtablauf",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42,\n  \"datum\": \"2026-08-24\",\n  \"von_soll\": \"2026-08-24 08:00:00\",\n  \"bis_soll\": \"2026-08-24 09:00:00\",\n  \"bereich\": \"Nord\",\n  \"art\": \"Linie\",\n  \"disponr\": 1,\n  \"zeichen\": \"MU\",\n  \"kennzeichen\": \"AB-CD 123\",\n  \"einsatznr\": 100,\n  \"haltnr\": 5,\n  \"bezeichnung\": \"Testfahrt\",\n  \"strasse\": \"Hauptstr. 1\",\n  \"plz\": \"12345\",\n  \"ort\": \"Musterstadt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/insertfahrtablauf",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "insertfahrtablauf"
+              ]
+            },
+            "description": "Legt einen neuen Fahrtablauf-Datensatz an."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteFahrtablauf",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/deletefahrtablauf",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "deletefahrtablauf"
+              ]
+            },
+            "description": "Loescht einen Fahrtablauf-Datensatz anhand von nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getLiniewegeobjekte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getliniewegeobjekte",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getliniewegeobjekte"
+              ]
+            },
+            "description": "Liefert alle Liniewegeobjekte-Datensaetze."
+          },
+          "response": []
+        },
+        {
+          "name": "getLiniewegeobjekteFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"art\": \"HALT\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getliniewegeobjektefiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getliniewegeobjektefiltered"
+              ]
+            },
+            "description": "Liefert Liniewegeobjekte-Datensaetze gefiltert nach beliebigen Feldern (alle Felder sind als Filter nutzbar)."
+          },
+          "response": []
+        },
+        {
+          "name": "getLiniewegeobjekteById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 42,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getliniewegeobjektebyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getliniewegeobjektebyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen Liniewegeobjekte-Datensatz anhand von nr."
+          },
+          "response": []
         }
       ]
     },
@@ -4057,7 +4428,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"kennziffer\": 42,\n  \"pwd\": \"5f4dcc3b5aa765d61d8327deb882cf99\",\n  \"username\": \"neuer.benutzer@example.com\",\n  \"erstellt\": \"2026-08-19 10:00:00\",\n  \"geaendert\": \"2026-08-19 10:00:00\",\n  \"gesperrt\": \"N\",\n  \"pwd2\": \"\",\n  \"versuche\": 0,\n  \"zeitsperre\": null,\n  \"pushid\": \"\",\n  \"letzter_login\": null,\n  \"hauptregistrierung\": 0,\n  \"typ\": \"USER\"\n}",
+              "raw": "{\n\n  \"anrede\":\"\",\n  \"name1\":\"\",\n  \"name2\":\"\",\n  \"username\": \"supervisor\",\n  \"pwd2\": \"$2y$12$QbqkYuWGpAJSJ1s5/cA5K.iK.Bwqd2x3TUz9HDfDMpayt6Kx3Fiia\",\n  \"typ\": \"mitarbeiter\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4075,6 +4446,44 @@
               ]
             },
             "description": "Legt einen neuen Datensatz in REGISTRIERUNG an. Identisch zu /registrierung/insertregistrierung, jedoch ohne Authentifizierung und nur vom lokalen Server (localhost) aufrufbar - Aufrufe von aussen werden mit HTTP 403 abgewiesen. Der Primaerschluessel nr wird nicht mitgegeben."
+          },
+          "response": []
+        },
+        {
+          "name": "checkUsernameLocal",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"max.mustermann@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/registrierung/checkusernamelocal",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "registrierung",
+                "checkusernamelocal"
+              ]
+            },
+            "description": "Prueft case-insensitiv (UPPER), ob ein Benutzername in REGISTRIERUNG noch frei ist. Antwort: {\"username\":\"...\",\"frei\":true,\"nr\":null} bzw. {\"frei\":false,\"nr\":<vorhandene nr>}. Gedacht fuer die Formularpruefung, bevor insertregistrierunglocal aufgerufen wird. Fehlendes username -> Fehler."
           },
           "response": []
         }
@@ -7821,6 +8230,120 @@
             "description": "Aktualisiert einen bestehenden Datensatz in FIBU anhand des Primaerschluessels nr."
           },
           "response": []
+        },
+        {
+          "name": "getKontenFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"kontenart\": 1,\n  \"orderby\": \"konto\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getkontenfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "getkontenfiltered"
+              ]
+            },
+            "description": "Liefert Konten-Datensaetze gefiltert nach beliebigen Feldern (alle Felder sind als Filter nutzbar)."
+          },
+          "response": []
+        },
+        {
+          "name": "getKonten",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"konto\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getkonten",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "getkonten"
+              ]
+            },
+            "description": "Liefert alle Konten-Datensaetze."
+          },
+          "response": []
+        },
+        {
+          "name": "getKontenById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"konto\": \"1000\",\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/fibu/getkontenbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "fibu",
+                "getkontenbyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen Konten-Datensatz anhand von konto."
+          },
+          "response": []
         }
       ]
     },
@@ -8915,12 +9438,10 @@
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.collectionVariables.set(\"jwttoken\", pm.response.json().token);"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            ]
           }
         }
       ],
@@ -8928,7 +9449,7 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "{{baseURL}}/login?user=SUPERVISOR&password=sv",
+          "raw": "{{baseURL}}/login?user=SUPERVISOR&password=sv&portal=mitarbeiter",
           "host": [
             "{{baseURL}}"
           ],
@@ -8943,6 +9464,10 @@
             {
               "key": "password",
               "value": "sv"
+            },
+            {
+              "key": "portal",
+              "value": "mitarbeiter"
             }
           ]
         }
