@@ -4,6 +4,7 @@ interface
 
 uses
   System.NetEncoding, Data.DB, IOUTILS,
+  System.Character,
   System.JSON,
   System.SyncObjs,
   Web.HTTPApp,
@@ -52,11 +53,86 @@ function ParseJSONObject(const AJson: string): TJSONObject;
 // WithBlob = True: BLOB-Felder als Base64, sonst als Platzhalter 'BLOB'
 function SerializeQuery(Dataset: TDataSet; WithBlob: Boolean = true): string;
 
+// ---------------------------------------------------------------------------
+// Umlautsicherer, case-insensitiver Textvergleich gegen die Datenbank
+//
+// Die Datenbank laeuft mit Zeichensatz NONE. UPPER() mappt dort NUR die
+// ASCII-Buchstaben a-z, Umlaute bleiben unveraendert ('Müller' -> 'MüLLER').
+// Delphis UpperCase()/LowerCase() verhalten sich genauso (loInvariantLocale),
+// ein Vergleich UPPER(feld) = UPPER(:param) findet 'MÜLLER' bei Eingabe
+// 'müller' deshalb NICHT. Ein CAST auf ISO8859_1/UTF8 scheitert ("Cannot
+// transliterate character between character sets"), COLLATE UNICODE gibt es
+// nicht -- ueber die Collation ist das Problem also nicht loesbar.
+//
+// Loesung: Die ASCII-Buchstaben werden auf beiden Seiten gleich normalisiert
+// (Feld per UPPER, Parameter per UpperCaseAscii); fuer die Umlaute werden die
+// drei moeglichen Schreibweisen geprueft -- wie eingegeben, komplett klein und
+// komplett gross. LOWER() kennt InterBase hier nicht.
+//
+// Verwendung (Parameter in der Reihenfolge _asc, _asclo, _ascup setzen):
+//   Q.SQL.Text := 'SELECT nr FROM REGISTRIERUNG WHERE ' +
+//                 CaseInsCondition('username', 'username');
+//   Q.ParamByName('username_asc').AsString   := UpperCaseAscii(Wert);
+//   Q.ParamByName('username_asclo').AsString := UpperCaseAscii(ToLowerUni(Wert));
+//   Q.ParamByName('username_ascup').AsString := UpperCaseAscii(ToUpperUni(Wert));
+// ---------------------------------------------------------------------------
+
+// Bildet exakt das UPPER() der Datenbank nach: nur ASCII a-z, Umlaute bleiben.
+function UpperCaseAscii(const AValue: string): string;
+
+// Gross-/Kleinschreibung inklusive Umlauten -- im Gegensatz zu UpperCase und
+// LowerCase, die nur ASCII umwandeln. Zeichenweise ueber den TCharHelper, damit
+// das Ergebnis nicht von der Locale des Dienstkontos abhaengt.
+// Hinweis: 'ß' bleibt 'ß' (die Umwandlung zu 'SS' verlaengert den String).
+function ToUpperUni(const AValue: string): string;
+function ToLowerUni(const AValue: string): string;
+
+// Liefert die Vergleichsbedingung fuer ein Feld, z.B.
+//   CaseInsCondition('name1', 'name1') ->
+//   '(UPPER(name1) = :name1_asc OR UPPER(name1) = :name1_asclo OR ...)'
+function CaseInsCondition(const AField, APrefix: string): string;
+
 implementation
 
 // ---------------------------------------------------------------------------
 // Hilfsfunktionen
 // ---------------------------------------------------------------------------
+
+// Siehe Erlaeuterung im interface-Teil.
+function UpperCaseAscii(const AValue: string): string;
+var
+  i: Integer;
+begin
+  Result := AValue;
+  for i := 1 to Length(Result) do
+    if CharInSet(Result[i], ['a' .. 'z']) then
+      Result[i] := Chr(Ord(Result[i]) - 32);
+end;
+
+function ToUpperUni(const AValue: string): string;
+var
+  i: Integer;
+begin
+  Result := AValue;
+  for i := 1 to Length(Result) do
+    Result[i] := Result[i].ToUpper;
+end;
+
+function ToLowerUni(const AValue: string): string;
+var
+  i: Integer;
+begin
+  Result := AValue;
+  for i := 1 to Length(Result) do
+    Result[i] := Result[i].ToLower;
+end;
+
+function CaseInsCondition(const AField, APrefix: string): string;
+begin
+  Result := '(UPPER(' + AField + ') = :' + APrefix + '_asc' +
+            ' OR UPPER(' + AField + ') = :' + APrefix + '_asclo' +
+            ' OR UPPER(' + AField + ') = :' + APrefix + '_ascup)';
+end;
 
 function ExcludeLastSlash(s: string): string;
 begin

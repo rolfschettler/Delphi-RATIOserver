@@ -45,7 +45,9 @@ function TDataModulLoginClass.login(sl: TStringList): boolean;
 
   Prüfung:
     Der Benutzer wird in der Tabelle REGISTRIERUNG über das Feld USERNAME gesucht
-    (case-insensitiv per UPPER, da InterBase kein LOWER kennt).
+    (case-insensitiv und umlautsicher — siehe Kommentar an der Query, der
+    Zeichensatz NONE erzwingt hier einen Sondervergleich).
+    Die Anfrage muss UTF-8 kodiert sein.
     Das Passwort wird im Klartext erwartet (keine Codierung) und NICHT mehr in
     Delphi verglichen, sondern über den PHP-Endpunkt /checkcryptedpassword
     geprüft: dieser verifiziert das Passwort per password_verify() gegen den
@@ -115,31 +117,46 @@ var
 begin
   username := '';
   password := '';
-
-  // 1. JSON-Body (POST application/json)
-  ReadFromJson;
-
-  // 2. Form-encoded (POST application/x-www-form-urlencoded)
-  if username = '' then
-    username := Request.ContentFields.Values['user'];
-  if password = '' then
-    password := Request.ContentFields.Values['password'];
-
-  // 3. URL-Parameter (GET ?user=...&password=...)
-  if username = '' then
-    username := Request.QueryFields.Values['user'];
-  if password = '' then
-    password := Request.QueryFields.Values['password'];
   Result := false;
 
   try
 //  raise Exception.Create('Fehlermeldung');
 
+    // Das Einlesen der Parameter steht mit im try-Block: enthaelt die Anfrage
+    // Bytes, die kein gueltiges UTF-8 sind (z.B. ein Umlaut als Latin-1 %FC
+    // statt %C3%BC), wirft bereits der Zugriff auf QueryFields/Content eine
+    // Encoding-Exception. Ohne den try-Block schlug das als HTTP 500 mit
+    // kryptischer Meldung durch statt als sauberes 401.
+    try
+      // 1. JSON-Body (POST application/json)
+      ReadFromJson;
+
+      // 2. Form-encoded (POST application/x-www-form-urlencoded)
+      if username = '' then
+        username := Request.ContentFields.Values['user'];
+      if password = '' then
+        password := Request.ContentFields.Values['password'];
+
+      // 3. URL-Parameter (GET ?user=...&password=...)
+      if username = '' then
+        username := Request.QueryFields.Values['user'];
+      if password = '' then
+        password := Request.QueryFields.Values['password'];
+    except
+      on e: Exception do
+        raise Exception.Create('Anmeldedaten sind nicht UTF-8 kodiert. Umlaute müssen als UTF-8 übergeben werden (ü = %C3%BC). [' + e.message + ']');
+    end;
+
     with query do
     begin
       close;
-      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,pwd2 from registrierung where UPPER(username)= UPPER(:username)';
-      ParamByName('username').AsString := username;
+      // Umlautsicherer, case-insensitiver Vergleich -- Erlaeuterung des
+      // Musters bei CaseInsCondition in webUtils.
+      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,pwd2 from registrierung' +
+                  ' where ' + CaseInsCondition('username', 'username');
+      ParamByName('username_asc').AsString   := UpperCaseAscii(username);
+      ParamByName('username_asclo').AsString := UpperCaseAscii(ToLowerUni(username));
+      ParamByName('username_ascup').AsString := UpperCaseAscii(ToUpperUni(username));
       open;
       if (eof and bof) then
         raise Exception.Create('Benutzername oder Passwort sind falsch');

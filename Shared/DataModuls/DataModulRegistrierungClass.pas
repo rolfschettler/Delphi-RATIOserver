@@ -33,6 +33,17 @@ function CreateDataModulRegistrierung(Request: TWebRequest; Response: TWebRespon
 implementation
 uses webutils;
 
+// Setzt die drei Parameter zu webUtils.CaseInsCondition mit demselben Praefix.
+// Die Funktion steht hier und nicht in webUtils, weil sie TFDQuery braucht --
+// webUtils wird auch von Units ohne FireDAC verwendet (router, uJWTUtils,
+// PHPSupport, KI_Support). Erlaeuterung des Vergleichsmusters: siehe webUtils.
+procedure SetCaseInsParams(AQuery: TFDQuery; const APrefix, AValue: string);
+begin
+  AQuery.ParamByName(APrefix + '_asc').AsString   := UpperCaseAscii(AValue);
+  AQuery.ParamByName(APrefix + '_asclo').AsString := UpperCaseAscii(ToLowerUni(AValue));
+  AQuery.ParamByName(APrefix + '_ascup').AsString := UpperCaseAscii(ToUpperUni(AValue));
+end;
+
 function CreateDataModulRegistrierung(Request: TWebRequest; Response: TWebResponse): TObject;
 begin
   Result := TDataModulRegistrierung.Create(Request, Response);
@@ -119,8 +130,8 @@ end;
 procedure TDataModulRegistrierung.insertRegistrierung;
 // Body: { "kennziffer": 42, "username": "...", ... }
 const
-  ALLOWED: array[0..13] of string = (
-    'kennziffer','pwd','username','userkonfig',
+  ALLOWED: array[0..14] of string = (
+    'kennziffer','pwd','username','userkonfig','userkonfig',
     'erstellt','geaendert','gesperrt','pwd2','versuche',
     'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
   );
@@ -130,26 +141,37 @@ end;
 
 // Route: /registrierung/insertregistrierunglocal  |  Auth: false  |  LocalOnly: true
 procedure TDataModulRegistrierung.insertRegistrierungLocal;
-// Body: { "username": "...", "pwd2": "...", "typ": "kunde",
+// Body: { "username": "...", "pwd2": "...", "typ": "kunde|mitarbeiter|fahrer",
 //         "anrede": "Herr", "name1": "Mustermann", "name2": "Max",
 //         "strasse": "...", "plz": "...", "ort": "...", "telefon1": "...",
 //         "email": "...", "kennziffer": 12345 }
 //
-// Adressbehandlung ausschliesslich bei typ=kunde (Vergleich case-insensitiv):
+// Gueltige Typen sind ausschliesslich kunde, mitarbeiter und fahrer
+// (Vergleich case-insensitiv); jeder andere sowie ein fehlender typ wird
+// abgewiesen.
+//
+// typ=kunde -- Adresse anlegen bzw. verknuepfen:
 //   Schreibt REGISTRIERUNG und ADRESSEN in EINER Transaktion.
-//   anrede, name1 und name2 sind dann Pflichtfelder; ADRESSEN.gruppe ist immer 1.
+//   anrede, name1 und name2 sind Pflichtfelder; ADRESSEN.gruppe ist immer 1.
 //   Ist eine kennziffer angegeben, wird die Adresse ueber kennziffer + name1 +
 //   name2 gesucht (nativ, lowercase und uppercase). Bei einem Treffer wird diese
 //   Kennziffer als Fremdschluessel in REGISTRIERUNG eingetragen und die Adresse
 //   bleibt unveraendert; ohne Treffer wird eine neue Adresse angelegt.
 //
-// Bei jedem anderen typ (z.B. mitarbeiter) und bei fehlendem typ wird KEINE
-// Adresse angelegt oder verknuepft: anrede, name1 und name2 sind nicht
-// erforderlich und werden ignoriert, REGISTRIERUNG.kennziffer bleibt NULL.
-// Die Antwort liefert dann "kennziffer": null und "adresse": "keine".
+// typ=fahrer -- Abgleich mit dem PERSONALSTAMM:
+//   username, name1 (Vorname) und name2 (Nachname) sind Pflichtfelder.
+//   username wird vor der Pruefung auf Grossschreibung gesetzt und muss
+//   zusammen mit name1/name2 einem Satz in PERSONALSTAMM entsprechen
+//   (username = PERSONALSTAMM.zeichen, name1 = name1, name2 = name2).
+//   Ohne Treffer: 'Benutzer ist nicht im Personalstamm vorhanden.'
+//   Der Login wird in Grossschreibung in REGISTRIERUNG gespeichert.
+//
+// typ=mitarbeiter und typ=fahrer legen KEINE Adresse an und verknuepfen keine:
+//   REGISTRIERUNG.kennziffer bleibt NULL, die Antwort liefert
+//   "kennziffer": null und "adresse": "keine".
 const
-  ALLOWED: array[0..2] of string = (
-    'username','pwd2','typ');
+  ALLOWED: array[0..3] of string = (
+    'username','pwd2','typ','userkonfig');
   ADR_ALLOWED: array[0..7] of string = (
     'anrede','name1','name2','strasse','plz','ort','telefon1','email');
 var
@@ -157,6 +179,7 @@ var
   Cols, Vals:   string;
   Typ:          string;
   IstKunde:     Boolean;
+  IstFahrer:    Boolean;
   Anrede:       string;
   Name1, Name2: string;
   Username:     string;
@@ -166,9 +189,25 @@ var
   AdresseNeu:   Boolean;
   Res:          TJSONObject;
   i:            Integer;
+  BodyCheck:    TJSONObject;
 begin
-  Typ      := Trim(getParamFromBody('typ'));
-  IstKunde := SameText(Typ, 'kunde');
+  // Ein ungueltiger JSON-Body wuerde sonst als fehlender typ gemeldet:
+  // ParseJSONObject liefert dann nil und jedes getParamFromBody seinen Default.
+  BodyCheck := ParseJSONObject(Request.Content);
+  try
+    if not Assigned(BodyCheck) then
+      raise Exception.Create('Der Request-Body enthaelt kein gueltiges JSON-Objekt.');
+  finally
+    BodyCheck.Free;
+  end;
+
+  Typ       := Trim(getParamFromBody('typ'));
+  IstKunde  := SameText(Typ, 'kunde');
+  IstFahrer := SameText(Typ, 'fahrer');
+
+  // In diesem Endpunkt sind nur kunde, mitarbeiter und fahrer zugelassen.
+  if not (IstKunde or IstFahrer or SameText(Typ, 'mitarbeiter')) then
+    raise Exception.Create('Ungueltiger typ. Erlaubt sind kunde, mitarbeiter und fahrer.');
 
   Anrede := Trim(getParamFromBody('anrede'));
   Name1  := Trim(getParamFromBody('name1'));
@@ -181,9 +220,40 @@ begin
 
   Username := Trim(getParamFromBody('username'));
 
+  // typ=fahrer: username immer in Grossschreibung -- so steht das Zeichen auch
+  // im PERSONALSTAMM und so wird der Login gespeichert.
+  if IstFahrer then
+  begin
+    // ToUpperUni statt UpperCase: letzteres laesst Umlaute klein.
+    Username := ToUpperUni(Username);
+
+    if (Username = '') or (Name1 = '') or (Name2 = '') then
+      raise Exception.Create('Die Felder username, name1 und name2 sind bei typ=fahrer Pflichtfelder.');
+
+    // Abgleich mit dem PERSONALSTAMM: username = zeichen, name1 = Vorname,
+    // name2 = Nachname. Alle drei umlautsicher vergleichen -- siehe
+    // CaseInsCondition in webUtils.
+    Q := TFDQuery.Create(nil);
+    try
+      Q.Connection := Connection;
+      Q.SQL.Text := 'SELECT nr FROM PERSONALSTAMM' +
+                    ' WHERE ' + CaseInsCondition('zeichen', 'zeichen') +
+                    '   AND ' + CaseInsCondition('name1', 'name1') +
+                    '   AND ' + CaseInsCondition('name2', 'name2');
+      SetCaseInsParams(Q, 'zeichen', Username);
+      SetCaseInsParams(Q, 'name1', Name1);
+      SetCaseInsParams(Q, 'name2', Name2);
+      Q.Open;
+      if Q.IsEmpty then
+        raise Exception.Create('Benutzer ist nicht im Personalstamm vorhanden.');
+    finally
+      Q.Free;
+    end;
+  end;
+
   // Dublettensperre: gleicher Login darf nicht zweimal registriert werden.
-  // Vergleich case-insensitiv per UPPER -- genau wie der Trigger
-  // TIA_ADRESSEN_REGISTRIERUNG prueft (LOWER() kennt InterBase hier nicht).
+  // Vergleich case-insensitiv und umlautsicher -- siehe CaseInsCondition am
+  // in webUtils.
   // ACHTUNG: Diese Pruefung allein ist nicht race-sicher; wasserdicht wird die
   // Sperre erst mit einem UNIQUE-Index auf REGISTRIERUNG.USERNAME.
   if Username <> '' then
@@ -191,14 +261,17 @@ begin
     Q := TFDQuery.Create(nil);
     try
       Q.Connection := Connection;
-      Q.SQL.Text := 'SELECT nr FROM REGISTRIERUNG WHERE UPPER(username) = :username_up';
-      Q.ParamByName('username_up').AsString := UpperCase(Username);
+      Q.SQL.Text := 'SELECT nr FROM REGISTRIERUNG WHERE ' + CaseInsCondition('username', 'username');
+      SetCaseInsParams(Q, 'username', Username);
       Q.Open;
       if not Q.IsEmpty then
       begin
         Res := TJSONObject.Create;
         Res.AddPair('status', 'error');
-        Res.AddPair('message', 'Der Benutzername ist bereits registriert.');
+        if IstFahrer then
+          Res.AddPair('message', 'Fahrer ist bereits registriert')
+        else
+          Res.AddPair('message', 'Der Benutzername ist bereits registriert.');
         Res.AddPair('username', Username);
         Res.AddPair('nr', TJSONNumber.Create(Q.FieldByName('nr').AsInteger));
         SendJson(Res, 409);
@@ -211,7 +284,7 @@ begin
 
   SuchKennziffer := StrToIntDef(getParamFromBody('kennziffer', '0'), 0);
   Kennziffer     := 0;
-  // Nur typ=kunde bekommt ueberhaupt eine Adresse; bei allen anderen Typen
+  // Nur typ=kunde bekommt ueberhaupt eine Adresse; bei mitarbeiter und fahrer
   // bleiben Adresssuche und Adress-Insert aus und kennziffer bleibt NULL.
   AdresseNeu     := IstKunde;
 
@@ -222,23 +295,17 @@ begin
       Q.Connection := Connection;
 
       // 1. Adresse suchen, wenn eine Kennziffer uebergeben wurde.
-      //    Namensvergleich in drei Varianten: nativ (Original gegen Original),
-      //    lowercase (komplett kleingeschriebener Feldinhalt) und uppercase
-      //    (beide Seiten per UPPER normalisiert -- der eigentliche
-      //    case-insensitive Vergleich). LOWER() kennt InterBase hier nicht.
+      //    Namensvergleich case-insensitiv und umlautsicher -- siehe
+      //    CaseInsCondition in webUtils.
       if IstKunde and (SuchKennziffer > 0) then
       begin
         Q.SQL.Text := 'SELECT kennziffer FROM ADRESSEN' +
                       ' WHERE kennziffer = :kennziffer' +
-                      '   AND (name1 = :name1 OR name1 = :name1_lo OR UPPER(name1) = :name1_up)' +
-                      '   AND (name2 = :name2 OR name2 = :name2_lo OR UPPER(name2) = :name2_up)';
+                      '   AND ' + CaseInsCondition('name1', 'name1') +
+                      '   AND ' + CaseInsCondition('name2', 'name2');
         Q.ParamByName('kennziffer').AsInteger := SuchKennziffer;
-        Q.ParamByName('name1').AsString       := Name1;
-        Q.ParamByName('name1_lo').AsString    := LowerCase(Name1);
-        Q.ParamByName('name1_up').AsString    := UpperCase(Name1);
-        Q.ParamByName('name2').AsString       := Name2;
-        Q.ParamByName('name2_lo').AsString    := LowerCase(Name2);
-        Q.ParamByName('name2_up').AsString    := UpperCase(Name2);
+        SetCaseInsParams(Q, 'name1', Name1);
+        SetCaseInsParams(Q, 'name2', Name2);
         Q.Open;
         if not Q.IsEmpty then
         begin
@@ -246,7 +313,7 @@ begin
           AdresseNeu := False;
         end
         else
-          raise Exception.Create('Diese Kennziffer existiert nicht für diesen Namen.');
+          raise Exception.Create('Diese Kennziffer existiert nicht fï¿½r diesen Namen.');
 
         Q.Close;
       end;
@@ -292,6 +359,9 @@ begin
       for i := Low(ALLOWED) to High(ALLOWED) do
         if isParamFromBody(ALLOWED[i]) then
           Q.ParamByName(ALLOWED[i]).Value := getParamFromBody(ALLOWED[i]);
+      // Fahrer-Login immer in Grossschreibung speichern (siehe oben)
+      if IstFahrer and isParamFromBody('username') then
+        Q.ParamByName('username').AsString := Username;
       Q.ExecSQL;
 
       // 5. Adresse nur anlegen, wenn keine gefunden wurde; gruppe ist immer 1
@@ -349,13 +419,24 @@ procedure TDataModulRegistrierung.checkUsernameLocal;
 //                   "nr": null }
 // Antwort belegt:  { "status": "error", "username": "...", "frei": false,
 //                   "message": "...", "nr": <vorhandene nr> }
-// Vergleich auf USERS.loginname case-insensitiv per UPPER (LOWER() kennt InterBase hier nicht).
+// Vergleich auf REGISTRIERUNG.username case-insensitiv und umlautsicher --
+// siehe CaseInsCondition in webUtils.
 var
   Q:        TFDQuery;
   Username: string;
   Frei:     Boolean;
   Res:      TJSONObject;
+  BodyCheck: TJSONObject;
 begin
+  // Ungueltiges JSON nicht als fehlenden username melden (siehe insertRegistrierungLocal)
+  BodyCheck := ParseJSONObject(Request.Content);
+  try
+    if not Assigned(BodyCheck) then
+      raise Exception.Create('Der Request-Body enthaelt kein gueltiges JSON-Objekt.');
+  finally
+    BodyCheck.Free;
+  end;
+
   Username := Trim(getParamFromBody('username'));
   if Username = '' then
     raise Exception.Create('Das Feld username ist ein Pflichtfeld.');
@@ -363,8 +444,8 @@ begin
   Q := TFDQuery.Create(nil);
   try
     Q.Connection := Connection;
-    Q.SQL.Text := 'SELECT nr FROM REGISTRIERUNG WHERE UPPER(username) = :username_up';
-    Q.ParamByName('username_up').AsString := UpperCase(Username);
+    Q.SQL.Text := 'SELECT nr FROM REGISTRIERUNG WHERE ' + CaseInsCondition('username', 'username');
+    SetCaseInsParams(Q, 'username', Username);
     Q.Open;
 
     Frei := Q.IsEmpty;
@@ -397,14 +478,25 @@ procedure TDataModulRegistrierung.getUserLocal;
 // damit die Passwortpruefung dort per DeCodieren erfolgen kann.
 // Antwort Treffer:   { "status": "OK", "passwort": "<codiert>", "gesperrt": "NEIN" }
 // Antwort unbekannt: { "status": "error", "gefunden": false }
-// Vergleich auf USERS.loginname case-insensitiv per UPPER (LOWER() kennt InterBase hier nicht).
+// Vergleich auf USERS.loginname case-insensitiv und umlautsicher -- siehe
+// CaseInsCondition in webUtils.
 // Ist gesperrt leer bzw. NULL, wird 'NEIN' geliefert.
 var
   Q:         TFDQuery;
   Loginname: string;
   Gesperrt:  string;
   Res:       TJSONObject;
+  BodyCheck: TJSONObject;
 begin
+  // Ungueltiges JSON nicht als fehlenden loginname melden (siehe oben)
+  BodyCheck := ParseJSONObject(Request.Content);
+  try
+    if not Assigned(BodyCheck) then
+      raise Exception.Create('Der Request-Body enthaelt kein gueltiges JSON-Objekt.');
+  finally
+    BodyCheck.Free;
+  end;
+
   Loginname := Trim(getParamFromBody('loginname'));
   if Loginname = '' then
     raise Exception.Create('Das Feld loginname ist ein Pflichtfeld.');
@@ -413,8 +505,8 @@ begin
   try
     Q.Connection := Connection;
     Q.SQL.Text := 'SELECT passwort, gesperrt FROM USERS' +
-                  ' WHERE UPPER(loginname) = :loginname_up';
-    Q.ParamByName('loginname_up').AsString := UpperCase(Loginname);
+                  ' WHERE ' + CaseInsCondition('loginname', 'loginname');
+    SetCaseInsParams(Q, 'loginname', Loginname);
     Q.Open;
 
     Res := TJSONObject.Create;
