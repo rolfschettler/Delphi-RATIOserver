@@ -26,6 +26,7 @@ type
     procedure ReadTeilnehmer();
     procedure teilnehmerformcsv();
     procedure getdokument();
+    procedure getGeneratorValue();
 
   end;
 
@@ -829,6 +830,52 @@ begin
   finally
     Q.Free;
     MS.Free;  // nil-safe — gibt nur frei wenn WebBroker es nicht übernommen hat
+  end;
+end;
+
+// Route: /getgeneratorvalue  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAddOn.getGeneratorValue;
+// Body: { "generator": "T_BILDTEXT_NR_GEN", "increment": 1 }
+// "increment" ist optional, Default 1.
+// Liefert den naechsten Wert des angegebenen Generators, z.B. gleichbedeutend
+// mit GEN_ID(T_BILDTEXT_NR_GEN,1).
+// GEN_ID akzeptiert den Generatornamen nicht als Bind-Parameter (nur als
+// SQL-Bezeichner). Deshalb wird der Name zuerst gegen RDB$GENERATORS geprueft
+// (muss existieren) und erst danach in die SQL eingesetzt -- das verhindert
+// SQL-Injection ueber den Generatornamen.
+var
+  GeneratorName: string;
+  Increment: Integer;
+  QCheck, QGen: TFDQuery;
+begin
+  if not isParamFromBody('generator') then
+    raise Exception.Create('Parameter "generator" fehlt.');
+  GeneratorName := Trim(UpperCase(getParamFromBody('generator')));
+  Increment := StrToIntDef(getParamFromBody('increment', '1'), 1);
+
+  QCheck := TFDQuery.Create(nil);
+  QGen   := TFDQuery.Create(nil);
+  try
+    QCheck.Connection := Connection;
+    QCheck.SQL.Text := 'SELECT COUNT(*) FROM RDB$GENERATORS WHERE RDB$GENERATOR_NAME = :genname';
+    QCheck.ParamByName('genname').AsString := GeneratorName;
+    QCheck.Open;
+    if QCheck.Fields[0].AsInteger = 0 then
+      raise Exception.CreateFmt('Generator "%s" existiert nicht.', [GeneratorName]);
+    QCheck.Close;
+
+    QGen.Connection := Connection;
+    QGen.SQL.Text := 'SELECT GEN_ID(' + GeneratorName + ', CAST(:increment AS INTEGER)) AS val FROM RDB$DATABASE';
+    QGen.ParamByName('increment').AsInteger := Increment;
+    QGen.Open;
+
+    Response.ContentType := 'application/json';
+    Response.StatusCode  := 200;
+    Response.Content     := Format('{"generator":"%s","value":%d}',
+      [GeneratorName, QGen.FieldByName('val').AsInteger]);
+  finally
+    QCheck.Free;
+    QGen.Free;
   end;
 end;
 

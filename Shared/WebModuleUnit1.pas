@@ -465,6 +465,7 @@ begin
   FRouter.AddRoute('/ki_getteilnehmer',   CreateDataModulAddOn, TDataModulAddOn(nil).KI_GetTeilnehmer);
   FRouter.AddRoute('/teilnehmerfromcsv', CreateDataModulAddOn, TDataModulAddOn(nil).teilnehmerformcsv);
   FRouter.AddRoute('/getdokument', CreateDataModulAddOn, TDataModulAddOn(nil).getdokument);
+  FRouter.AddRoute('/getgeneratorvalue', CreateDataModulAddOn, TDataModulAddOn(nil).getGeneratorValue);
 
   //PUBLIC API: Diese Api können auch von außerhalb des localhost aufgerufen werden
 
@@ -694,6 +695,12 @@ begin
   FRouter.AddRoute('/dokumente/updatevorlagen',      CreateDataModulDokumente, TDataModulDokumente(nil).updateVorlagen);
   FRouter.AddRoute('/dokumente/deletevorlagen',      CreateDataModulDokumente, TDataModulDokumente(nil).deleteVorlagen);
   FRouter.AddRoute('/dokumente/uploaddokument',         CreateDataModulDokumente, TDataModulDokumente(nil).uploadDokument);
+  FRouter.AddRoute('/dokumente/gett_bildtext',          CreateDataModulDokumente, TDataModulDokumente(nil).getT_Bildtext);
+  FRouter.AddRoute('/dokumente/gett_bildtextfiltered',  CreateDataModulDokumente, TDataModulDokumente(nil).getT_BildtextFiltered);
+  FRouter.AddRoute('/dokumente/gett_bildtextbyid',      CreateDataModulDokumente, TDataModulDokumente(nil).getT_BildtextById);
+  FRouter.AddRoute('/dokumente/insertt_bildtext',       CreateDataModulDokumente, TDataModulDokumente(nil).insertT_Bildtext);
+  FRouter.AddRoute('/dokumente/updatet_bildtext',       CreateDataModulDokumente, TDataModulDokumente(nil).updateT_Bildtext);
+  FRouter.AddRoute('/dokumente/deletet_bildtext',       CreateDataModulDokumente, TDataModulDokumente(nil).deleteT_Bildtext);
 
   //INCOMING
   FRouter.AddRoute('/incoming/demo',           CreateDataModulIncoming, TDataModulIncoming(nil).Demo);
