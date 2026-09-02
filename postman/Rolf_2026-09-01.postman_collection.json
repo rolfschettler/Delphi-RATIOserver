@@ -1,0 +1,196 @@
+{
+  "info": {
+    "name": "RATIOserver – Public Adresse (Token-autorisiert)",
+    "description": "Delta-Collection: die in dieser Session neu hinzugekommenen Endpunkte /public/getadresse und /public/updateadresse (Shared/DataModuls/DataModulPublicClass.pas).\n\n**Kein JWT nötig — bewusst.** Diese Endpunkte sind mit Auth=false, LocalOnly=false registriert. Autorisiert wird über den Einladungs-Token aus ACCESS_TOKENS, der im Body als \"token\" (bzw. beim Lesen alternativ als ?token=… im QueryString) mitgeschickt wird. Ein Authorization-Header würde am Zweck vorbeitesten und ist deshalb nicht gesetzt.\n\n**Vor dem Test:** die Collection-Variable {{einladungstoken}} auf den Klartext-Token eines frischen, unverbrauchten ACCESS_TOKENS-Eintrags mit reference_type='ADRESSEN' und purpose='einladung' setzen. Bestehende Test-Tokens sind verbraucht (used_at gesetzt), weil checkmailtoken sie beim Öffnen der Einladungsseite entwertet.\n\nDie Kennziffer wird NIE mitgeschickt — der Server liest sie ausschließlich aus ACCESS_TOKENS.REFERENCE_ID. Die beiden Gegenproben-Requests belegen das.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Public Adresse",
+      "description": "Öffentliche Adress-Bearbeitung per Einladungs-Token. Aufrufer ist der Browser des Gastes, ohne Login.",
+      "item": [
+        {
+          "name": "POST /public/getadresse – Adresse zum Token lesen",
+          "description": "Prüft den Token (gefunden, nicht widerrufen, nicht abgelaufen, bei single_use=1 nicht verbraucht, reference_type='ADRESSEN', purpose='einladung') und liefert die zugehörige Adresse plus recipient_email. Der Token wird dabei NICHT verbraucht — used_at bleibt NULL, damit anschließend noch gespeichert werden kann.",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{einladungstoken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/public/getadresse",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "public",
+                "getadresse"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /public/getadresse?token= – Lesen ohne JSON-Body",
+          "description": "Gleiche Antwort wie der POST. Belegt die Nutzbarkeit aus PHP-Projekten, statischen Seiten oder einem simplen Link: ValidatePublicToken liest den Token ersatzweise aus dem QueryString. Beim Schreiben gibt es diese Variante bewusst nicht — ein schreibender Aufruf mit Token in der URL landet sonst in Apache-Logs und Browser-History.",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/public/getadresse?token={{einladungstoken}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "public",
+                "getadresse"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{einladungstoken}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /public/updateadresse – Adresse zum Token speichern",
+          "description": "Aktualisiert nur die Felder, die im Body vorkommen (Teil-Update). Whitelist: anrede, titel, name1, name2, strasse, plz, ort, telefon1, email. Ein Feld auf JSON null setzen schreibt NULL in die Spalte.",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{einladungstoken}}\",\n    \"anrede\": \"Frau\",\n    \"titel\": null,\n    \"name1\": \"Maria\",\n    \"name2\": \"Test22\",\n    \"strasse\": \"Kiechelweg 4\",\n    \"plz\": \"89077\",\n    \"ort\": \"Neu-Ulm\",\n    \"telefon1\": \"0731 123456\",\n    \"email\": \"10002@gmx.ok\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/public/updateadresse",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "public",
+                "updateadresse"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Gegenproben",
+      "description": "Negativtests. Alle drei müssen fehlschlagen — sie belegen die tragenden Sicherheitseigenschaften.",
+      "item": [
+        {
+          "name": "IDOR – fremde Kennziffer im Body wird ignoriert",
+          "description": "Erwartet: HTTP 200 mit der Adresse aus dem TOKEN (nicht 10003). SendRecordByKey bekommt den Schlüssel als Parameter aus ACCESS_TOKENS.REFERENCE_ID; eine kennziffer im Body wird gar nicht erst gelesen.",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{einladungstoken}}\",\n    \"kennziffer\": 10003\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/public/getadresse",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "public",
+                "getadresse"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Feld-Whitelist – gruppe wird nicht geschrieben",
+          "description": "Erwartet: HTTP 200 {\"status\":\"OK\"}, aber ADRESSEN.gruppe bleibt unverändert. gruppe steht bewusst nicht in der ALLOWED-Liste von updateAdresseByToken.",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{einladungstoken}}\",\n    \"ort\": \"Neu-Ulm\",\n    \"gruppe\": 99\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/public/updateadresse",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "public",
+                "updateadresse"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ungültiger Token",
+          "description": "Erwartet: HTTP 401 {\"status\":\"ERROR\",\"message\":\"Token unbekannt.\"}",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"ungueltig\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/public/getadresse",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "public",
+                "getadresse"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "localhost/ibapi"
+    },
+    {
+      "key": "einladungstoken",
+      "value": ""
+    }
+  ]
+}

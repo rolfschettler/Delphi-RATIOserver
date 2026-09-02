@@ -497,6 +497,12 @@ begin
   //PUBLIC
   FRouter.AddRoute('/public/checkmailtoken',     CreateDataModulPublic, TDataModulPublic(nil).checkmailtoken,false,true); //Auth=false,LocalOnly=true
 
+  // Token-autorisiert: der Gast ruft ohne Login direkt aus dem Browser auf.
+  // Autorisierung steckt im Einladungs-Token, deshalb Auth=false; der Aufruf
+  // kommt aus dem Internet, deshalb LocalOnly=false.
+  FRouter.AddRoute('/public/getadresse',         CreateDataModulPublic, TDataModulPublic(nil).getAdresseByToken,false,false);    //Auth=false,LocalOnly=false
+  FRouter.AddRoute('/public/updateadresse',      CreateDataModulPublic, TDataModulPublic(nil).updateAdresseByToken,false,false); //Auth=false,LocalOnly=false
+
 
   //TOURISTIK
   FRouter.AddRoute('/touristik/demo',             CreateDataModulTouristik, TDataModulTouristik(nil).Demo);
