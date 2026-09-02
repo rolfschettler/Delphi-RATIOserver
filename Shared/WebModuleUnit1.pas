@@ -495,13 +495,18 @@ begin
   FRouter.AddRoute('/adressen/deletezusatztabelle',      CreateDataModulAdressen, TDataModulAdressen(nil).deleteZusatztabelle);
 
   //PUBLIC
-  FRouter.AddRoute('/public/checkmailtoken',     CreateDataModulPublic, TDataModulPublic(nil).checkmailtoken,false,true); //Auth=false,LocalOnly=true
 
   // Token-autorisiert: der Gast ruft ohne Login direkt aus dem Browser auf.
   // Autorisierung steckt im Einladungs-Token, deshalb Auth=false; der Aufruf
   // kommt aus dem Internet, deshalb LocalOnly=false.
   FRouter.AddRoute('/public/getadresse',         CreateDataModulPublic, TDataModulPublic(nil).getAdresseByToken,false,false);    //Auth=false,LocalOnly=false
   FRouter.AddRoute('/public/updateadresse',      CreateDataModulPublic, TDataModulPublic(nil).updateAdresseByToken,false,false); //Auth=false,LocalOnly=false
+  FRouter.AddRoute('/public/adresse/abschliessen',       CreateDataModulPublic, TDataModulPublic(nil).abschliessenByToken,false,false);  //Auth=false,LocalOnly=false
+
+  // Neues Passwort per Einladungs-Token. Anderer PURPOSE ('passwort') und
+  // andere Tabelle (REGISTRIERUNG) - eine Adress-Einladung kommt hier nicht
+  // durch, weil ValidatePublicToken beides vergleicht.
+  FRouter.AddRoute('/public/setpasswort',        CreateDataModulPublic, TDataModulPublic(nil).setPasswortByToken,false,false);     //Auth=false,LocalOnly=false
 
 
   //TOURISTIK
