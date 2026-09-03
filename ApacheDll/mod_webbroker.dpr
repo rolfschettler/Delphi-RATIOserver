@@ -34,7 +34,8 @@ uses
   DataModulFuhrparkClass in '..\Shared\DataModuls\DataModulFuhrparkClass.pas' {DataModulFuhrpark: TDataModule},
   DataModulDokumenteClass in '..\Shared\DataModuls\DataModulDokumenteClass.pas' {DataModulDokumente: TDataModule},
   DataModulFibuClass in '..\Shared\DataModuls\DataModulFibuClass.pas' {DataModulFibu: TDataModule},
-  DataModulRegistrierungClass in '..\Shared\DataModuls\DataModulRegistrierungClass.pas' {DataModulRegistrierung: TDataModule};
+  DataModulRegistrierungClass in '..\Shared\DataModuls\DataModulRegistrierungClass.pas' {DataModulRegistrierung: TDataModule},
+  uBCrypt in '..\Shared\uBCrypt.pas';
 
 {$R *.res}
 
