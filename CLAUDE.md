@@ -63,25 +63,7 @@ Body: `options.raw.language` = `"json"` setzen.
 
 IMMER jeder Request benötigt {{jwttoken}}
 
-## Dateiformat von .pas/.dfm/.dpr/.dproj (Pflicht)
-Die Schreibwerkzeuge (Write/Edit) speichern mit **LF und ohne BOM**. Delphi braucht **CRLF**. Folgen:
-- Eine `.dfm` mit LF **öffnet der Formulardesigner nicht mehr.** Das Projekt kompiliert und läuft weiter — der Schaden fällt erst auf, wenn jemand das Formular visuell bearbeiten will.
-- Eine `.pas`/`.dpr`, die ihr BOM verliert, wird als ANSI gelesen: alle Umlaute sind zerstört.
 
-Deshalb bei JEDER Änderung an einer dieser Dateien:
-1. **Vorher** den Zustand DIESER Datei feststellen: `head -c 3 <datei> | od -An -tx1` → `ef bb bf` = BOM vorhanden. Außerdem prüfen, ob CR- und LF-Anzahl gleich sind (= überall CRLF).
-2. **Nach dem Schreiben** genau diesen Zustand zurückstellen (`$true` = mit BOM, `$false` = ohne, Wert aus Schritt 1):
-```powershell
-$p = "<pfad>"
-$t = [System.IO.File]::ReadAllText($p)
-$t = ($t -replace "`r`n", "`n") -replace "`n", "`r`n"
-[System.IO.File]::WriteAllText($p, $t, (New-Object System.Text.UTF8Encoding($false)))
-```
-3. **Nachweisen**: CR-Anzahl = LF-Anzahl und BOM wie im Ausgangszustand. Erst dann die Aufgabe als erledigt melden. Dieser Schritt ist der entscheidende — die ersten beiden werden übersprungen, sobald eine Änderung "trivial" aussieht.
-
-**Das BOM ist NICHT aus der Endung ableitbar.** Delphi setzt es nur bei Unicode-Inhalt, in diesem Projekt ist es gemischt (30 `.pas` mit BOM, 54 ohne; 2 `.dfm` mit, 31 ohne). Nicht raten — nachsehen. Referenzen: `git show HEAD:<pfad>` und der Ordner `__history`. Nur wenn der Ausgangszustand nicht feststellbar ist (neue Datei): bei `.pas`/`.dpr`/`.dproj` BOM setzen, bei `.dfm` nichts erzwingen. CRLF gilt immer.
-
-**Umlaute im Quelltext sind erwünscht** — Kommentare und Strings auf Deutsch mit ä, ö, ü, ß. Umschreibungen wie „ue" sind kein Ersatz für ein korrektes BOM.
 
 ## Projektkontext (Kurzfassung)
 Delphi WebBroker REST-API, Apache-DLL + CGI, FireDAC/IB, JWT-Auth, OpenAI GPT-4o, Touristik-Domain.
