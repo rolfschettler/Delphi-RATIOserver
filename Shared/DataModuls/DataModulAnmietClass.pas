@@ -42,6 +42,14 @@ type
      procedure insertFundsachenMitBildern;
      procedure updateFundsachen;
      procedure deleteFundsachen;
+
+     procedure getTransfehr;
+     procedure getTransfehrFiltered;
+     procedure getTransfehrById;
+     procedure getTransfehrKey;
+     procedure insertTransfehr;
+     procedure updateTransfehr;
+     procedure deleteTransfehr;
   end;
 
 
@@ -600,6 +608,149 @@ procedure TDataModulAnmiet.deleteFundsachen;
 // Body: { "nr": 42 }
 begin
   DoDelete('FUNDSACHEN', 'nr');
+end;
+
+// Route: /anmiet/gettransfehr  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getTransfehr;
+// Body: { "fields": ["Field1","Field2",...] | "*", "orderby": "Field" }
+const
+  ALLOWED: array[0..39] of string = (
+    'nr','kunde','ansprechpartner','hinfahrt','hinfahrtende','rueckfahrt','rueckfahrtende','abfahrthin',
+    'ankunfthin','abfahrtrueck','ankunftrueck','zeit1h','zeit2h','zeit1r','zeit2r','text1',
+    'text2','text3','text4','text5','text6','datum1','datum2','kurztext',
+    'text','bearbeiter','erstellt','perszahl','personen','status','symbol','projektart',
+    'angebot_gedruckt','auftrag_gedruckt','optionsdatum','filiale','kontaktentstehung','bearbeiter2','vertretung','reiseart'
+  );
+begin
+  DoSelect('TRANSFEHR', ALLOWED);
+end;
+
+// Route: /anmiet/gettransfehrfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getTransfehrFiltered;
+// Body: { "fields": [...] | "*", "kunde": 123, "orderby": "hinfahrt" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..39] of string = (
+    'nr','kunde','ansprechpartner','hinfahrt','hinfahrtende','rueckfahrt','rueckfahrtende','abfahrthin',
+    'ankunfthin','abfahrtrueck','ankunftrueck','zeit1h','zeit2h','zeit1r','zeit2r','text1',
+    'text2','text3','text4','text5','text6','datum1','datum2','kurztext',
+    'text','bearbeiter','erstellt','perszahl','personen','status','symbol','projektart',
+    'angebot_gedruckt','auftrag_gedruckt','optionsdatum','filiale','kontaktentstehung','bearbeiter2','vertretung','reiseart'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  // 'text' ist ein Blob-Feld und daher nicht filterbar (nur in ALLOWED enthalten).
+  CONDITIONS: array[0..38] of string = (
+    'nr = :nr',
+    'kunde = :kunde',
+    'ansprechpartner = :ansprechpartner',
+    'hinfahrt = :hinfahrt',
+    'hinfahrtende = :hinfahrtende',
+    'rueckfahrt = :rueckfahrt',
+    'rueckfahrtende = :rueckfahrtende',
+    'abfahrthin = :abfahrthin',
+    'ankunfthin = :ankunfthin',
+    'abfahrtrueck = :abfahrtrueck',
+    'ankunftrueck = :ankunftrueck',
+    'zeit1h = :zeit1h',
+    'zeit2h = :zeit2h',
+    'zeit1r = :zeit1r',
+    'zeit2r = :zeit2r',
+    'text1 = :text1',
+    'text2 = :text2',
+    'text3 = :text3',
+    'text4 = :text4',
+    'text5 = :text5',
+    'text6 = :text6',
+    'datum1 = :datum1',
+    'datum2 = :datum2',
+    'kurztext = :kurztext',
+    'bearbeiter = :bearbeiter',
+    'erstellt = :erstellt',
+    'perszahl = :perszahl',
+    'personen = :personen',
+    'status = :status',
+    'symbol = :symbol',
+    'projektart = :projektart',
+    'angebot_gedruckt = :angebot_gedruckt',
+    'auftrag_gedruckt = :auftrag_gedruckt',
+    'optionsdatum = :optionsdatum',
+    'filiale = :filiale',
+    'kontaktentstehung = :kontaktentstehung',
+    'bearbeiter2 = :bearbeiter2',
+    'vertretung = :vertretung',
+    'reiseart = :reiseart'
+  );
+  FILTER_PARAMS: array[0..38] of string = (
+    'nr','kunde','ansprechpartner','hinfahrt','hinfahrtende','rueckfahrt','rueckfahrtende','abfahrthin',
+    'ankunfthin','abfahrtrueck','ankunftrueck','zeit1h','zeit2h','zeit1r','zeit2r','text1',
+    'text2','text3','text4','text5','text6','datum1','datum2','kurztext',
+    'bearbeiter','erstellt','perszahl','personen','status','symbol','projektart','angebot_gedruckt',
+    'auftrag_gedruckt','optionsdatum','filiale','kontaktentstehung','bearbeiter2','vertretung','reiseart'
+  );
+begin
+  DoSelectFilteredDynamic('TRANSFEHR', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /anmiet/gettransfehrbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getTransfehrById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..39] of string = (
+    'nr','kunde','ansprechpartner','hinfahrt','hinfahrtende','rueckfahrt','rueckfahrtende','abfahrthin',
+    'ankunfthin','abfahrtrueck','ankunftrueck','zeit1h','zeit2h','zeit1r','zeit2r','text1',
+    'text2','text3','text4','text5','text6','datum1','datum2','kurztext',
+    'text','bearbeiter','erstellt','perszahl','personen','status','symbol','projektart',
+    'angebot_gedruckt','auftrag_gedruckt','optionsdatum','filiale','kontaktentstehung','bearbeiter2','vertretung','reiseart'
+  );
+begin
+  DoSelectOne('TRANSFEHR', ALLOWED, 'nr');
+end;
+
+// Route: /anmiet/gettransfehrkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.getTransfehrKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(TRANSFEHR_NR_GEN, 1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /anmiet/inserttransfehr  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.insertTransfehr;
+// Body: { "kunde": 123, "hinfahrt": "...", ... }
+const
+  ALLOWED: array[0..38] of string = (
+    'kunde','ansprechpartner','hinfahrt','hinfahrtende','rueckfahrt','rueckfahrtende','abfahrthin','ankunfthin',
+    'abfahrtrueck','ankunftrueck','zeit1h','zeit2h','zeit1r','zeit2r','text1','text2',
+    'text3','text4','text5','text6','datum1','datum2','kurztext','text',
+    'bearbeiter','erstellt','perszahl','personen','status','symbol','projektart','angebot_gedruckt',
+    'auftrag_gedruckt','optionsdatum','filiale','kontaktentstehung','bearbeiter2','vertretung','reiseart'
+  );
+begin
+  DoInsert('TRANSFEHR', ALLOWED);
+end;
+
+// Route: /anmiet/updatetransfehr  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.updateTransfehr;
+// Body: { "nr": 42, "kunde": 123, ... }
+const
+  ALLOWED: array[0..38] of string = (
+    'kunde','ansprechpartner','hinfahrt','hinfahrtende','rueckfahrt','rueckfahrtende','abfahrthin','ankunfthin',
+    'abfahrtrueck','ankunftrueck','zeit1h','zeit2h','zeit1r','zeit2r','text1','text2',
+    'text3','text4','text5','text6','datum1','datum2','kurztext','text',
+    'bearbeiter','erstellt','perszahl','personen','status','symbol','projektart','angebot_gedruckt',
+    'auftrag_gedruckt','optionsdatum','filiale','kontaktentstehung','bearbeiter2','vertretung','reiseart'
+  );
+begin
+  DoUpdate('TRANSFEHR', ALLOWED, 'nr');
+end;
+
+// Route: /anmiet/deletetransfehr  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAnmiet.deleteTransfehr;
+// Body: { "nr": 42 }
+begin
+  DoDelete('TRANSFEHR', 'nr');
 end;
 
 end.

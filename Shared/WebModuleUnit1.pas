@@ -88,6 +88,7 @@ DataModulPrintClass,
 DataModulAdressenClass,
 DataModulTouristikClass,
 DataModulAnmietClass,
+DataModulSchuelerverkehrClass,
 DataModulDispoClass,
 DataModulToupacClass,
 DataModulFuhrparkClass,
@@ -494,6 +495,14 @@ begin
   FRouter.AddRoute('/adressen/updatezusatztabelle',      CreateDataModulAdressen, TDataModulAdressen(nil).updateZusatztabelle);
   FRouter.AddRoute('/adressen/deletezusatztabelle',      CreateDataModulAdressen, TDataModulAdressen(nil).deleteZusatztabelle);
 
+  FRouter.AddRoute('/adressen/getcodestabelle',         CreateDataModulAdressen, TDataModulAdressen(nil).getCodestabelle);
+  FRouter.AddRoute('/adressen/getcodestabellefiltered', CreateDataModulAdressen, TDataModulAdressen(nil).getCodestabelleFiltered);
+  FRouter.AddRoute('/adressen/getcodestabellebyid',     CreateDataModulAdressen, TDataModulAdressen(nil).getCodestabelleById);
+
+  FRouter.AddRoute('/adressen/getkonfiguration',         CreateDataModulAdressen, TDataModulAdressen(nil).getKonfiguration);
+  FRouter.AddRoute('/adressen/getkonfigurationfiltered', CreateDataModulAdressen, TDataModulAdressen(nil).getKonfigurationFiltered);
+  FRouter.AddRoute('/adressen/getkonfigurationbyid',     CreateDataModulAdressen, TDataModulAdressen(nil).getKonfigurationById);
+
   //PUBLIC
   FRouter.AddRoute('/public/checkmailtoken',     CreateDataModulPublic, TDataModulPublic(nil).checkmailtoken,false,true); //Auth=false,LocalOnly=true
 
@@ -598,6 +607,19 @@ begin
   FRouter.AddRoute('/anmiet/insertfundsachenmitbildern', CreateDataModulAnmiet, TDataModulAnmiet(nil).insertFundsachenMitBildern);
   FRouter.AddRoute('/anmiet/updatefundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).updateFundsachen);
   FRouter.AddRoute('/anmiet/deletefundsachen',        CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteFundsachen);
+  FRouter.AddRoute('/anmiet/gettransfehr',            CreateDataModulAnmiet, TDataModulAnmiet(nil).getTransfehr);
+  FRouter.AddRoute('/anmiet/gettransfehrfiltered',    CreateDataModulAnmiet, TDataModulAnmiet(nil).getTransfehrFiltered);
+  FRouter.AddRoute('/anmiet/gettransfehrbyid',        CreateDataModulAnmiet, TDataModulAnmiet(nil).getTransfehrById);
+  FRouter.AddRoute('/anmiet/gettransfehrkey',         CreateDataModulAnmiet, TDataModulAnmiet(nil).getTransfehrKey);
+  FRouter.AddRoute('/anmiet/inserttransfehr',         CreateDataModulAnmiet, TDataModulAnmiet(nil).insertTransfehr);
+  FRouter.AddRoute('/anmiet/updatetransfehr',         CreateDataModulAnmiet, TDataModulAnmiet(nil).updateTransfehr);
+  FRouter.AddRoute('/anmiet/deletetransfehr',         CreateDataModulAnmiet, TDataModulAnmiet(nil).deleteTransfehr);
+
+  //SCHUELERVERKEHR
+  FRouter.AddRoute('/schuelerverkehr/demo', CreateDataModulSchuelerverkehr, TDataModulSchuelerverkehr(nil).Demo);
+  FRouter.AddRoute('/schuelerverkehr/getsv_teilnehmer',         CreateDataModulSchuelerverkehr, TDataModulSchuelerverkehr(nil).getSV_Teilnehmer);
+  FRouter.AddRoute('/schuelerverkehr/getsv_teilnehmerfiltered', CreateDataModulSchuelerverkehr, TDataModulSchuelerverkehr(nil).getSV_TeilnehmerFiltered);
+  FRouter.AddRoute('/schuelerverkehr/getsv_teilnehmerbyid',     CreateDataModulSchuelerverkehr, TDataModulSchuelerverkehr(nil).getSV_TeilnehmerById);
 
   //REGISTRIERUNG
   FRouter.AddRoute('/registrierung/getregistrierung',         CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getRegistrierung);
@@ -658,6 +680,10 @@ begin
   FRouter.AddRoute('/dispo/getliniewegeobjekte',         CreateDataModulDispo, TDataModulDispo(nil).getLiniewegeobjekte,true,false);
   FRouter.AddRoute('/dispo/getliniewegeobjektefiltered', CreateDataModulDispo, TDataModulDispo(nil).getLiniewegeobjekteFiltered,true,false);
   FRouter.AddRoute('/dispo/getliniewegeobjektebyid',     CreateDataModulDispo, TDataModulDispo(nil).getLiniewegeobjekteById,true,false);
+
+  FRouter.AddRoute('/dispo/getdispo',         CreateDataModulDispo, TDataModulDispo(nil).getDispo,true,false);
+  FRouter.AddRoute('/dispo/getdispofiltered', CreateDataModulDispo, TDataModulDispo(nil).getDispoFiltered,true,false);
+  FRouter.AddRoute('/dispo/getdispobyid',     CreateDataModulDispo, TDataModulDispo(nil).getDispoById,true,false);
 
   //TOUPAC
   FRouter.AddRoute('/toupac/demo',                CreateDataModulToupac, TDataModulToupac(nil).Demo);

@@ -18,6 +18,7 @@ uses
   DataModulAdressenClass in '..\Shared\DataModuls\DataModulAdressenClass.pas' {DataModulAdressen: TDataModule},
   DataModulTouristikClass in '..\Shared\DataModuls\DataModulTouristikClass.pas' {DataModulTouristik: TDataModule},
   DataModulAnmietClass in '..\Shared\DataModuls\DataModulAnmietClass.pas' {DataModulAnmiet: TDataModule},
+  DataModulSchuelerverkehrClass in '..\Shared\DataModuls\DataModulSchuelerverkehrClass.pas' {DataModulSchuelerverkehr: TDataModule},
   DataModulIncomingClass in '..\Shared\DataModuls\DataModulIncomingClass.pas' {DataModulIncoming: TDataModule},
   DataModulPublicClass in '..\Shared\DataModuls\DataModulPublicClass.pas' {DataModulPublic: TDataModule},
   router in '..\Shared\router.pas',

@@ -1,0 +1,2 @@
+inherited DataModulSchuelerverkehr: TDataModulSchuelerverkehr
+end

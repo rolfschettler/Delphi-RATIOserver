@@ -33,6 +33,12 @@ type
     procedure insertZusatztabelle;
     procedure updateZusatztabelle;
     procedure deleteZusatztabelle;
+    procedure getCodestabelle;
+    procedure getCodestabelleFiltered;
+    procedure getCodestabelleById;
+    procedure getKonfiguration;
+    procedure getKonfigurationFiltered;
+    procedure getKonfigurationById;
   end;
 
 function CreateDataModulAdressen(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -170,10 +176,10 @@ const
     'kennziffer','gruppe','anrede','titel','name1','name2',
     'strasse','plz','ort','telefon1','email','matchcode','lvorgang'
   );
-  CONDITIONS: array[0..0] of string = (
-    'gruppe = :gruppe'
+  CONDITIONS: array[0..4] of string = (
+    'gruppe = :gruppe','name1 = :name1','name2 = :name2','strasse = :strasse','ort = :ort'
   );
-  FILTER_PARAMS: array[0..0] of string = ('gruppe');
+  FILTER_PARAMS: array[0..4] of string = ('gruppe','name1','name2','strasse','ort');
 begin
   DoSelectFilteredDynamic('ADRESSEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
@@ -461,6 +467,90 @@ procedure TDataModulAdressen.deleteZusatztabelle;
 // Body: { "nr": 42 }
 begin
   DoDelete('ZUSATZTABELLE', 'nr');
+end;
+
+// Route: /adressen/getcodestabelle  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getCodestabelle;
+// Body: { "fields": ["nr","bezeichnung",...] | "*", "orderby": "bezeichnung" }
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','bezeichnung','code','bereich'
+  );
+begin
+  DoSelect('CODESTABELLE', ALLOWED);
+end;
+
+// Route: /adressen/getcodestabellefiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getCodestabelleFiltered;
+// Body: { "fields": [...] | "*", "nr": 1, "bezeichnung": "...", "code": "...", "bereich": "...", "orderby": "bezeichnung" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','bezeichnung','code','bereich'
+  );
+  CONDITIONS: array[0..3] of string = (
+    'nr = :nr',
+    'bezeichnung = :bezeichnung',
+    'code = :code',
+    'bereich = :bereich'
+  );
+  FILTER_PARAMS: array[0..3] of string = ('nr','bezeichnung','code','bereich');
+begin
+  DoSelectFilteredDynamic('CODESTABELLE', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /adressen/getcodestabellebyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getCodestabelleById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','bezeichnung','code','bereich'
+  );
+begin
+  DoSelectOne('CODESTABELLE', ALLOWED, 'nr');
+end;
+
+// Route: /adressen/getkonfiguration  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getKonfiguration;
+// Body: { "fields": ["nr","name",...] | "*", "orderby": "name" }
+const
+  ALLOWED: array[0..5] of string = (
+    'nr','name','art','id','content','art2'
+  );
+begin
+  DoSelect('KONFIGURATION', ALLOWED);
+end;
+
+// Route: /adressen/getkonfigurationfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getKonfigurationFiltered;
+// Body: { "fields": [...] | "*", "nr": 1, "name": "...", "art": "...", "id": 1, "art2": "...", "orderby": "name" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+// content ist ein Blob-Feld und daher nur in ALLOWED, nicht in CONDITIONS/FILTER_PARAMS.
+const
+  ALLOWED: array[0..5] of string = (
+    'nr','name','art','id','content','art2'
+  );
+  CONDITIONS: array[0..4] of string = (
+    'nr = :nr',
+    'name = :name',
+    'art = :art',
+    'id = :id',
+    'art2 = :art2'
+  );
+  FILTER_PARAMS: array[0..4] of string = ('nr','name','art','id','art2');
+begin
+  DoSelectFilteredDynamic('KONFIGURATION', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /adressen/getkonfigurationbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getKonfigurationById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..5] of string = (
+    'nr','name','art','id','content','art2'
+  );
+begin
+  DoSelectOne('KONFIGURATION', ALLOWED, 'nr');
 end;
 
 end.

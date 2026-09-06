@@ -1,0 +1,312 @@
+{
+  "info": {
+    "name": "RATIOserver – Delta 2026-09-01d (Transfehr)",
+    "description": "Delta-Collection mit den in dieser Session neu erstellten CRUD-Endpunkten für die Tabelle TRANSFEHR im Anmiet-Controller (Shared/DataModuls/DataModulAnmietClass.pas). Enthält nur diese neuen Endpunkte, keine bereits bestehenden.\n\nBei GET-Requests mit JSON-Body ist \"protocolProfileBehavior\": {\"disableBodyPruning\": true} gesetzt, damit Postman den Body bei GET nicht verwirft.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Transfehr",
+      "item": [
+        {
+          "name": "GET /anmiet/gettransfehr – Transfehr-Einträge auflisten",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"hinfahrt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/anmiet/gettransfehr",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "anmiet",
+                "gettransfehr"
+              ]
+            },
+            "description": "Listet Datensätze aus der Tabelle TRANSFEHR auf (generisches `DoSelect`, kein Filter).\n\n**Erlaubte Felder (ALLOWED):** nr, kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, text, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart\n\n**Body (optional):** `{ \"fields\": [...] | \"*\", \"orderby\": \"feld\", \"limit\": 10, \"offset\": 0 }`\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** ohne `limit` ein rohes JSON-Array der Datensätze; mit `limit` ein Objekt `{\"total\":N,\"limit\":N,\"offset\":N,\"data\":[...]}`."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /anmiet/gettransfehrfiltered – Transfehr-Einträge gefiltert",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"kunde\": 123,\n  \"status\": 1,\n  \"orderby\": \"hinfahrt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/anmiet/gettransfehrfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "anmiet",
+                "gettransfehrfiltered"
+              ]
+            },
+            "description": "Listet Datensätze aus TRANSFEHR auf, optional gefiltert nach beliebigen der unten genannten Filterparameter (generisches `DoSelectFilteredDynamic`, alle Filter AND-verknüpft und optional).\n\n**Erlaubte Felder (ALLOWED):** nr, kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, text, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart\n\n**Filterparameter (optional, AND-verknüpft):** nr, kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart (Blob-Feld `text` ist nicht filterbar, nur in ALLOWED enthalten)\n\n**Body (optional):** `{ \"fields\": [...] | \"*\", \"kunde\": <wert>, \"status\": <wert>, \"orderby\": \"feld\", \"limit\": 10, \"offset\": 0 }`\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** ohne `limit` ein rohes JSON-Array der Datensätze; mit `limit` ein Objekt `{\"total\":N,\"limit\":N,\"offset\":N,\"data\":[...]}`."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /anmiet/gettransfehrbyid – Transfehr-Eintrag per Nr",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/anmiet/gettransfehrbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "anmiet",
+                "gettransfehrbyid"
+              ]
+            },
+            "description": "Liefert genau einen Datensatz aus TRANSFEHR anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).\n\n**Erlaubte Felder (ALLOWED):** nr, kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, text, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart\n\n**Body:** `{ \"nr\": <wert>, \"fields\": [...] | \"*\" }` – nr ist Pflicht.\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** ein einzelnes JSON-Objekt (kein Array) mit den angeforderten Feldern."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /anmiet/gettransfehrkey – nächste Transfehr-Nr ermitteln",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/anmiet/gettransfehrkey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "anmiet",
+                "gettransfehrkey"
+              ]
+            },
+            "description": "Ermittelt den nächsten Wert des Generators `TRANSFEHR_NR_GEN` (`GEN_ID(TRANSFEHR_NR_GEN, 1)`) für einen neuen Primärschlüssel `nr`.\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** JSON mit dem Feld `nr`."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /anmiet/inserttransfehr – Transfehr anlegen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kunde\": 123,\n  \"ansprechpartner\": 5,\n  \"hinfahrt\": \"2026-09-10 08:00:00\",\n  \"hinfahrtende\": \"2026-09-10 10:00:00\",\n  \"abfahrthin\": \"Flughafen\",\n  \"ankunfthin\": \"Hotel\",\n  \"zeit1h\": \"08:00\",\n  \"kurztext\": \"Transfer Flughafen - Hotel\",\n  \"bearbeiter\": \"HW\",\n  \"erstellt\": \"2026-09-01 12:00:00\",\n  \"personen\": 4,\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/anmiet/inserttransfehr",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "anmiet",
+                "inserttransfehr"
+              ]
+            },
+            "description": "Legt einen neuen Datensatz in der Tabelle TRANSFEHR an (generisches `DoInsert`). Die Nr wird nicht über diesen Endpunkt vergeben – sie sollte vorab über `/anmiet/gettransfehrkey` ermittelt und im Body als `nr` mitgegeben werden, falls vom Frontend benötigt (Primärschlüssel `nr` ist hier nicht in ALLOWED enthalten, da generatorbasiert).\n\n**Erlaubte Felder (ALLOWED):** kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, text, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** `{\"status\":\"OK\"}`"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /anmiet/updatetransfehr – Transfehr ändern",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"status\": 2,\n  \"kurztext\": \"Transfer Flughafen - Hotel (bestätigt)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/anmiet/updatetransfehr",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "anmiet",
+                "updatetransfehr"
+              ]
+            },
+            "description": "Aktualisiert einen bestehenden Datensatz in TRANSFEHR anhand `nr` (generisches `DoUpdate`). Nur im Body vorhandene, erlaubte Felder werden geändert.\n\n**Erlaubte Felder (ALLOWED):** kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, text, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart\n\n**Body:** `{ \"nr\": <wert>, ...zu ändernde Felder... }` – nr ist Pflicht.\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** `{\"status\":\"OK\"}`"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /anmiet/deletetransfehr – Transfehr löschen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/anmiet/deletetransfehr",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "anmiet",
+                "deletetransfehr"
+              ]
+            },
+            "description": "Löscht einen Datensatz aus TRANSFEHR anhand `nr` (generisches `DoDelete`).\n\n**Body:** `{ \"nr\": <wert> }`\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** `{\"status\":\"OK\"}`"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "jwttoken",
+      "value": ""
+    },
+    {
+      "key": "baseURL",
+      "value": "localhost/ibapi"
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "info": {
+    "name": "RATIOserver – Delta 2026-09-01e (Schuelerverkehr)",
+    "description": "Delta-Collection mit den in dieser Session neu erstellten R-Endpunkten (get/getFiltered/getById) für die Tabelle SV_TEILNEHMER im Schuelerverkehr-Controller (Shared/DataModuls/DataModulSchuelerverkehrClass.pas). Enthält nur diese neuen Endpunkte, keine bereits bestehenden.\n\nBei GET-Requests mit JSON-Body ist \"protocolProfileBehavior\": {\"disableBodyPruning\": true} gesetzt, damit Postman den Body bei GET nicht verwirft.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Schuelerverkehr",
+      "item": [
+        {
+          "name": "GET /schuelerverkehr/getsv_teilnehmer – SV_Teilnehmer auflisten",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nachname\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/schuelerverkehr/getsv_teilnehmer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "schuelerverkehr",
+                "getsv_teilnehmer"
+              ]
+            },
+            "description": "Listet Datensätze aus der Tabelle SV_TEILNEHMER auf (generisches `DoSelect`, kein Filter).\n\n**Erlaubte Felder (ALLOWED):** nr, persnr, los, einrichtungnr_fk, kennziffer_fk, kostentraeger_fk, tourbereich, berufsverkehr, anrede, vorname, nachname, strasse, land, plz, ort, ortsteil, bezirk, email, xkoord, ykoord, haltepunktnr_fk, ansprech1, ansprech1_tel, ansprech2, ansprech2_tel, hinweis, importhinweis1, rolli, einzelbefoerderung, begleitperson, begleitpersonname, hilfsmittel, hilfsmittelhinweis, sv_fahrzeugprofil, abrechnungstarif_fk, gruppe, geburtstag, geprueft, inaktiv, erfasstvon, erfasstam, geaendertvon, geaendertam, ansprech1_email, ansprech1_vorname, ansprech1_nachname, ansprech2_email, ansprech2_vorname, ansprech2_nachname, pushid, pwd, datumfeld1, datumfeld2, datumfeld3, datumfeld4, textfeld1, textfeld2, textfeld3, textfeld4, textfeld5\n\n**Body (optional):** `{ \"fields\": [...] | \"*\", \"orderby\": \"feld\", \"limit\": 10, \"offset\": 0 }`\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** ohne `limit` ein rohes JSON-Array der Datensätze; mit `limit` ein Objekt `{\"total\":N,\"limit\":N,\"offset\":N,\"data\":[...]}`."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /schuelerverkehr/getsv_teilnehmerfiltered – SV_Teilnehmer gefiltert",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"nachname\": \"Mustermann\",\n  \"inaktiv\": \"Nein\",\n  \"orderby\": \"nachname\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/schuelerverkehr/getsv_teilnehmerfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "schuelerverkehr",
+                "getsv_teilnehmerfiltered"
+              ]
+            },
+            "description": "Listet Datensätze aus SV_TEILNEHMER auf, optional gefiltert nach beliebigen der unten genannten Filterparameter (generisches `DoSelectFilteredDynamic`, alle Filter AND-verknüpft und optional).\n\n**Erlaubte Felder (ALLOWED):** nr, persnr, los, einrichtungnr_fk, kennziffer_fk, kostentraeger_fk, tourbereich, berufsverkehr, anrede, vorname, nachname, strasse, land, plz, ort, ortsteil, bezirk, email, xkoord, ykoord, haltepunktnr_fk, ansprech1, ansprech1_tel, ansprech2, ansprech2_tel, hinweis, importhinweis1, rolli, einzelbefoerderung, begleitperson, begleitpersonname, hilfsmittel, hilfsmittelhinweis, sv_fahrzeugprofil, abrechnungstarif_fk, gruppe, geburtstag, geprueft, inaktiv, erfasstvon, erfasstam, geaendertvon, geaendertam, ansprech1_email, ansprech1_vorname, ansprech1_nachname, ansprech2_email, ansprech2_vorname, ansprech2_nachname, pushid, pwd, datumfeld1, datumfeld2, datumfeld3, datumfeld4, textfeld1, textfeld2, textfeld3, textfeld4, textfeld5\n\n**Filterparameter (optional, AND-verknüpft):** alle oben genannten ALLOWED-Felder\n\n**Body (optional):** `{ \"fields\": [...] | \"*\", \"nachname\": <wert>, \"inaktiv\": <wert>, \"orderby\": \"feld\", \"limit\": 10, \"offset\": 0 }`\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** ohne `limit` ein rohes JSON-Array der Datensätze; mit `limit` ein Objekt `{\"total\":N,\"limit\":N,\"offset\":N,\"data\":[...]}`."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /schuelerverkehr/getsv_teilnehmerbyid – SV_Teilnehmer per Nr",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/schuelerverkehr/getsv_teilnehmerbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "schuelerverkehr",
+                "getsv_teilnehmerbyid"
+              ]
+            },
+            "description": "Liefert genau einen Datensatz aus SV_TEILNEHMER anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).\n\n**Erlaubte Felder (ALLOWED):** nr, persnr, los, einrichtungnr_fk, kennziffer_fk, kostentraeger_fk, tourbereich, berufsverkehr, anrede, vorname, nachname, strasse, land, plz, ort, ortsteil, bezirk, email, xkoord, ykoord, haltepunktnr_fk, ansprech1, ansprech1_tel, ansprech2, ansprech2_tel, hinweis, importhinweis1, rolli, einzelbefoerderung, begleitperson, begleitpersonname, hilfsmittel, hilfsmittelhinweis, sv_fahrzeugprofil, abrechnungstarif_fk, gruppe, geburtstag, geprueft, inaktiv, erfasstvon, erfasstam, geaendertvon, geaendertam, ansprech1_email, ansprech1_vorname, ansprech1_nachname, ansprech2_email, ansprech2_vorname, ansprech2_nachname, pushid, pwd, datumfeld1, datumfeld2, datumfeld3, datumfeld4, textfeld1, textfeld2, textfeld3, textfeld4, textfeld5\n\n**Body:** `{ \"nr\": <wert>, \"fields\": [...] | \"*\" }` – nr ist Pflicht.\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** ein einzelnes JSON-Objekt (kein Array) mit den angeforderten Feldern."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwttoken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "jwttoken",
+      "value": ""
+    },
+    {
+      "key": "baseURL",
+      "value": "localhost/ibapi"
+    }
+  ]
+}

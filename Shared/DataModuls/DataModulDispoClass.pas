@@ -59,6 +59,9 @@ type
     procedure getLiniewegeobjekte;
     procedure getLiniewegeobjekteFiltered;
     procedure getLiniewegeobjekteById;
+    procedure getDispo;
+    procedure getDispoFiltered;
+    procedure getDispoById;
   end;
 
 function CreateDataModulDispo(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -1041,6 +1044,54 @@ const
   );
 begin
   DoSelectOne('LINIEWEGEOBJEKTE', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/getdispo  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getDispo;
+// Body: { "fields": ["nr","von",...] | "*", "orderby": "von" }
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','von','bis','objekt','einsatznr','dienstobjnr','art','bemerkung','fahrtablaufnr'
+  );
+begin
+  DoSelect('DISPO', ALLOWED);
+end;
+
+// Route: /dispo/getdispofiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getDispoFiltered;
+// Body: { "fields": [...] | "*", "nr": 1, "objekt": "...", "einsatznr": 42, "orderby": "von" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','von','bis','objekt','einsatznr','dienstobjnr','art','bemerkung','fahrtablaufnr'
+  );
+  CONDITIONS: array[0..8] of string = (
+    'nr = :nr',
+    'von = :von',
+    'bis = :bis',
+    'objekt = :objekt',
+    'einsatznr = :einsatznr',
+    'dienstobjnr = :dienstobjnr',
+    'art = :art',
+    'bemerkung = :bemerkung',
+    'fahrtablaufnr = :fahrtablaufnr'
+  );
+  FILTER_PARAMS: array[0..8] of string = (
+    'nr','von','bis','objekt','einsatznr','dienstobjnr','art','bemerkung','fahrtablaufnr'
+  );
+begin
+  DoSelectFilteredDynamic('DISPO', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /dispo/getdispobyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getDispoById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','von','bis','objekt','einsatznr','dienstobjnr','art','bemerkung','fahrtablaufnr'
+  );
+begin
+  DoSelectOne('DISPO', ALLOWED, 'nr');
 end;
 
 end.
