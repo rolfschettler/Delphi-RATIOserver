@@ -63,5 +63,7 @@ Body: `options.raw.language` = `"json"` setzen.
 
 IMMER jeder Request benötigt {{jwttoken}}
 
+
+
 ## Projektkontext (Kurzfassung)
 Delphi WebBroker REST-API, Apache-DLL + CGI, FireDAC/IB, JWT-Auth, OpenAI GPT-4o, Touristik-Domain.
