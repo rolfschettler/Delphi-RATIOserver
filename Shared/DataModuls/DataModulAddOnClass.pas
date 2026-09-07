@@ -27,6 +27,7 @@ type
     procedure teilnehmerformcsv();
     procedure getdokument();
     procedure getGeneratorValue();
+    procedure getFirmenstamm();
 
   end;
 
@@ -876,6 +877,26 @@ begin
   finally
     QCheck.Free;
     QGen.Free;
+  end;
+end;
+
+// Route: /getfirmenstamm  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAddOn.getFirmenstamm;
+// Liefert den einzigen Datensatz der Tabelle FIRMENSTAMM (Mandanten-Stammdaten).
+var
+  Q: TFDQuery;
+begin
+  Q := TFDQuery.Create(nil);
+  try
+    Q.Connection := Connection;
+    Q.SQL.Text := 'SELECT * FROM FIRMENSTAMM';
+    Q.Open;
+
+    Response.ContentType := 'application/json';
+    Response.StatusCode  := 200;
+    Response.Content     := SerializeQuery(Q);
+  finally
+    Q.Free;
   end;
 end;
 

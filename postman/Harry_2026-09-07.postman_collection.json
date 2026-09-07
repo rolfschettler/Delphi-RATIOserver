@@ -1,0 +1,219 @@
+{
+  "info": {
+    "name": "RATIOserver – Delta 2026-09-07 (Dispo Zeitraum-Filter)",
+    "description": "Delta-Collection für den umgebauten Endpunkt /dispo/getdispofiltered (Shared/DataModuls/DataModulDispoClass.pas). Zeitraum-Filter (von/bis) arbeitet jetzt als Overlap-Bedingung (bis >= von UND von <= bis) statt exakter Gleichheit, dazu weiterhin optional filterbar nach objekt, einsatznr, dienstobjnr. \"von\" und \"bis\" sind nur gemeinsam nutzbar – wird nur eines der beiden angegeben, liefert der Endpunkt einen Fehler.\n\nBei GET-Requests mit JSON-Body ist \"protocolProfileBehavior\": {\"disableBodyPruning\": true} gesetzt, damit Postman den Body bei GET nicht verwirft.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Dispo",
+      "item": [
+        {
+          "name": "GET /dispo/getdispofiltered – nur Zeitraum (von+bis)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"von\": \"2026-09-01 00:00:00\",\n  \"bis\": \"2026-09-30 23:59:59\",\n  \"orderby\": \"von\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Liefert DISPO-Datensätze, deren Zeitraum sich mit [von, bis] überschneidet (bis >= von UND von <= bis). objekt/einsatznr/dienstobjnr nicht gesetzt -> kein zusätzlicher Filter."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – Zeitraum + objekt",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"von\": \"2026-09-01 00:00:00\",\n  \"bis\": \"2026-09-30 23:59:59\",\n  \"objekt\": \"Bus 12\",\n  \"orderby\": \"von\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Zeitraum-Overlap-Filter kombiniert mit zusätzlichem exaktem objekt-Filter (AND-verknüpft)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – nur einsatznr (kein Zeitraum)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"einsatznr\": 42,\n  \"orderby\": \"von\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Kein Zeitraum-Filter (von/bis nicht gesetzt) -> Zeitbedingung inaktiv, nur einsatznr wird gefiltert."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – keine Filter (alle Datensätze)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"von\",\n  \"limit\": 20,\n  \"offset\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Kein Filter gesetzt -> alle DISPO-Datensätze (paginiert über limit/offset)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – Fehlerfall: nur \"von\" ohne \"bis\"",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"von\": \"2026-09-01 00:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Negativtest: nur \"von\" ohne \"bis\" gesetzt -> Endpunkt lehnt mit Fehlermeldung ab (\"von\" und \"bis\" müssen gemeinsam angegeben werden), statt still 0 Zeilen zu liefern."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "info": {
+    "name": "RATIOserver – Delta 2026-09-07b (AddOn: getFirmenstamm)",
+    "description": "Delta-Collection für den neuen Endpunkt /getfirmenstamm (Shared/DataModuls/DataModulAddOnClass.pas). Liefert den einzigen Datensatz der Tabelle FIRMENSTAMM (Mandanten-Stammdaten). Kein Filter, keine Parameter nötig, da die Tabelle nur einen Datensatz enthält.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AddOn",
+      "item": [
+        {
+          "name": "GET /getfirmenstamm",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/getfirmenstamm",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "getfirmenstamm"
+              ]
+            },
+            "description": "Liefert den einzigen Datensatz der Tabelle FIRMENSTAMM (Mandanten-Stammdaten) als JSON."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -1059,27 +1059,48 @@ end;
 
 // Route: /dispo/getdispofiltered  |  Auth: true  |  LocalOnly: false
 procedure TDataModulDispo.getDispoFiltered;
-// Body: { "fields": [...] | "*", "nr": 1, "objekt": "...", "einsatznr": 42, "orderby": "von" }
-// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+// Body: { "fields": [...] | "*", "von": "2024-01-01 00:00:00", "bis": "2024-12-31 23:59:59",
+//         "objekt": "...", "einsatznr": 42, "dienstobjnr": 7, "orderby": "von" }
+// Zeitraum-Filter (Overlap): DISPO-Eintrag ueberschneidet [von, bis]. "von" und "bis" sind
+// nur gemeinsam nutzbar (beide oder keines) -- wird nur eines der beiden angegeben, wird das
+// als Klientenfehler abgelehnt statt still 0 Zeilen zu liefern.
+// objekt/einsatznr/dienstobjnr sind unabhaengig davon jeweils optional.
+//
+// Hinweis: DoSelectFilteredDynamic statt DoSelectFiltered, da InterBase bei
+// ":von IS NULL"/":bis IS NULL" (Parameter ohne Vergleich mit einer Spalte) den
+// Datentyp nicht ableiten kann -> "Data type unknown" (SQL error -804). Mit
+// DoSelectFilteredDynamic erscheint jeder Parameter genau einmal, stets in einem
+// typisierten Vergleich mit einer Spalte.
+var
+  Body:    TJSONObject;
+  VonVal:  TJSONValue;
+  BisVal:  TJSONValue;
+  VonSet:  Boolean;
+  BisSet:  Boolean;
 const
   ALLOWED: array[0..8] of string = (
     'nr','von','bis','objekt','einsatznr','dienstobjnr','art','bemerkung','fahrtablaufnr'
   );
-  CONDITIONS: array[0..8] of string = (
-    'nr = :nr',
-    'von = :von',
-    'bis = :bis',
-    'objekt = :objekt',
-    'einsatznr = :einsatznr',
-    'dienstobjnr = :dienstobjnr',
-    'art = :art',
-    'bemerkung = :bemerkung',
-    'fahrtablaufnr = :fahrtablaufnr'
+  CONDITIONS: array[0..4] of string = (
+    'bis >= :von', 'von <= :bis', 'objekt = :objekt', 'einsatznr = :einsatznr', 'dienstobjnr = :dienstobjnr'
   );
-  FILTER_PARAMS: array[0..8] of string = (
-    'nr','von','bis','objekt','einsatznr','dienstobjnr','art','bemerkung','fahrtablaufnr'
+  FILTER_PARAMS: array[0..4] of string = (
+    'von','bis','objekt','einsatznr','dienstobjnr'
   );
 begin
+  Body := ParseJSONObject(Request.Content);
+  if Assigned(Body) then
+  try
+    VonVal := Body.GetValue('von');
+    BisVal := Body.GetValue('bis');
+    VonSet := Assigned(VonVal) and not VonVal.Null;
+    BisSet := Assigned(BisVal) and not BisVal.Null;
+    if VonSet <> BisSet then
+      raise Exception.Create('Wenn ein Zeitraum gefiltert werden soll, muessen "von" und "bis" gemeinsam angegeben werden.');
+  finally
+    Body.Free;
+  end;
+
   DoSelectFilteredDynamic('DISPO', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 

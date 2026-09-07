@@ -467,6 +467,7 @@ begin
   FRouter.AddRoute('/teilnehmerfromcsv', CreateDataModulAddOn, TDataModulAddOn(nil).teilnehmerformcsv);
   FRouter.AddRoute('/getdokument', CreateDataModulAddOn, TDataModulAddOn(nil).getdokument);
   FRouter.AddRoute('/getgeneratorvalue', CreateDataModulAddOn, TDataModulAddOn(nil).getGeneratorValue);
+  FRouter.AddRoute('/getfirmenstamm', CreateDataModulAddOn, TDataModulAddOn(nil).getFirmenstamm);
 
   //PUBLIC API: Diese Api können auch von außerhalb des localhost aufgerufen werden
 
