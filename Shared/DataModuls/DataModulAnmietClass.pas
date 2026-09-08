@@ -471,11 +471,17 @@ end;
 
 // Prueft, ob AValue syntaktisch gueltiges Base64 ist (Zeichensatz + Laenge/Padding).
 // Leerstring gilt als gueltig (entspricht einem leeren Blob).
+// Whitespace wird vorher entfernt: MIME-Base64 (RFC 2045) bricht alle 76 Zeichen
+// mit CRLF um, und Clients schicken solche Werte weiterhin zurueck. Der Decoder
+// (TNetEncoding.Base64) ignoriert Umbrueche ohnehin.
 function IsValidBase64Value(const AValue: string): Boolean;
+var
+  Cleaned: string;
 begin
-  Result := (AValue = '') or
-    (((Length(AValue) mod 4) = 0) and
-     TRegEx.IsMatch(AValue, '^[A-Za-z0-9+/]*={0,2}$'));
+  Cleaned := TRegEx.Replace(AValue, '\s', '');
+  Result := (Cleaned = '') or
+    (((Length(Cleaned) mod 4) = 0) and
+     TRegEx.IsMatch(Cleaned, '^[A-Za-z0-9+/]*={0,2}$'));
 end;
 
 // Route: /anmiet/insertfundsachenmitbildern  |  Auth: true  |  LocalOnly: false
