@@ -736,6 +736,8 @@ begin
   FRouter.AddRoute('/dokumente/gett_bildtext',          CreateDataModulDokumente, TDataModulDokumente(nil).getT_Bildtext);
   FRouter.AddRoute('/dokumente/gett_bildtextfiltered',  CreateDataModulDokumente, TDataModulDokumente(nil).getT_BildtextFiltered);
   FRouter.AddRoute('/dokumente/gett_bildtextbyid',      CreateDataModulDokumente, TDataModulDokumente(nil).getT_BildtextById);
+  FRouter.AddRoute('/dokumente/getbildtextfiltered',    CreateDataModulDokumente, TDataModulDokumente(nil).getBildtextFiltered);
+  FRouter.AddRoute('/dokumente/getbildtextbyid',        CreateDataModulDokumente, TDataModulDokumente(nil).getBildtextById);
   FRouter.AddRoute('/dokumente/insertt_bildtext',       CreateDataModulDokumente, TDataModulDokumente(nil).insertT_Bildtext);
   FRouter.AddRoute('/dokumente/updatet_bildtext',       CreateDataModulDokumente, TDataModulDokumente(nil).updateT_Bildtext);
   FRouter.AddRoute('/dokumente/deletet_bildtext',       CreateDataModulDokumente, TDataModulDokumente(nil).deleteT_Bildtext);

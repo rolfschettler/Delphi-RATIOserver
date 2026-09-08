@@ -749,35 +749,56 @@ end;
 
 // Route: /dispo/geturlaubsantragfiltered  |  Auth: true  |  LocalOnly: false
 procedure TDataModulDispo.getUrlaubsantragFiltered;
-// Body: { "fields": [...] | "*", "nr": 1, "mitarbeiter": "MM", "orderby": "von" }
-// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+// Body: { "fields": [...] | "*", "von": "2024-01-01", "bis": "2024-12-31",
+//         "nr": 1, "mitarbeiter": "MM", "orderby": "von" }
+// Zeitraum-Filter (Overlap): URLAUBSANTRAG-Eintrag ueberschneidet [von, bis]. "von" und "bis"
+// sind Pflichtfelder -- fehlt eines von beiden, wird das als Klientenfehler abgelehnt statt
+// still ungefiltert (oder 0 Zeilen) zu liefern.
+// nr/mitarbeiter/status/statusam/statusvon/vertretung sind unabhaengig davon jeweils optional.
 // bemerkung ist ein Blob-Feld und daher nur in ALLOWED, nicht in CONDITIONS/FILTER_PARAMS.
+//
+// Hinweis: DoSelectFilteredDynamic statt DoSelectFiltered, da InterBase bei
+// ":von IS NULL"/":bis IS NULL" (Parameter ohne Vergleich mit einer Spalte) den
+// Datentyp nicht ableiten kann -> "Data type unknown" (SQL error -804). Mit
+// DoSelectFilteredDynamic erscheint jeder Parameter genau einmal, stets in einem
+// typisierten Vergleich mit einer Spalte.
+var
+  Body:    TJSONObject;
+  VonVal:  TJSONValue;
+  BisVal:  TJSONValue;
 const
   ALLOWED: array[0..14] of string = (
     'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
     'bemerkung','text1','text2','text3','status','statusam','statusvon','vertretung'
   );
-  CONDITIONS: array[0..13] of string = (
+  CONDITIONS: array[0..7] of string = (
     'nr = :nr',
     'mitarbeiter = :mitarbeiter',
-    'von = :von',
-    'bis = :bis',
-    'beantragtam = :beantragtam',
-    'genehmigtam = :genehmigtam',
-    'genehmigtvon = :genehmigtvon',
-    'text1 = :text1',
-    'text2 = :text2',
-    'text3 = :text3',
+    'bis >= :von',
+    'von <= :bis',
     'status = :status',
     'statusam = :statusam',
     'statusvon = :statusvon',
     'vertretung = :vertretung'
   );
-  FILTER_PARAMS: array[0..13] of string = (
-    'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
-    'text1','text2','text3','status','statusam','statusvon','vertretung'
+  FILTER_PARAMS: array[0..7] of string = (
+    'nr','mitarbeiter','von','bis',
+    'status','statusam','statusvon','vertretung'
   );
 begin
+  Body := ParseJSONObject(Request.Content);
+  if Assigned(Body) then
+  try
+    VonVal := Body.GetValue('von');
+    BisVal := Body.GetValue('bis');
+    if (not Assigned(VonVal)) or VonVal.Null or (not Assigned(BisVal)) or BisVal.Null then
+      raise Exception.Create('"von" und "bis" sind Pflichtfelder.');
+  finally
+    Body.Free;
+  end
+  else
+    raise Exception.Create('"von" und "bis" sind Pflichtfelder.');
+
   DoSelectFilteredDynamic('URLAUBSANTRAG', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
 

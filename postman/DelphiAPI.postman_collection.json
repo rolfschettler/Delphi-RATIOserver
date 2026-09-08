@@ -644,6 +644,82 @@
             "description": "Loescht einen Datensatz aus T_BILDTEXT anhand des Schluessels nr."
           },
           "response": []
+        },
+        {
+          "name": "getBildtextFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"art\": \"FOTO\",\n  \"code\": 1,\n  \"sprache\": \"DE\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dokumente/getbildtextfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dokumente",
+                "getbildtextfiltered"
+              ]
+            },
+            "description": "Liefert BILDTEXT-Datensaetze gefiltert nach optionalen Parametern (nr, art, code, imgtype, ueberschrift, bildindex, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, lastlock, erfasst_am, versteckt, bildformat, textformat)."
+          },
+          "response": []
+        },
+        {
+          "name": "getBildtextById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dokumente/getbildtextbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dokumente",
+                "getbildtextbyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen BILDTEXT-Datensatz anhand von nr."
+          },
+          "response": []
         }
       ]
     },
@@ -4686,47 +4762,6 @@
           "response": []
         },
         {
-          "name": "GET /dispo/getdispofiltered – Dispo-Einträge gefiltert",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{jwttoken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fields\": \"*\",\n  \"nr\": 1,\n  \"objekt\": \"...\",\n  \"einsatznr\": 42,\n  \"orderby\": \"von\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseURL}}/dispo/getdispofiltered",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "dispo",
-                "getdispofiltered"
-              ]
-            },
-            "description": "Listet Datensätze aus DISPO auf, optional gefiltert nach beliebigen der unten genannten Filterparameter (generisches `DoSelectFilteredDynamic`, alle Filter AND-verknüpft und optional).\n\n**Erlaubte Felder (ALLOWED):** nr, von, bis, objekt, einsatznr, dienstobjnr, art, bemerkung, fahrtablaufnr\n\n**Filterparameter (optional, AND-verknüpft):** nr, von, bis, objekt, einsatznr, dienstobjnr, art, bemerkung, fahrtablaufnr\n\n**Body (optional):** `{ \"fields\": [...] | \"*\", \"nr\": <wert>, \"objekt\": \"...\", \"einsatznr\": <wert>, \"orderby\": \"feld\", \"limit\": 10, \"offset\": 0 }`\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** ohne `limit` ein rohes JSON-Array der Datensätze; mit `limit` ein Objekt `{\"total\":N,\"limit\":N,\"offset\":N,\"data\":[...]}`."
-          },
-          "response": []
-        },
-        {
           "name": "GET /dispo/getdispobyid – Dispo-Eintrag per Nr",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -4764,6 +4799,211 @@
               ]
             },
             "description": "Liefert genau einen Datensatz aus DISPO anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).\n\n**Erlaubte Felder (ALLOWED):** nr, von, bis, objekt, einsatznr, dienstobjnr, art, bemerkung, fahrtablaufnr\n\n**Body:** `{ \"nr\": <wert>, \"fields\": [...] | \"*\" }` – nr ist Pflicht.\n\n**Auth:** erforderlich (Bearer Token)\n\n**Antwort:** ein einzelnes JSON-Objekt (kein Array) mit den angeforderten Feldern."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – Zeitraum + objekt",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"von\": \"2026-09-01 00:00:00\",\n  \"bis\": \"2026-09-30 23:59:59\",\n  \"objekt\": \"Bus 12\",\n  \"orderby\": \"von\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Zeitraum-Overlap-Filter kombiniert mit zusätzlichem exaktem objekt-Filter (AND-verknüpft)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – nur einsatznr (kein Zeitraum)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"einsatznr\": 42,\n  \"orderby\": \"von\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Kein Zeitraum-Filter (von/bis nicht gesetzt) -> Zeitbedingung inaktiv, nur einsatznr wird gefiltert."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – nur Zeitraum (von+bis)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"von\": \"2026-09-01 00:00:00\",\n  \"bis\": \"2026-09-30 23:59:59\",\n  \"orderby\": \"von\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Liefert DISPO-Datensätze, deren Zeitraum sich mit [von, bis] überschneidet (bis >= von UND von <= bis). objekt/einsatznr/dienstobjnr nicht gesetzt -> kein zusätzlicher Filter."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – keine Filter (alle Datensätze)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"von\",\n  \"limit\": 20,\n  \"offset\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Kein Filter gesetzt -> alle DISPO-Datensätze (paginiert über limit/offset)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /dispo/getdispofiltered – Fehlerfall: nur \"von\" ohne \"bis\"",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"von\": \"2026-09-01 00:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/dispo/getdispofiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "dispo",
+                "getdispofiltered"
+              ]
+            },
+            "description": "Negativtest: nur \"von\" ohne \"bis\" gesetzt -> Endpunkt lehnt mit Fehlermeldung ab (\"von\" und \"bis\" müssen gemeinsam angegeben werden), statt still 0 Zeilen zu liefern."
           },
           "response": []
         }
@@ -10372,6 +10612,17 @@
       "response": []
     },
     {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
       "name": "IBApi local Update NO KEY",
       "request": {
         "auth": {
@@ -10626,17 +10877,6 @@
       "request": {
         "method": "GET",
         "header": []
-      },
-      "response": []
-    },
-    {
-      "name": "New Request",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": ""
-        }
       },
       "response": []
     }

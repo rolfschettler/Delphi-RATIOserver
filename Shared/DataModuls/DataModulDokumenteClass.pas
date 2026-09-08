@@ -30,6 +30,8 @@ type
     procedure insertT_Bildtext;
     procedure updateT_Bildtext;
     procedure deleteT_Bildtext;
+    procedure getBildtextFiltered;
+    procedure getBildtextById;
   end;
 
 
@@ -326,6 +328,59 @@ const
   );
 begin
   DoSelectOne('T_BILDTEXT', ALLOWED, 'nr');
+end;
+
+// Route: /dokumente/getbildtextfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDokumente.getBildtextFiltered;
+// Body: { "fields": [...] | "*", "art": "...", "code": 42, "sprache": "...", "orderby": "nr" }
+// Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+// BILD und TEXT sind BLOB-Felder und deshalb nur in ALLOWED, nie als Filter.
+const
+  ALLOWED: array[0..19] of string = (
+    'nr','bild','text','art','code','imgtype','ueberschrift','bildindex','copr',
+    'sprache','internet','app','externe_id','nutzungsrecht_bis','urheber',
+    'lastlock','erfasst_am','versteckt','bildformat','textformat'
+  );
+  CONDITIONS: array[0..17] of string = (
+    'nr = :nr',
+    'art = :art',
+    'code = :code',
+    'imgtype = :imgtype',
+    'ueberschrift = :ueberschrift',
+    'bildindex = :bildindex',
+    'copr = :copr',
+    'sprache = :sprache',
+    'internet = :internet',
+    'app = :app',
+    'externe_id = :externe_id',
+    'nutzungsrecht_bis = :nutzungsrecht_bis',
+    'urheber = :urheber',
+    'lastlock = :lastlock',
+    'erfasst_am = :erfasst_am',
+    'versteckt = :versteckt',
+    'bildformat = :bildformat',
+    'textformat = :textformat'
+  );
+  FILTER_PARAMS: array[0..17] of string = (
+    'nr','art','code','imgtype','ueberschrift','bildindex','copr','sprache',
+    'internet','app','externe_id','nutzungsrecht_bis','urheber','lastlock',
+    'erfasst_am','versteckt','bildformat','textformat'
+  );
+begin
+  DoSelectFilteredDynamic('BILDTEXT', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /dokumente/getbildtextbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDokumente.getBildtextById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..19] of string = (
+    'nr','bild','text','art','code','imgtype','ueberschrift','bildindex','copr',
+    'sprache','internet','app','externe_id','nutzungsrecht_bis','urheber',
+    'lastlock','erfasst_am','versteckt','bildformat','textformat'
+  );
+begin
+  DoSelectOne('BILDTEXT', ALLOWED, 'nr');
 end;
 
 // Prueft, ob AValue syntaktisch gueltiges Base64 ist (Zeichensatz + Laenge/Padding).
