@@ -95,6 +95,24 @@ function CaseInsCondition(const AField, APrefix: string): string;
 implementation
 
 // ---------------------------------------------------------------------------
+// Base64-Encoder OHNE Zeilenumbrueche
+//
+// TNetEncoding.Base64 ist eine MIME-Instanz (RFC 2045) und bricht die Ausgabe
+// alle 76 Zeichen mit CRLF um. Das ist zwar gueltiges Base64, aber:
+//   - strikte Parser (RFC 4648) lehnen die Umbrueche ab,
+//   - in der JSON-Ansicht von Postman/Bruno erscheinen sie als literale
+//     Escape-Sequenzen und ueberleben ein Copy-Paste nicht,
+//   - die Blob-Pruefung von insertT_Bildtext wies die eigene GET-Ausgabe ab.
+// FBase64NoWrap ist mit CharsPerLine = 0 konfiguriert und liefert deshalb eine
+// einzige durchgehende Zeile. Kodieren aendert den Zustand der Instanz nicht,
+// sie ist daher wie TNetEncoding.Base64 aus mehreren Threads nutzbar
+// (Apache-DLL). Erzeugt/freigegeben in initialization/finalization.
+// ---------------------------------------------------------------------------
+var
+  FBase64NoWrap: TBase64Encoding;
+
+
+// ---------------------------------------------------------------------------
 // Hilfsfunktionen
 // ---------------------------------------------------------------------------
 
@@ -165,7 +183,7 @@ begin
   try
     TBlobField(Field).SaveToStream(Stream);
     Stream.Position := 0;
-    Result := TNetEncoding.Base64.EncodeBytesToString(Stream.Memory, Stream.Size);
+    Result := FBase64NoWrap.EncodeBytesToString(Stream.Memory, Stream.Size);
   finally
     Stream.Free;
   end;
@@ -441,5 +459,13 @@ begin
     if Assigned(row)        then row.Free;
   end;
 end;
+
+
+initialization
+  // CharsPerLine = 0 -> keine Zeilenumbrueche in der Base64-Ausgabe.
+  FBase64NoWrap := TBase64Encoding.Create(0);
+
+finalization
+  FreeAndNil(FBase64NoWrap);
 
 end.
