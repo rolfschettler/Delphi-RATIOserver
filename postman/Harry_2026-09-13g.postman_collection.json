@@ -1,0 +1,208 @@
+{
+  "info": {
+    "_postman_id": "5c8e0a47-2b96-41f3-9d68-7e15b3c9a204",
+    "name": "Harry_2026-09-13g",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "T_Leistung",
+      "item": [
+        {
+          "name": "getT_Leistung",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_leistung",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_leistung"]
+            },
+            "description": "Liefert alle T_LEISTUNG-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LeistungFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"code\": \"LST001\",\n  \"ltraeger\": 1,\n  \"typ\": 1,\n  \"gesperrt\": \"N\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_leistungfiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_leistungfiltered"]
+            },
+            "description": "Liefert T_LEISTUNG-Datensaetze gefiltert nach optionalen Parametern. Filterbar sind alle 36 Nicht-Blob-Felder (nr, code, kontingentcode, ltraeger, altervon, alterbis, preisvon, preisbis, dauerbis, dauervon, stornierbar, provklasse, ustpflicht, zahlbarsofort, rabatterlaubt, typ, subtyp, sachkonto, kostelle1, kostelle2, capacity, maxcapacity, mincapacity, internet, suchbegriff, stornostaffel, params, preisoption, tarifcode, versicherungsart, onlinebuchung, kennziffer, app, gesperrt, bezeichnung, optionstage). Alle Filter sind optional. Das Blob-Feld buchungsinfo ist nicht filterbar."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LeistungById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_leistungbyid",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_leistungbyid"]
+            },
+            "description": "Liefert einen einzelnen T_LEISTUNG-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LeistungKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_leistungkey",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_leistungkey"]
+            },
+            "description": "Liefert den naechsten Primaerschluessel aus dem Generator GEN_ID(T_LEISTUNG_NR_GEN,1) als Feld nr."
+          },
+          "response": []
+        },
+        {
+          "name": "insertT_Leistung",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"code\": \"LST001\",\n  \"kontingentcode\": \"\",\n  \"ltraeger\": 1,\n  \"altervon\": 0,\n  \"alterbis\": 99,\n  \"preisvon\": 0,\n  \"preisbis\": 0,\n  \"dauervon\": 1,\n  \"dauerbis\": 7,\n  \"stornierbar\": \"J\",\n  \"provklasse\": 0,\n  \"ustpflicht\": \"J\",\n  \"zahlbarsofort\": \"N\",\n  \"rabatterlaubt\": \"J\",\n  \"typ\": 1,\n  \"subtyp\": \"\",\n  \"sachkonto\": \"8400\",\n  \"kostelle1\": \"\",\n  \"kostelle2\": \"\",\n  \"capacity\": 0,\n  \"maxcapacity\": 50,\n  \"mincapacity\": 1,\n  \"internet\": \"J\",\n  \"suchbegriff\": \"LST001\",\n  \"stornostaffel\": 0,\n  \"preisoption\": 0,\n  \"onlinebuchung\": \"J\",\n  \"kennziffer\": 1,\n  \"app\": \"J\",\n  \"gesperrt\": \"N\",\n  \"bezeichnung\": \"Beispielleistung\",\n  \"optionstage\": 7\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_leistung",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "insertt_leistung"]
+            },
+            "description": "Legt einen neuen T_LEISTUNG-Datensatz an. Den Wert fuer nr vorher ueber getT_LeistungKey holen. Es muessen nicht alle Felder uebergeben werden."
+          },
+          "response": []
+        },
+        {
+          "name": "updateT_Leistung",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"bezeichnung\": \"Beispielleistung (geaendert)\",\n  \"gesperrt\": \"N\",\n  \"maxcapacity\": 60\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_leistung",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "updatet_leistung"]
+            },
+            "description": "Aktualisiert einen T_LEISTUNG-Datensatz anhand von nr. Nur die im Body uebergebenen Felder werden geschrieben."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteT_Leistung",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/deletet_leistung",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "deletet_leistung"]
+            },
+            "description": "Loescht einen T_LEISTUNG-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

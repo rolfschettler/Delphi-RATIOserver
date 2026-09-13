@@ -1,0 +1,179 @@
+{
+  "info": {
+    "_postman_id": "e6b3d072-58a1-4c94-ae2f-1d70b8c43a56",
+    "name": "Harry_2026-09-13d",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "T_Katalogreise",
+      "item": [
+        {
+          "name": "getT_Katalogreise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_katalogreise",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_katalogreise"]
+            },
+            "description": "Liefert alle T_KATALOGREISE-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_KatalogreiseFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"katalognr\": 1,\n  \"code\": \"KAT001\",\n  \"status\": 1,\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_katalogreisefiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_katalogreisefiltered"]
+            },
+            "description": "Liefert T_KATALOGREISE-Datensaetze gefiltert nach optionalen Parametern. Filterbar sind alle 45 Nicht-Blob-Felder (nr, reisenr, reisethema, code, katalognr, terminschema, internet, befkategorie, sachkonto, sachkontostorno, sachkontoprov, kostelle1, kostelle2, kostelle1storno, kostelle2storno, kostelle1prov, kostelle2prov, erstelltam, fbrabatt, fbbis, angebot, status, url1-url4, xkoord, ykoord, maximumpers, minimumpers, anzahlungsbetrag, anzahlungsart, nrkreis, stornostaffel, zusatzinfo, katalogseite, veranstalter, hauptkategorie, pauschalierungsfaktor, versicherungsart, geaendertam, geaendertvon, erstelltvon, untertitel, mandant). Alle Filter sind optional. Die Blob-Felder bemerkung und kategorie sind nicht filterbar."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_KatalogreiseById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_katalogreisebyid",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_katalogreisebyid"]
+            },
+            "description": "Liefert einen einzelnen T_KATALOGREISE-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_KatalogreiseKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_katalogreisekey",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "gett_katalogreisekey"]
+            },
+            "description": "Liefert den naechsten Primaerschluessel aus dem Generator GEN_ID(T_KATALOGREISE_NR_GEN,1) als Feld nr."
+          },
+          "response": []
+        },
+        {
+          "name": "insertT_Katalogreise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"reisenr\": 1,\n  \"reisethema\": \"Rundreise\",\n  \"code\": \"KAT001\",\n  \"katalognr\": 1,\n  \"terminschema\": 0,\n  \"internet\": \"J\",\n  \"befkategorie\": \"\",\n  \"sachkonto\": \"8400\",\n  \"kostelle1\": \"\",\n  \"kostelle2\": \"\",\n  \"erstelltam\": \"2026-09-13\",\n  \"fbrabatt\": 0,\n  \"angebot\": \"N\",\n  \"status\": 1,\n  \"maximumpers\": 50,\n  \"minimumpers\": 10,\n  \"anzahlungsbetrag\": 100,\n  \"anzahlungsart\": \"P\",\n  \"stornostaffel\": 0,\n  \"katalogseite\": 12,\n  \"veranstalter\": \"\",\n  \"hauptkategorie\": \"\",\n  \"pauschalierungsfaktor\": 1,\n  \"erstelltvon\": \"SUPERVISOR\",\n  \"untertitel\": \"Beispielreise\",\n  \"mandant\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_katalogreise",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "insertt_katalogreise"]
+            },
+            "description": "Legt einen neuen T_KATALOGREISE-Datensatz an. Den Wert fuer nr vorher ueber getT_KatalogreiseKey holen. Es muessen nicht alle Felder uebergeben werden."
+          },
+          "response": []
+        },
+        {
+          "name": "updateT_Katalogreise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"untertitel\": \"Beispielreise (geaendert)\",\n  \"status\": 2,\n  \"geaendertam\": \"2026-09-13\",\n  \"geaendertvon\": \"SUPERVISOR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_katalogreise",
+              "host": ["{{baseURL}}"],
+              "path": ["toupac", "updatet_katalogreise"]
+            },
+            "description": "Aktualisiert einen T_KATALOGREISE-Datensatz anhand von nr. Nur die im Body uebergebenen Felder werden geschrieben."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
