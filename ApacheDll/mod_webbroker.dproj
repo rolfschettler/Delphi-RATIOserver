@@ -222,6 +222,10 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>DataModulRegistrierung</Form>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
+        <DCCReference Include="..\Shared\DataModuls\DataModulStoredProceduresClass.pas">
+            <Form>DataModulStoredProcedures</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
         <DCCReference Include="..\Shared\uBCrypt.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

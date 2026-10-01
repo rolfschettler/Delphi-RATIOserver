@@ -36,6 +36,7 @@ uses
   DataModulDokumenteClass in '..\Shared\DataModuls\DataModulDokumenteClass.pas' {DataModulDokumente: TDataModule},
   DataModulFibuClass in '..\Shared\DataModuls\DataModulFibuClass.pas' {DataModulFibu: TDataModule},
   DataModulRegistrierungClass in '..\Shared\DataModuls\DataModulRegistrierungClass.pas' {DataModulRegistrierung: TDataModule},
+  DataModulStoredProceduresClass in '..\Shared\DataModuls\DataModulStoredProceduresClass.pas' {DataModulStoredProcedures: TDataModule},
   uBCrypt in '..\Shared\uBCrypt.pas';
 
 {$R *.res}

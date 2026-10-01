@@ -96,7 +96,8 @@ DataModulIncomingClass,
 DataModulPublicClass,
 DataModulDokumenteClass,
 DataModulFibuClass,
-DataModulRegistrierungClass;
+DataModulRegistrierungClass,
+DataModulStoredProceduresClass;
 
 
 {$R *.dfm}
@@ -797,6 +798,10 @@ begin
   FRouter.AddRoute('/incoming/insertt_teilnehmer',    CreateDataModulIncoming, TDataModulIncoming(nil).insertT_Teilnehmer);
   FRouter.AddRoute('/incoming/updatet_teilnehmer',    CreateDataModulIncoming, TDataModulIncoming(nil).updateT_Teilnehmer);
   FRouter.AddRoute('/incoming/deletet_teilnehmer',    CreateDataModulIncoming, TDataModulIncoming(nil).deleteT_Teilnehmer);
+
+  //STOREDPROCEDURES
+  FRouter.AddRoute('/storedprocedures/demo',         CreateDataModulStoredProcedures, TDataModulStoredProcedures(nil).Demo);
+  FRouter.AddRoute('/storedprocedures/sp_zahlungen', CreateDataModulStoredProcedures, TDataModulStoredProcedures(nil).SP_Zahlungen);
 
 end;
 

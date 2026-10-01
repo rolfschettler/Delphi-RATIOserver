@@ -1,0 +1,2 @@
+inherited DataModulStoredProcedures: TDataModulStoredProcedures
+end

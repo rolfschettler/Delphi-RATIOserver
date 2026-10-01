@@ -5689,7 +5689,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nr\": 1,\n  \"aufgabe\": \"Rueckruf Kunde\",\n  \"erstellt\": \"2026-08-13\",\n  \"terminam\": \"2026-08-14\",\n  \"vorlaufzeit\": 1,\n  \"text\": \"Bitte zurueckrufen\",\n  \"bereich\": \"Fuhrpark\",\n  \"reftable\": null,\n  \"refnr\": null,\n  \"benutzer\": \"hwiest\",\n  \"benutzergruppe\": null,\n  \"status\": \"offen\",\n  \"von_name\": \"Harry\",\n  \"an_name\": \"Team\",\n  \"suchbegriff\": \"Rueckruf\",\n  \"prio\": 1,\n  \"typ\": \"Termin\",\n  \"zusatzfeld1\": null,\n  \"zusatzfeld2\": null,\n  \"erstelltvon\": \"hwiest\"\n}",
+              "raw": "{\n  \"nr\": 1,\n  \"aufgabe\": \"Rueckruf Kunde\",\n  \"erstellt\": \"2026-08-13\",\n  \"terminam\": \"2026-08-14\",\n  \"vorlaufzeit\": 1,\n  \"text\": \"Bitte zurueckrufen\",\n  \"bereich\": \"Fuhrpark\",\n  \"reftable\": null,\n  \"refnr\": null,\n  \"benutzer\": \"hwiest\",\n  \"benutzergruppe\": null,\n  \"status\": 0,\n  \"von_name\": \"Harry\",\n  \"an_name\": \"Team\",\n  \"suchbegriff\": \"Rueckruf\",\n  \"prio\": 1,\n  \"typ\": null,\n  \"zusatzfeld1\": null,\n  \"zusatzfeld2\": null,\n  \"erstelltvon\": \"hwiest\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5966,6 +5966,1700 @@
                 "deletet_vorgang"
               ]
             }
+          },
+          "response": []
+        },
+        {
+          "name": "getT_Positionen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_positionen",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_positionen"
+              ]
+            },
+            "description": "Liefert alle T_POSITIONEN-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_PositionenFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"vorgangnr\": 1,\n  \"postyp\": \"LT\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_positionenfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_positionenfiltered"
+              ]
+            },
+            "description": "Liefert T_POSITIONEN-Datensaetze gefiltert nach optionalen Parametern (nr, masterpos, vorgangnr, postyp, agenturnr, leistungnr, ltraeger, teilnehmernr, packagenr, katalogreisenr, status, leistungsstatus). Alle Filter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung gesetzt."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_PositionenById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_positionenbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_positionenbyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen T_POSITIONEN-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_Ticketdaten",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_ticketdaten",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_ticketdaten"
+              ]
+            },
+            "description": "Liefert alle T_TICKETDATEN-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_TicketdatenFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"reftable\": \"T_POSITIONEN\",\n  \"refnr\": 1,\n  \"art\": \"TICKET\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_ticketdatenfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_ticketdatenfiltered"
+              ]
+            },
+            "description": "Liefert T_TICKETDATEN-Datensaetze gefiltert nach optionalen Parametern (nr, reftable, refnr, art, bezeichnung, wtag). Alle Filter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung gesetzt."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_TicketdatenById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_ticketdatenbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_ticketdatenbyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen T_TICKETDATEN-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_Ltraeger",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_ltraeger",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_ltraeger"
+              ]
+            },
+            "description": "Liefert alle T_LTRAEGER-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LtraegerFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"code\": \"HOTEL01\",\n  \"land\": \"DE\",\n  \"gesperrt\": \"N\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_ltraegerfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_ltraegerfiltered"
+              ]
+            },
+            "description": "Liefert T_LTRAEGER-Datensaetze gefiltert nach optionalen Parametern (nr, kennziffer, code, bezeichnung, land, ort, typ, sachkonto, kostelle1, kostelle2, optionstage, klasse, stornostaffel, suchbegriff, waehrung, gesperrt, bemerkung_intern). Alle Filter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung gesetzt. Das Blob-Feld kategorie ist nicht filterbar."
+          },
+          "response": []
+        },
+        {
+          "name": "updateT_Ltraeger",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"bezeichnung\": \"Hotel Sonne (geaendert)\",\n  \"ort\": \"Muenchen\",\n  \"gesperrt\": \"N\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_ltraeger",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "updatet_ltraeger"
+              ]
+            },
+            "description": "Aktualisiert einen T_LTRAEGER-Datensatz anhand von nr. Nur die im Body uebergebenen Felder werden geschrieben."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LtraegerKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_ltraegerkey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_ltraegerkey"
+              ]
+            },
+            "description": "Liefert den naechsten Primaerschluessel aus dem Generator GEN_ID(T_LTRAEGER_NR_GEN,1) als Feld nr."
+          },
+          "response": []
+        },
+        {
+          "name": "insertT_Ltraeger",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"kennziffer\": 1,\n  \"code\": \"HOTEL01\",\n  \"bezeichnung\": \"Hotel Sonne\",\n  \"land\": \"DE\",\n  \"ort\": \"Muenchen\",\n  \"typ\": 1,\n  \"sachkonto\": \"4400\",\n  \"kostelle1\": \"\",\n  \"kostelle2\": \"\",\n  \"optionstage\": 7,\n  \"klasse\": \"A\",\n  \"stornostaffel\": 0,\n  \"suchbegriff\": \"SONNE\",\n  \"kategorie\": \"\",\n  \"waehrung\": \"EUR\",\n  \"gesperrt\": \"N\",\n  \"bemerkung_intern\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_ltraeger",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "insertt_ltraeger"
+              ]
+            },
+            "description": "Legt einen neuen T_LTRAEGER-Datensatz an. Den Wert fuer nr vorher ueber getT_LtraegerKey holen."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LtraegerById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_ltraegerbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_ltraegerbyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen T_LTRAEGER-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteT_Ltraeger",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/deletet_ltraeger",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "deletet_ltraeger"
+              ]
+            },
+            "description": "Loescht einen T_LTRAEGER-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_Katalogreise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_katalogreise",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_katalogreise"
+              ]
+            },
+            "description": "Liefert alle T_KATALOGREISE-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "insertT_Katalogreise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"reisenr\": 1,\n  \"reisethema\": \"Rundreise\",\n  \"code\": \"KAT001\",\n  \"katalognr\": 1,\n  \"terminschema\": 0,\n  \"internet\": \"J\",\n  \"befkategorie\": \"\",\n  \"sachkonto\": \"8400\",\n  \"kostelle1\": \"\",\n  \"kostelle2\": \"\",\n  \"erstelltam\": \"2026-09-13\",\n  \"fbrabatt\": 0,\n  \"angebot\": \"N\",\n  \"status\": 1,\n  \"maximumpers\": 50,\n  \"minimumpers\": 10,\n  \"anzahlungsbetrag\": 100,\n  \"anzahlungsart\": \"P\",\n  \"stornostaffel\": 0,\n  \"katalogseite\": 12,\n  \"veranstalter\": \"\",\n  \"hauptkategorie\": \"\",\n  \"pauschalierungsfaktor\": 1,\n  \"erstelltvon\": \"SUPERVISOR\",\n  \"untertitel\": \"Beispielreise\",\n  \"mandant\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_katalogreise",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "insertt_katalogreise"
+              ]
+            },
+            "description": "Legt einen neuen T_KATALOGREISE-Datensatz an. Den Wert fuer nr vorher ueber getT_KatalogreiseKey holen. Es muessen nicht alle Felder uebergeben werden."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_KatalogreiseFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"katalognr\": 1,\n  \"code\": \"KAT001\",\n  \"status\": 1,\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_katalogreisefiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_katalogreisefiltered"
+              ]
+            },
+            "description": "Liefert T_KATALOGREISE-Datensaetze gefiltert nach optionalen Parametern. Filterbar sind alle 45 Nicht-Blob-Felder (nr, reisenr, reisethema, code, katalognr, terminschema, internet, befkategorie, sachkonto, sachkontostorno, sachkontoprov, kostelle1, kostelle2, kostelle1storno, kostelle2storno, kostelle1prov, kostelle2prov, erstelltam, fbrabatt, fbbis, angebot, status, url1-url4, xkoord, ykoord, maximumpers, minimumpers, anzahlungsbetrag, anzahlungsart, nrkreis, stornostaffel, zusatzinfo, katalogseite, veranstalter, hauptkategorie, pauschalierungsfaktor, versicherungsart, geaendertam, geaendertvon, erstelltvon, untertitel, mandant). Alle Filter sind optional. Die Blob-Felder bemerkung und kategorie sind nicht filterbar."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_KatalogreiseById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_katalogreisebyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_katalogreisebyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen T_KATALOGREISE-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_KatalogreiseKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_katalogreisekey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_katalogreisekey"
+              ]
+            },
+            "description": "Liefert den naechsten Primaerschluessel aus dem Generator GEN_ID(T_KATALOGREISE_NR_GEN,1) als Feld nr."
+          },
+          "response": []
+        },
+        {
+          "name": "updateT_Katalogreise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"untertitel\": \"Beispielreise (geaendert)\",\n  \"status\": 2,\n  \"geaendertam\": \"2026-09-13\",\n  \"geaendertvon\": \"SUPERVISOR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_katalogreise",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "updatet_katalogreise"
+              ]
+            },
+            "description": "Aktualisiert einen T_KATALOGREISE-Datensatz anhand von nr. Nur die im Body uebergebenen Felder werden geschrieben."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_Reise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_reise",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_reise"
+              ]
+            },
+            "description": "Liefert alle T_REISE-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_ReiseFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"code\": \"REI001\",\n  \"land\": \"DE\",\n  \"gesperrt\": \"N\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_reisefiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_reisefiltered"
+              ]
+            },
+            "description": "Liefert T_REISE-Datensaetze gefiltert nach optionalen Parametern (nr, bezeichnung, code, land, region, suchbegriff, gesperrt). Alle Filter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung gesetzt. Das Blob-Feld kategorie ist nicht filterbar."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_ReiseById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_reisebyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_reisebyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen T_REISE-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_ReiseKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_reisekey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_reisekey"
+              ]
+            },
+            "description": "Liefert den naechsten Primaerschluessel aus dem Generator GEN_ID(T_REISE_NR_GEN,1) als Feld nr."
+          },
+          "response": []
+        },
+        {
+          "name": "insertT_Reise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"bezeichnung\": \"Nordkap Rundreise\",\n  \"code\": \"REI001\",\n  \"land\": \"NO\",\n  \"region\": \"Skandinavien\",\n  \"suchbegriff\": \"NORDKAP\",\n  \"gesperrt\": \"N\",\n  \"kategorie\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_reise",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "insertt_reise"
+              ]
+            },
+            "description": "Legt einen neuen T_REISE-Datensatz an. Den Wert fuer nr vorher ueber getT_ReiseKey holen."
+          },
+          "response": []
+        },
+        {
+          "name": "updateT_Reise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"bezeichnung\": \"Nordkap Rundreise (geaendert)\",\n  \"region\": \"Skandinavien\",\n  \"gesperrt\": \"N\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_reise",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "updatet_reise"
+              ]
+            },
+            "description": "Aktualisiert einen T_REISE-Datensatz anhand von nr. Nur die im Body uebergebenen Felder werden geschrieben."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_Reiseleistungen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_reiseleistungen",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_reiseleistungen"
+              ]
+            },
+            "description": "Liefert alle T_REISELEISTUNGEN-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_ReiseleistungenFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"katalogreisenr\": 1,\n  \"leistungnr\": 1,\n  \"gesperrt\": \"N\",\n  \"orderby\": \"sortierung\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_reiseleistungenfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_reiseleistungenfiltered"
+              ]
+            },
+            "description": "Liefert T_REISELEISTUNGEN-Datensaetze gefiltert nach optionalen Parametern. Filterbar sind alle 47 Nicht-Blob-Felder (nr, katalogreisenr, leistungnr, rabatterlaubt, standard, leistungsgeber, code, geraet, von, bis, internet, vontag, bistag, zeitvon, zeitbis, params, status, inklusiv, leistungsgruppe, preisoption, marge, adresskennziffer, vontagref, rundungsoption, sortierung, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, gesperrt, kopiertaus, ek_kalk1 bis ek_kalk4, bezeichnung2, provklasse, referenz1 bis referenz4, preis_steuerfrei, sachkonto_steuerfrei, onlinebuchung, app, termin, optionsdatum). Alle Filter sind optional. Das Blob-Feld bemerkung ist nicht filterbar."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_ReiseleistungenById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_reiseleistungenbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_reiseleistungenbyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen T_REISELEISTUNGEN-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_ReiseleistungenKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_reiseleistungenkey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_reiseleistungenkey"
+              ]
+            },
+            "description": "Liefert den naechsten Primaerschluessel aus dem Generator GEN_ID(T_REISELEISTUNGEN_NR_GEN,1) als Feld nr."
+          },
+          "response": []
+        },
+        {
+          "name": "insertT_Reiseleistungen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"katalogreisenr\": 1,\n  \"leistungnr\": 1,\n  \"rabatterlaubt\": \"J\",\n  \"standard\": \"J\",\n  \"leistungsgeber\": 1,\n  \"code\": \"RL001\",\n  \"von\": \"2026-09-13\",\n  \"bis\": \"2026-09-20\",\n  \"internet\": \"J\",\n  \"vontag\": 1,\n  \"bistag\": 7,\n  \"zeitvon\": \"08:00\",\n  \"zeitbis\": \"18:00\",\n  \"status\": 1,\n  \"inklusiv\": 0,\n  \"leistungsgruppe\": 1,\n  \"preisoption\": 0,\n  \"marge\": 0,\n  \"sortierung\": 10,\n  \"ek_tats\": 0,\n  \"ek_kalk\": 0,\n  \"gesperrt\": \"N\",\n  \"bezeichnung2\": \"Beispielleistung\",\n  \"onlinebuchung\": \"J\",\n  \"app\": \"J\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_reiseleistungen",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "insertt_reiseleistungen"
+              ]
+            },
+            "description": "Legt einen neuen T_REISELEISTUNGEN-Datensatz an. Den Wert fuer nr vorher ueber getT_ReiseleistungenKey holen. Es muessen nicht alle Felder uebergeben werden."
+          },
+          "response": []
+        },
+        {
+          "name": "updateT_Reiseleistungen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"bezeichnung2\": \"Beispielleistung (geaendert)\",\n  \"status\": 2,\n  \"sortierung\": 20,\n  \"gesperrt\": \"N\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_reiseleistungen",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "updatet_reiseleistungen"
+              ]
+            },
+            "description": "Aktualisiert einen T_REISELEISTUNGEN-Datensatz anhand von nr. Nur die im Body uebergebenen Felder werden geschrieben."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteT_Reiseleistungen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/deletet_reiseleistungen",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "deletet_reiseleistungen"
+              ]
+            },
+            "description": "Loescht einen T_REISELEISTUNGEN-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_Leistung",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_leistung",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_leistung"
+              ]
+            },
+            "description": "Liefert alle T_LEISTUNG-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LeistungFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"code\": \"LST001\",\n  \"ltraeger\": 1,\n  \"typ\": 1,\n  \"gesperrt\": \"N\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_leistungfiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_leistungfiltered"
+              ]
+            },
+            "description": "Liefert T_LEISTUNG-Datensaetze gefiltert nach optionalen Parametern. Filterbar sind alle 36 Nicht-Blob-Felder (nr, code, kontingentcode, ltraeger, altervon, alterbis, preisvon, preisbis, dauerbis, dauervon, stornierbar, provklasse, ustpflicht, zahlbarsofort, rabatterlaubt, typ, subtyp, sachkonto, kostelle1, kostelle2, capacity, maxcapacity, mincapacity, internet, suchbegriff, stornostaffel, params, preisoption, tarifcode, versicherungsart, onlinebuchung, kennziffer, app, gesperrt, bezeichnung, optionstage). Alle Filter sind optional. Das Blob-Feld buchungsinfo ist nicht filterbar."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LeistungById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_leistungbyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_leistungbyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen T_LEISTUNG-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_LeistungKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_leistungkey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_leistungkey"
+              ]
+            },
+            "description": "Liefert den naechsten Primaerschluessel aus dem Generator GEN_ID(T_LEISTUNG_NR_GEN,1) als Feld nr."
+          },
+          "response": []
+        },
+        {
+          "name": "insertT_Leistung",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"code\": \"LST001\",\n  \"kontingentcode\": \"\",\n  \"ltraeger\": 1,\n  \"altervon\": 0,\n  \"alterbis\": 99,\n  \"preisvon\": 0,\n  \"preisbis\": 0,\n  \"dauervon\": 1,\n  \"dauerbis\": 7,\n  \"stornierbar\": \"J\",\n  \"provklasse\": 0,\n  \"ustpflicht\": \"J\",\n  \"zahlbarsofort\": \"N\",\n  \"rabatterlaubt\": \"J\",\n  \"typ\": 1,\n  \"subtyp\": \"\",\n  \"sachkonto\": \"8400\",\n  \"kostelle1\": \"\",\n  \"kostelle2\": \"\",\n  \"capacity\": 0,\n  \"maxcapacity\": 50,\n  \"mincapacity\": 1,\n  \"internet\": \"J\",\n  \"suchbegriff\": \"LST001\",\n  \"stornostaffel\": 0,\n  \"preisoption\": 0,\n  \"onlinebuchung\": \"J\",\n  \"kennziffer\": 1,\n  \"app\": \"J\",\n  \"gesperrt\": \"N\",\n  \"bezeichnung\": \"Beispielleistung\",\n  \"optionstage\": 7\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_leistung",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "insertt_leistung"
+              ]
+            },
+            "description": "Legt einen neuen T_LEISTUNG-Datensatz an. Den Wert fuer nr vorher ueber getT_LeistungKey holen. Es muessen nicht alle Felder uebergeben werden."
+          },
+          "response": []
+        },
+        {
+          "name": "updateT_Leistung",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"bezeichnung\": \"Beispielleistung (geaendert)\",\n  \"gesperrt\": \"N\",\n  \"maxcapacity\": 60\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_leistung",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "updatet_leistung"
+              ]
+            },
+            "description": "Aktualisiert einen T_LEISTUNG-Datensatz anhand von nr. Nur die im Body uebergebenen Felder werden geschrieben."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteT_Leistung",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/deletet_leistung",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "deletet_leistung"
+              ]
+            },
+            "description": "Loescht einen T_LEISTUNG-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_Termine",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"nr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_termine",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_termine"
+              ]
+            },
+            "description": "Liefert alle T_TERMINE-Datensaetze. Ueber \"fields\" kann eine Feldauswahl (Array) oder \"*\" angegeben werden, ueber \"orderby\" die Sortierung."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_TermineFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"katalogreisenr\": 1,\n  \"storniert\": \"N\",\n  \"gesperrt\": \"N\",\n  \"orderby\": \"von\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_terminefiltered",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_terminefiltered"
+              ]
+            },
+            "description": "Liefert T_TERMINE-Datensaetze gefiltert nach optionalen Parametern. Filterbar sind alle 19 Nicht-Blob-Felder (nr, katalogreisenr, von, bis, vw, vtage, storniert, gesperrt, sonderangebot, internet, sachkonto, kostelle1, kostelle2, minimumpers, maximumpers, provisionskonto, sachkontostorno, abgesagt_am, schnittstelle_sendtime). Alle Filter sind optional. Die Blob-Felder bemerkung und bemerkung_intern sind nicht filterbar."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_TermineById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_terminebyid",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_terminebyid"
+              ]
+            },
+            "description": "Liefert einen einzelnen T_TERMINE-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_TermineKey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/toupac/gett_terminekey",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "gett_terminekey"
+              ]
+            },
+            "description": "Liefert den naechsten Primaerschluessel aus dem Generator GEN_ID(T_TERMINE_NR_GEN,1) als Feld nr."
+          },
+          "response": []
+        },
+        {
+          "name": "insertT_Termine",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"katalogreisenr\": 1,\n  \"von\": \"2026-09-13\",\n  \"bis\": \"2026-09-20\",\n  \"vw\": 0,\n  \"vtage\": 7,\n  \"storniert\": \"N\",\n  \"gesperrt\": \"N\",\n  \"sonderangebot\": \"N\",\n  \"internet\": \"J\",\n  \"sachkonto\": \"8400\",\n  \"kostelle1\": \"\",\n  \"kostelle2\": \"\",\n  \"minimumpers\": 10,\n  \"maximumpers\": 50,\n  \"provisionskonto\": \"\",\n  \"sachkontostorno\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/insertt_termine",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "insertt_termine"
+              ]
+            },
+            "description": "Legt einen neuen T_TERMINE-Datensatz an. Den Wert fuer nr vorher ueber getT_TermineKey holen. Es muessen nicht alle Felder uebergeben werden."
+          },
+          "response": []
+        },
+        {
+          "name": "updateT_Termine",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"maximumpers\": 60,\n  \"gesperrt\": \"N\",\n  \"sonderangebot\": \"J\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/updatet_termine",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "updatet_termine"
+              ]
+            },
+            "description": "Aktualisiert einen T_TERMINE-Datensatz anhand von nr. Nur die im Body uebergebenen Felder werden geschrieben."
+          },
+          "response": []
+        },
+        {
+          "name": "deleteT_Termine",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwttoken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/toupac/deletet_termine",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "toupac",
+                "deletet_termine"
+              ]
+            },
+            "description": "Loescht einen T_TERMINE-Datensatz anhand des Primaerschluessels nr."
           },
           "response": []
         }

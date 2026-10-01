@@ -1,0 +1,47 @@
+{
+  "info": {
+    "_postman_id": "3f2a7c91-6d54-4b0e-9a13-28c7f5e14b06",
+    "name": "Harry_2026-10-01",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "StoredProcedures",
+      "item": [
+        {
+          "name": "demo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Helga\",\n  \"menge\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/storedprocedures/demo?id=42&filter=Mueller",
+              "host": ["{{baseURL}}"],
+              "path": ["storedprocedures", "demo"],
+              "query": [
+                { "key": "id", "value": "42" },
+                { "key": "filter", "value": "Mueller" }
+              ]
+            },
+            "description": "Demo-Endpunkt des neuen Controllers StoredProcedures. Liest die URL-Parameter id und filter sowie die Body-Parameter name und menge und gibt sie als JSON zurueck (nicht gesetzte Werte erscheinen als null). Dient als Funktionstest, dass der Controller korrekt registriert ist."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
