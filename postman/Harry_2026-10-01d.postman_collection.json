@@ -1,0 +1,101 @@
+{
+  "info": {
+    "_postman_id": "b81f3d6a-52c4-4e9b-8d17-3a9e0c4f6d25",
+    "name": "Harry_2026-10-01d",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "T_Konfiguration",
+      "item": [
+        {
+          "name": "getT_Konfiguration",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"orderby\": \"bezeichnung\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/gett_konfiguration",
+              "host": ["{{baseURL}}"],
+              "path": ["adressen", "gett_konfiguration"]
+            },
+            "description": "Liefert alle Datensaetze der Tabelle T_KONFIGURATION. Optional: fields (Array oder \"*\") und orderby."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_KonfigurationFiltered",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": \"*\",\n  \"kategorie\": \"ALLGEMEIN\",\n  \"bereich\": \"TOUPAC\",\n  \"orderby\": \"bezeichnung\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/gett_konfigurationfiltered",
+              "host": ["{{baseURL}}"],
+              "path": ["adressen", "gett_konfigurationfiltered"]
+            },
+            "description": "Liefert gefilterte T_KONFIGURATION-Datensaetze. Optionale Filter (exakter Vergleich, nur im Body vorhandene werden angewendet): nr, bezeichnung, wert, werttyp, kategorie, bereich, vorgabe, bereich2, beschreibung. Optional: fields und orderby."
+          },
+          "response": []
+        },
+        {
+          "name": "getT_KonfigurationById",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{jwttoken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nr\": 1,\n  \"fields\": \"*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/adressen/gett_konfigurationbyid",
+              "host": ["{{baseURL}}"],
+              "path": ["adressen", "gett_konfigurationbyid"]
+            },
+            "description": "Liefert genau einen T_KONFIGURATION-Datensatz anhand des Primaerschluessels nr."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

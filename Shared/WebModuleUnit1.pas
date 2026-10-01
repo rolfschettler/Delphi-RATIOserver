@@ -505,6 +505,10 @@ begin
   FRouter.AddRoute('/adressen/getkonfigurationfiltered', CreateDataModulAdressen, TDataModulAdressen(nil).getKonfigurationFiltered);
   FRouter.AddRoute('/adressen/getkonfigurationbyid',     CreateDataModulAdressen, TDataModulAdressen(nil).getKonfigurationById);
 
+  FRouter.AddRoute('/adressen/gett_konfiguration',         CreateDataModulAdressen, TDataModulAdressen(nil).getT_Konfiguration);
+  FRouter.AddRoute('/adressen/gett_konfigurationfiltered', CreateDataModulAdressen, TDataModulAdressen(nil).getT_KonfigurationFiltered);
+  FRouter.AddRoute('/adressen/gett_konfigurationbyid',     CreateDataModulAdressen, TDataModulAdressen(nil).getT_KonfigurationById);
+
   //PUBLIC
 
   // Token-autorisiert: der Gast ruft ohne Login direkt aus dem Browser auf.
@@ -697,6 +701,10 @@ begin
   FRouter.AddRoute('/dispo/getdispo',         CreateDataModulDispo, TDataModulDispo(nil).getDispo,true,false);
   FRouter.AddRoute('/dispo/getdispofiltered', CreateDataModulDispo, TDataModulDispo(nil).getDispoFiltered,true,false);
   FRouter.AddRoute('/dispo/getdispobyid',     CreateDataModulDispo, TDataModulDispo(nil).getDispoById,true,false);
+
+  FRouter.AddRoute('/dispo/getdispotour',         CreateDataModulDispo, TDataModulDispo(nil).getDispotour,true,false);
+  FRouter.AddRoute('/dispo/getdispotourfiltered', CreateDataModulDispo, TDataModulDispo(nil).getDispotourFiltered,true,false);
+  FRouter.AddRoute('/dispo/getdispotourbyid',     CreateDataModulDispo, TDataModulDispo(nil).getDispotourById,true,false);
 
   //TOUPAC
   FRouter.AddRoute('/toupac/demo',                CreateDataModulToupac, TDataModulToupac(nil).Demo);

@@ -62,6 +62,9 @@ type
     procedure getDispo;
     procedure getDispoFiltered;
     procedure getDispoById;
+    procedure getDispotour;
+    procedure getDispotourFiltered;
+    procedure getDispotourById;
   end;
 
 function CreateDataModulDispo(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -1134,6 +1137,74 @@ const
   );
 begin
   DoSelectOne('DISPO', ALLOWED, 'nr');
+end;
+
+// Route: /dispo/getdispotour  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getDispotour;
+// Body: { "fields": ["nr","bezeichnung",...] | "*", "orderby": "bezeichnung" }
+const
+  ALLOWED: array[0..57] of string = (
+    'nr','bezeichnung','bemerkung','mon','die','mit','don','fre','sam','son',
+    'feiertag','ferien','nichtvon','nichtbis','typ','gruppe','firma','dienstnr',
+    'text1','text2','text3','text4','text5','text6','datum1','datum2',
+    'gueltig_von','gueltig_bis','nurferien','berechnungswert','einrichtung',
+    'einzelrechnung','einzelvorgabe','erfasstam','erfasstvon','fahrer',
+    'geaendertam','geaendertvon','hinweis','km','kostentraeger','minuten','nach',
+    'preisschema','tournummer','von','zusatzinfo','pauschalbetrag','ktogruppe',
+    'haupttour','monatspauschale','haupttournummer','altetournummer','googlelink',
+    'leistungsdaten','leistungsdatenvon','abrechnungsdaten','abrechnungsdatenvon'
+  );
+begin
+  DoSelect('DISPOTOUR', ALLOWED);
+end;
+
+// Route: /dispo/getdispotourfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getDispotourFiltered;
+// Body: { "fields": [...] | "*", "nr": 42, "bezeichnung": "...", "bemerkung": "...",
+//         "firma": "...", "dienstnr": "...", "orderby": "bezeichnung" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..57] of string = (
+    'nr','bezeichnung','bemerkung','mon','die','mit','don','fre','sam','son',
+    'feiertag','ferien','nichtvon','nichtbis','typ','gruppe','firma','dienstnr',
+    'text1','text2','text3','text4','text5','text6','datum1','datum2',
+    'gueltig_von','gueltig_bis','nurferien','berechnungswert','einrichtung',
+    'einzelrechnung','einzelvorgabe','erfasstam','erfasstvon','fahrer',
+    'geaendertam','geaendertvon','hinweis','km','kostentraeger','minuten','nach',
+    'preisschema','tournummer','von','zusatzinfo','pauschalbetrag','ktogruppe',
+    'haupttour','monatspauschale','haupttournummer','altetournummer','googlelink',
+    'leistungsdaten','leistungsdatenvon','abrechnungsdaten','abrechnungsdatenvon'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..4] of string = (
+    'nr = :nr',
+    'bezeichnung = :bezeichnung',
+    'bemerkung = :bemerkung',
+    'firma = :firma',
+    'dienstnr = :dienstnr'
+  );
+  FILTER_PARAMS: array[0..4] of string = ('nr', 'bezeichnung', 'bemerkung', 'firma', 'dienstnr');
+begin
+  DoSelectFilteredDynamic('DISPOTOUR', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /dispo/getdispotourbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulDispo.getDispotourById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..57] of string = (
+    'nr','bezeichnung','bemerkung','mon','die','mit','don','fre','sam','son',
+    'feiertag','ferien','nichtvon','nichtbis','typ','gruppe','firma','dienstnr',
+    'text1','text2','text3','text4','text5','text6','datum1','datum2',
+    'gueltig_von','gueltig_bis','nurferien','berechnungswert','einrichtung',
+    'einzelrechnung','einzelvorgabe','erfasstam','erfasstvon','fahrer',
+    'geaendertam','geaendertvon','hinweis','km','kostentraeger','minuten','nach',
+    'preisschema','tournummer','von','zusatzinfo','pauschalbetrag','ktogruppe',
+    'haupttour','monatspauschale','haupttournummer','altetournummer','googlelink',
+    'leistungsdaten','leistungsdatenvon','abrechnungsdaten','abrechnungsdatenvon'
+  );
+begin
+  DoSelectOne('DISPOTOUR', ALLOWED, 'nr');
 end;
 
 end.

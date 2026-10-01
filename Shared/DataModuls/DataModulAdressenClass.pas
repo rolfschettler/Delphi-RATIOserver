@@ -39,6 +39,9 @@ type
     procedure getKonfiguration;
     procedure getKonfigurationFiltered;
     procedure getKonfigurationById;
+    procedure getT_Konfiguration;
+    procedure getT_KonfigurationFiltered;
+    procedure getT_KonfigurationById;
   end;
 
 function CreateDataModulAdressen(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -551,6 +554,57 @@ const
   );
 begin
   DoSelectOne('KONFIGURATION', ALLOWED, 'nr');
+end;
+
+// Route: /adressen/gett_konfiguration  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getT_Konfiguration;
+// Body: { "fields": ["nr","bezeichnung",...] | "*", "orderby": "bezeichnung" }
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','bezeichnung','wert','werttyp','kategorie','bereich','vorgabe','bereich2','beschreibung'
+  );
+begin
+  DoSelect('T_KONFIGURATION', ALLOWED);
+end;
+
+// Route: /adressen/gett_konfigurationfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getT_KonfigurationFiltered;
+// Body: { "fields": [...] | "*", "nr": 1, "bezeichnung": "...", "wert": "...", "werttyp": "...",
+//         "kategorie": "...", "bereich": "...", "vorgabe": "...", "bereich2": "...",
+//         "beschreibung": "...", "orderby": "bezeichnung" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','bezeichnung','wert','werttyp','kategorie','bereich','vorgabe','bereich2','beschreibung'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..8] of string = (
+    'nr = :nr',
+    'bezeichnung = :bezeichnung',
+    'wert = :wert',
+    'werttyp = :werttyp',
+    'kategorie = :kategorie',
+    'bereich = :bereich',
+    'vorgabe = :vorgabe',
+    'bereich2 = :bereich2',
+    'beschreibung = :beschreibung'
+  );
+  FILTER_PARAMS: array[0..8] of string = (
+    'nr','bezeichnung','wert','werttyp','kategorie','bereich','vorgabe','bereich2','beschreibung'
+  );
+begin
+  DoSelectFilteredDynamic('T_KONFIGURATION', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /adressen/gett_konfigurationbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getT_KonfigurationById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..8] of string = (
+    'nr','bezeichnung','wert','werttyp','kategorie','bereich','vorgabe','bereich2','beschreibung'
+  );
+begin
+  DoSelectOne('T_KONFIGURATION', ALLOWED, 'nr');
 end;
 
 end.
