@@ -1,0 +1,38 @@
+info:
+  name: GET /showroute – Route als HTML-Seite anzeigen
+  type: http
+  seq: 10
+
+http:
+  method: GET
+  url: "{{baseURL}}/showroute?start=88487 Mietingen&ziel=Biberach"
+  params:
+    - name: start
+      value: 88487 Mietingen
+      type: query
+    - name: ziel
+      value: Biberach
+      type: query
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ruft den PHP-Endpunkt `showroute` auf (`PHP_Call('showroute', {start, ziel}, GetAuthToken)`) und liefert eine HTML-Seite mit der Route zwischen Start und Ziel (z.B. zum direkten Öffnen im Browser). Kein Body.
+
+  **Query-Parameter:** `start` (string), `ziel` (string) – beide werden ohne Prüfung weitergereicht (fehlend = Leerstring).
+
+  **Auth:** NICHT erforderlich (Auth=false) – der Bearer-Block schadet nicht.
+
+  **LocalOnly:** true – nur vom Server selbst erreichbar (Bruno muss auf dem Server laufen), sonst 403.
+
+  **Antwort:** HTML (`text/html`), Inhalt vom PHP-Backend bestimmt.
+
+  **Hinweis:** Ohne Authentifizierung aus dem Internet aufrufbar; jeder Aufruf löst einen PHP-Backend-Aufruf (ggf. kostenpflichtiger Karten-/Routing-Dienst) aus.

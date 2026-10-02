@@ -1,0 +1,35 @@
+info:
+  name: POST /dokumente/updatevorlagen – Dokumentvorlage ändern
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{baseURL}}/dokumente/updatevorlagen"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 11,
+        "name": "Reisebestätigung Standard V2",
+        "text1": "Sehr geehrte Damen und Herren,"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen bestehenden VORLAGEN-Datensatz anhand des Primärschlüssels `nr` (generisches `DoUpdate('VORLAGEN', ALLOWED, 'nr')`). `nr` dient als Schlüssel und ist selbst nicht in ALLOWED enthalten (kann nicht überschrieben werden).
+
+  **Erlaubte Felder (ALLOWED):** haupttext, art, standard, name, text1, text2, drucker, druckerwahl, folgeformular, datum, angepasst, bereich, doktyp, versteckt, dokkategorie, geaendertam, bearbeiter, pwd, archiv, dms_key, wiedervorlage, gueltigbis, reftable, refnr, datumfeld1, datumfeld2, zusatzfeld1, zusatzfeld2, anmietnr, senderemail, empfaengeremail, dateiname, mandant.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** `{"status":"OK"}`

@@ -1,0 +1,46 @@
+info:
+  name: POST /anmiet/updatefundsachen – Fundsache ändern
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{baseURL}}/anmiet/updatefundsachen"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 101,
+        "status": "abgeholt",
+        "abgeholt_am": "2026-08-30",
+        "abgeholt_von": "Herr Mueller"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen bestehenden FUNDSACHEN-Datensatz anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+
+  **Tabelle:** FUNDSACHEN
+
+  **Erlaubte Felder (ALLOWED):** abgeholt_am, abgeholt_von, abholort, bearbeitet_am, bearbeitet_von, beschreibung, erfasst_am, erfasst_von, status, text_intern, verlustdatum, verlustort, zusatzfeld1, zusatzfeld2, zusatzfeld3 (`nr` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+
+  **Hinweis:** Die BLOB-Felder `bilder`, `bild_klein` und `unterschrift` gehören hier NICHT zu ALLOWED – sie können nur beim Anlegen über `insertfundsachenmitbildern` gesetzt werden.
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert>, "feld": "...", ... }` – nr ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

@@ -1,0 +1,38 @@
+info:
+  name: GET /fibu/getkontenfiltered – Konten gefiltert auflisten (Read-Only)
+  type: http
+  seq: 24
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getkontenfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "konto": "1000",
+        "kontenart": 1,
+        "orderby": "konto"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensaetze der Tabelle KONTEN gefiltert ueber `DoSelectFilteredDynamic('KONTEN', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Reine Read-Only-Stammdaten-Tabelle ohne Insert/Update/Delete.
+
+  **Erlaubte Felder (ALLOWED) und gleichzeitig moegliche Filter-Parameter:** konto, bezeichnung, stschluessel, steuer, kontenart, kontengruppe, automatik, steuerkonto, ustpos, klasse, zahlung, gutscheinkonto, aktiva, passiva, eu, waehrung, op, babzuordnung, ebvortragskonto, gesperrt, mandant. Jeder gesetzte Filter-Parameter erzeugt automatisch eine per AND verknuepfte Gleichheits-Bedingung; alle Filter sind optional.
+
+  **Body:** `{ "fields": [...] | "*", "orderby": "feld", <beliebige Filter-Parameter> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** wie getkonten.

@@ -1,0 +1,37 @@
+info:
+  name: GET /dispo/getpersonalstammfiltered – Personalstamm filtern
+  type: http
+  seq: 26
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getpersonalstammfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "zeichen": "MU",
+        "orderby": "name2"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Implementierung: `DoSelectFilteredDynamic('PERSONALSTAMM', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Trotz der 65 ALLOWED-Felder gibt es nur EINEN Filterparameter: `zeichen` → `zeichen = :zeichen` (optional).
+
+  **Erlaubte Felder (ALLOWED, 65):** nr, anrede, name1, name2, zeichen, strasse, land, plz, ort, telefon1, telefon2, fsnummer, pbs_gueltig_bis, verwendung, geburtstag, bemerkung, angestellt_seit, urlaubgesamt, resturlaub, gesperrt, fahrzeug, sortierung, stundenlohn, stundenlohn2, zuschlag, kostenstelle, urlaubsjahr, alterurlaub, altefreietage, freietagegesamt, restfreietage, betrieb, profil, feiertagsberechtigt, zulageberechtigt, mindestregelungsberechtigt, arbeitsvertragsart, urlaubsstunden, krankheitsstunden, durchschnittsstunden, ausgeschieden_am, sprache, versicherungsnummer, zusatzinfo, kennziffer, versuche, zeitsperre, freistunden, pushid, wochenende, abteilung, kostelle1, personalnummer, urlaubsgruppe, vertretung, resturlaub_aktuell, altefreietage2, alterurlaub2, nation, xkoord, ykoord, koords_erfasst_am, pushid_fis, pushid_dispo, pushid_tickets.
+
+  **Hinweis:** Für PERSONALSTAMM existieren nur `get`/`getFiltered` sowie `update`/`delete` – KEINE `getById`/`insert`/`getKey`-Route.
+
+  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

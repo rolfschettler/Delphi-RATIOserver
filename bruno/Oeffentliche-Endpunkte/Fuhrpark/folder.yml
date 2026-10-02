@@ -1,0 +1,11 @@
+info:
+  name: Fuhrpark
+  type: folder
+  seq: 4
+
+request:
+  auth: inherit
+
+docs:
+  content: "Fuhrpark-Controller (Quelle: Shared/DataModuls/DataModulFuhrparkClass.pas). Deckt die Fuhrpark-Verwaltung ab: Fahrtenbuch (Tabelle FAHRTENBUCH – Einzelfahrten mit Kilometer-, Umsatz- und Steuerangaben), Reparaturvorgänge (Tabelle REPVORGANG), Tankungen (Tabelle TANKUNG), Auslandsfahrten (Tabelle AUSLANDFAHRT), Fahrzeugstammdaten (Tabelle FAHRZEUG) sowie Länder-Stammdaten (Tabelle LAND). Alle Endpunkte erfordern Authentifizierung per Bearer Token ({{jwttoken}}), keiner ist LocalOnly. Besonderheiten: `getFahrzeug*` besitzt KEINEN insert- und KEINEN Key-Endpunkt (Primärschlüssel ist das Kennzeichen selbst, das beim Anlegen bereits bekannt ist – vermutlich werden Fahrzeuge nicht über einen generischen Insert-Endpunkt angelegt); `getLand*` ist ein reiner Read-Only-Stammdaten-Endpunkt ganz ohne Insert/Update/Delete/Key. Die BLOB-Felder `text` und `bild` (Tabelle FAHRZEUG) sind in ALLOWED enthalten, aber bewusst nicht in den Filter-Bedingungen von `getFahrzeugFiltered`, da InterBase Gleichheitsvergleiche auf BLOB-Feldern nicht unterstützt. Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /fuhrpark/*), sonst HTTP 403 \"Keine Berechtigung fuer diesen Endpunkt.\"."
+  type: text/markdown

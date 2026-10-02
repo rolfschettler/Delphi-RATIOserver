@@ -1,0 +1,34 @@
+info:
+  name: GET /dispo/geturlaubsantragbyid – Urlaubsantrag per Nr abrufen
+  type: http
+  seq: 28
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/geturlaubsantragbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 302,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus URLAUBSANTRAG anhand des Primärschlüssels. Implementierung: `DoSelectOne('URLAUBSANTRAG', ALLOWED, 'nr')`. Body: `{"nr":<Urlaubsantrag-Nr>,"fields":[...]|"*"}`.
+
+  **Erlaubte Felder:** identisch zu `/dispo/geturlaubsantrag` (15 Felder, siehe dort).
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` – 0 oder 1 Datensatz.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

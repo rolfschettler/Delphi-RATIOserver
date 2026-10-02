@@ -1,0 +1,44 @@
+info:
+  name: POST /anmiet/updateanmiet – Anmietung ändern
+  type: http
+  seq: 15
+
+http:
+  method: POST
+  url: "{{baseURL}}/anmiet/updateanmiet"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 12345,
+        "status": "bestaetigt",
+        "preis": "480.00",
+        "bearbeiter": "hw"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen bestehenden ANMIET-Datensatz anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+
+  **Tabelle:** ANMIET
+
+  **Erlaubte Felder (ALLOWED):** identisch zur Feldliste von `insertanmiet` (siehe dort) (`nr` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert>, "feld": "...", ... }` – nr ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

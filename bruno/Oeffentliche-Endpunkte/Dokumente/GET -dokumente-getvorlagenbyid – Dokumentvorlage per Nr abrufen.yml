@@ -1,0 +1,34 @@
+info:
+  name: GET /dokumente/getvorlagenbyid – Dokumentvorlage per Nr abrufen
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{baseURL}}/dokumente/getvorlagenbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 10,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen VORLAGEN-Datensatz anhand des Primärschlüssels `nr` (generisches `DoSelectOne('VORLAGEN', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED):** identisch zu `getvorlagen` (siehe dort).
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.

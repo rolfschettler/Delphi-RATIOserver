@@ -1,0 +1,42 @@
+info:
+  name: GET /anmiet/gettransfehr – Transfer-Projekte auflisten
+  type: http
+  seq: 17
+
+http:
+  method: GET
+  url: "{{baseURL}}/anmiet/gettransfehr"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "hinfahrt"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle TRANSFEHR (Transfer-/Fahrtprojekte mit Hin- und Rückfahrt) auf (generisches `DoSelect`, kein Filter).
+
+  **Tabelle:** TRANSFEHR
+
+  **Erlaubte Felder (ALLOWED):** nr, kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, text, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart
+
+  **Hinweis:** `text` ist ein BLOB-Feld und wird von `SerializeQuery` als Base64-String geliefert.
+
+  **Body (optional):** `{ "fields": [...] | "*", "orderby": "feld", "limit": 10, "offset": 0 }` – ohne `fields` bzw. mit `"*"` werden alle ALLOWED-Felder geliefert; `orderby` muss ein ALLOWED-Feld sein. Ein leerer/fehlender Body ist erlaubt.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

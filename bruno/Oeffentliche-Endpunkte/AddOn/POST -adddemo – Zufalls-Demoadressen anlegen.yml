@@ -1,0 +1,35 @@
+info:
+  name: POST /adddemo – Zufalls-Demoadressen anlegen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/adddemo?count=5"
+  params:
+    - name: count
+      value: "5"
+      type: query
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Erzeugt Demo-Datensätze in der Tabelle ADRESSEN mit zufälligen Werten (`GeneriereZufaelligeAdresse`): anrede, name1 (Vorname), name2 (Nachname), strasse, plz, ort, email, briefanrede, telefon1; fest `gruppe = '1'`, `code = 'demo'`, `erfasst_am` = jetzt (ohne Millisekunden). Jeder Datensatz in eigener Transaktion. Kein Body.
+
+  **Query-Parameter:** `count` (optional, Integer, Default 1).
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** true – nur vom Server selbst erreichbar (Bruno muss auf dem Server laufen), sonst 403.
+
+  **Antwort:** `{"status":"OK","message":"es wurden N Adresse(n) zugefügt"}`
+
+  **Besonderheit (Code-Auffälligkeit):** Die Schleife läuft `0 to Count` – es werden tatsächlich `count + 1` Adressen angelegt, die Meldung nennt aber `count`. Schreibt Testdaten in die Produktivtabelle ADRESSEN.

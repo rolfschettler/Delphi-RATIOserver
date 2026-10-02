@@ -1,0 +1,36 @@
+info:
+  name: GET /fuhrpark/getfahrtenbuchbyid – Fahrtenbuch-Eintrag per nr abrufen
+  type: http
+  seq: 12
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/getfahrtenbuchbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle FAHRTENBUCH anhand des Primärschlüssels `nr` (Aufruf: `DoSelectOne('FAHRTENBUCH', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED):** nr, kz, von, bis, strecke, auftragsgeber, kminland, kmausland, kmleer, kmanfang, kmende, kmgesamt, personen, fahrer, umsatz, rvlin, rvlaus, eleistung, kennzeichen, text, steuerfahr, steuermarge, freiemarge, freieumsatz, ratiobusfahrtnr, steuer, sonstigervl, sonstrvlpz, steuermarge2, fahrer2, beguenstigt, zusatz1, zusatz2, km_stand_zustieg_1_kunde, km_stand_ausstieg_l_kunde
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

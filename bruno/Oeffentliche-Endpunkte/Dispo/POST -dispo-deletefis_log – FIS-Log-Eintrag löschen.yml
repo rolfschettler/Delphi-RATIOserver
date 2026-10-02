@@ -1,0 +1,33 @@
+info:
+  name: POST /dispo/deletefis_log – FIS-Log-Eintrag löschen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/deletefis_log"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 9001
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle FIS_LOG. Implementierung: `DoDelete('FIS_LOG', 'nr')`.
+
+  **Body:** `{"nr": <FIS_LOG-Nr>}`
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

@@ -1,0 +1,52 @@
+info:
+  name: POST /teilnehmerfromcsv – Teilnehmer aus CSV (Reservierungsliste) importieren
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{baseURL}}/teilnehmerfromcsv?vorgangnr=4711"
+  params:
+    - name: vorgangnr
+      value: "4711"
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value: []
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Importiert Teilnehmer aus einer hochgeladenen CSV-Datei (`multipart/form-data`, UTF-8, Trennzeichen `;`) in T_TEILNEHMER. Zweiphasig: erst wird die GESAMTE Datei validiert, nur bei fehlerfreier Datei folgt der Import (eine Transaktion, `nr` per Generator `T_TEILNEHMER_NR_GEN`).
+
+  **Query-Parameter:** `vorgangnr` (Pflicht, Integer; fehlt/0 → Exception).
+
+  **Datei (`Request.Files[0]`, Pflicht):** Erste nicht-leere Zeile = Header mit den Pflichtspalten `Reservierungsnr`, `Gruppe`, `Name`. Datenzeilen: gleiche Feldanzahl wie Header, `Reservierungsnr` und `Gruppe` ganzzahlig, `Name` im Format "Nachname, Vorname" (Komma Pflicht) → name2 / name1, `name` = "Nachname Vorname".
+
+  Beispiel:
+  ```
+  Reservierungsnr;Gruppe;Name
+  1001;1;Mustermann, Max
+  1002;1;Musterfrau, Erika
+  ```
+
+  **Duplikate:** Zeilen mit bereits vorhandener `vorgangnr` + `reservierungsnr` werden übersprungen.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** false.
+
+  **Antwort:** Erfolg `{"status":"OK","imported":N,"skipped":M}`; Validierungsfehler HTTP 400 `{"status":"ERROR","errors":["Zeile 3: ...", ...]}`.
+
+  **Hinweis:** Der Handler heißt im Code `teilnehmerformcsv` (Tippfehler), die Route `/teilnehmerfromcsv`.

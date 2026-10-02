@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/gett_reiseleistungenbyid – Reiseleistung per nr
+  type: http
+  seq: 50
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_reiseleistungenbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus T_REISELEISTUNGEN anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_REISELEISTUNGEN', ALLOWED, 'nr')` auf.
+
+  **Tabelle:** T_REISELEISTUNGEN
+
+  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, leistungnr, rabatterlaubt, standard, leistungsgeber, code, geraet, von, bis, internet, vontag, bistag, zeitvon, zeitbis, bemerkung, params, status, inklusiv, leistungsgruppe, preisoption, marge, adresskennziffer, vontagref, rundungsoption, sortierung, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, gesperrt, kopiertaus, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, provklasse, referenz1, referenz2, preis_steuerfrei, sachkonto_steuerfrei, onlinebuchung, app, termin, optionsdatum, referenz3, referenz4
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).

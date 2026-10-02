@@ -20,6 +20,7 @@ type
     MethodCode: Pointer; // Code-Pointer der Methode (Data später gebunden)
     AuthRequired: boolean;
     LocalOnly: boolean;  // Zugriff nur vom localhost erlaubt
+    Roles: string;       // Erlaubte Rollen als Komma-Liste (lowercase), leer = keine Rollenpruefung
   end;
 
   TRouteEntryArray = array of TRouteEntry;
@@ -29,10 +30,11 @@ type
     FRoutes: TRouteEntryArray;
 
   public
-    procedure AddRoute(APath: string; AFactory: TInstanceFactory; AMethod: TRouteHandler; AuthRequired: boolean = true; ALocalOnly: boolean = false);
+    procedure AddRoute(APath: string; AFactory: TInstanceFactory; AMethod: TRouteHandler; AuthRequired: boolean = true; ALocalOnly: boolean = false; ARoles: string = '');
     function FindRoute(Path: string; out AFactory: TInstanceFactory; out MethodCode: Pointer): boolean;
     function IsAuthRequired(Path: string): boolean;
     function IsLocalOnly(Path: string): boolean;
+    function GetRoles(Path: string): string;
     procedure Clear;
     function ListRoutes: string;
     function ListRoutes2: string;
@@ -42,7 +44,7 @@ implementation
 
 uses webUtils, System.Generics.Collections, System.Generics.Defaults;
 
-procedure TRouter.AddRoute(APath: string; AFactory: TInstanceFactory; AMethod: TRouteHandler; AuthRequired: boolean = true; ALocalOnly: boolean = false);
+procedure TRouter.AddRoute(APath: string; AFactory: TInstanceFactory; AMethod: TRouteHandler; AuthRequired: boolean = true; ALocalOnly: boolean = false; ARoles: string = '');
 var
   Len: Integer;
   M: TMethod;
@@ -52,6 +54,7 @@ begin
   FRoutes[Len].Path := APath;
   FRoutes[Len].AuthRequired := AuthRequired;
   FRoutes[Len].LocalOnly := ALocalOnly;
+  FRoutes[Len].Roles := LowerCase(Trim(ARoles));
   FRoutes[Len].Factory := AFactory;
 
   // Nur den Code-Pointer der Methode speichern (ohne Data)
@@ -161,6 +164,37 @@ begin
   end;
 end;
 
+function TRouter.GetRoles(Path: string): string;
+var
+  I: Integer;
+  haswildcard: boolean;
+  APath: string;
+  _path: string;
+begin
+  // Liefert die fuer eine Route erlaubten Rollen (Komma-Liste), leer = keine Rollenpruefung
+  Result := '';
+  for I := Low(FRoutes) to High(FRoutes) do
+  begin
+    APath := ExcludeLastSlash(Path);
+
+    haswildcard := AnsiRightStr(FRoutes[I].Path, 1) = '*';
+    _path := FRoutes[I].Path.TrimRight(['*']);
+
+    if haswildcard then
+      if APath.StartsWith(_path + '/', true) then
+      begin
+        Result := FRoutes[I].Roles;
+        exit;
+      end;
+
+    if SameText(_path, ExcludeLastSlash(Path)) then
+    begin
+      Result := FRoutes[I].Roles;
+      exit;
+    end;
+  end;
+end;
+
 procedure TRouter.Clear;
 begin
   SetLength(FRoutes, 0);
@@ -188,6 +222,8 @@ begin
       Result := Result + '<span style="color:green"> [No Auth]</span>';
     if FRoutes[I].LocalOnly then
       Result := Result + '<span style="color:red"> [Localhost only]</span>';
+    if FRoutes[I].Roles <> '' then
+      Result := Result + '<span style="color:blue"> [Rollen: ' + FRoutes[I].Roles + ']</span>';
     Result := Result + sLineBreak;
   end;
 

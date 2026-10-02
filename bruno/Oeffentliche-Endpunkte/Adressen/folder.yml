@@ -1,0 +1,11 @@
+info:
+  name: Adressen
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit
+
+docs:
+  content: "Controller für die Adressverwaltung: deckt die Tabelle ADRESSEN (Kunden-/Kontaktstammdaten inkl. Vergabe der nächsten Kennziffer), ADRKATS (Adress-Kategorien/Gruppen zur Klassifizierung der Adressen) sowie ZUSATZTABELLE (generische Zusatzfelder, die per reftable/refnr an beliebige Datensätze anderer Tabellen angehängt werden können) ab. Zusätzlich lesender Zugriff (Liste, gefiltert, per nr) auf CODESTABELLE (Code-/Kürzeltabelle), KONFIGURATION (Konfigurationsdatensätze inkl. Blob-Feld content) und T_KONFIGURATION (Einstellungen als Wert-Paare). Alle Endpunkte erfordern Authentifizierung via Bearer Token (JWT) und sind nicht auf lokale Aufrufe beschränkt (Auth=true, LocalOnly=false)."
+  type: text/markdown

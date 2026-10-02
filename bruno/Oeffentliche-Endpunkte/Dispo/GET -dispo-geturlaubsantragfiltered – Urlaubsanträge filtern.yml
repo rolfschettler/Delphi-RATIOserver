@@ -1,0 +1,56 @@
+info:
+  name: GET /dispo/geturlaubsantragfiltered – Urlaubsanträge filtern
+  type: http
+  seq: 29
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/geturlaubsantragfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "von": "2026-10-01",
+        "bis": "2026-10-31",
+        "mitarbeiter": "MU",
+        "status": "offen",
+        "orderby": "von"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Implementierung: `DoSelectFilteredDynamic('URLAUBSANTRAG', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Jeder im Body gesetzte (nicht-null) Filterparameter erzeugt eine AND-verknüpfte WHERE-Bedingung.
+
+  **Pflicht:** `von` und `bis` müssen beide im Body gesetzt sein – fehlt eines (oder fehlt der Body), bricht der Handler mit Fehler `"von" und "bis" sind Pflichtfelder.` ab.
+
+  **Zeitraum (Overlap):** liefert alle Urlaubsanträge, die den Zeitraum [von, bis] überschneiden.
+
+  **Filterparameter (8):**
+  - `von` → `bis >= :von` (Pflicht)
+  - `bis` → `von <= :bis` (Pflicht)
+  - `nr` → `nr = :nr` (optional)
+  - `mitarbeiter` → `mitarbeiter = :mitarbeiter` (optional)
+  - `status` → `status = :status` (optional)
+  - `statusam` → `statusam = :statusam` (optional)
+  - `statusvon` → `statusvon = :statusvon` (optional)
+  - `vertretung` → `vertretung = :vertretung` (optional)
+
+  `bemerkung` ist ein Blob-Feld und daher NUR in ALLOWED enthalten, nicht filterbar. beantragtam, genehmigtam, genehmigtvon, text1, text2, text3 sind ebenfalls nicht filterbar.
+
+  **Erlaubte Felder (ALLOWED, 15):** identisch zu `/dispo/geturlaubsantrag` (siehe dort).
+
+  **Body:** `{"fields":[...]|"*","von":"...","bis":"...","mitarbeiter":"...",...,"orderby":"feld","limit":10,"offset":0}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+
+  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

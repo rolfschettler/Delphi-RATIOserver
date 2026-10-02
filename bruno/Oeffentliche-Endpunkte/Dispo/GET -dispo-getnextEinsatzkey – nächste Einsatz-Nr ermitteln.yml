@@ -1,0 +1,25 @@
+info:
+  name: GET /dispo/getnextEinsatzkey – nächste Einsatz-Nr ermitteln
+  type: http
+  seq: 24
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getnextEinsatzkey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert den nächsten Primärschlüsselwert für EINSATZ über den InterBase-Generator: `SELECT GEN_ID(NEXT_EINSATZ_NR,1) AS NR FROM RDB$DATABASE`. Kein Body erforderlich.
+
+  **Antwort:** `{"header":{"nr":"ftinteger"},"data":[{"nr":4712}]}` (Generator-Wert wird bei jedem Aufruf hochgezählt).
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

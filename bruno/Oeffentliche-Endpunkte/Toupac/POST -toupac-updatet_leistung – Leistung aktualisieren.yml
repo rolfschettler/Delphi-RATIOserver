@@ -1,0 +1,43 @@
+info:
+  name: POST /toupac/updatet_leistung – Leistung aktualisieren
+  type: http
+  seq: 60
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/updatet_leistung"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "bezeichnung": "Doppelzimmer Halbpension Meerblick",
+        "capacity": 18
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in T_LEISTUNG anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_LEISTUNG', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+
+  **Tabelle:** T_LEISTUNG
+
+  **Erlaubte Felder (ALLOWED):** nr, code, kontingentcode, ltraeger, buchungsinfo, altervon, alterbis, preisvon, preisbis, dauerbis, dauervon, stornierbar, provklasse, ustpflicht, zahlbarsofort, rabatterlaubt, typ, subtyp, sachkonto, kostelle1, kostelle2, capacity, maxcapacity, mincapacity, internet, suchbegriff, stornostaffel, params, preisoption, tarifcode, versicherungsart, onlinebuchung, kennziffer, app, gesperrt, bezeichnung, optionstage
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

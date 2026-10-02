@@ -1,0 +1,44 @@
+info:
+  name: POST /toupac/updatef_fahrtauftrag – Fahrtauftrag aktualisieren
+  type: http
+  seq: 20
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/updatef_fahrtauftrag"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "status": "erledigt",
+        "erledigt": "2026-08-31",
+        "geaendertvon": "hwiest"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in F_FAHRTAUFTRAG anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('F_FAHRTAUFTRAG', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+
+  **Tabelle:** F_FAHRTAUFTRAG
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

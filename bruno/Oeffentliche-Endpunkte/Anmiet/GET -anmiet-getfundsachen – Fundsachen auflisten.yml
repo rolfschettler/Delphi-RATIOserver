@@ -1,0 +1,42 @@
+info:
+  name: GET /anmiet/getfundsachen – Fundsachen auflisten
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{baseURL}}/anmiet/getfundsachen"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "erfasst_am"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle FUNDSACHEN auf (generisches `DoSelect`, kein Filter).
+
+  **Tabelle:** FUNDSACHEN
+
+  **Erlaubte Felder (ALLOWED):** nr, abgeholt_am, abgeholt_von, abholort, bearbeitet_am, bearbeitet_von, beschreibung, bilder, bild_klein, erfasst_am, erfasst_von, status, text_intern, unterschrift, verlustdatum, verlustort, zusatzfeld1, zusatzfeld2, zusatzfeld3
+
+  **Hinweis:** `bilder`, `bild_klein` und `unterschrift` sind BLOB-Felder und werden von `SerializeQuery` als Base64-String zurückgegeben.
+
+  **Body (optional):** `{ "fields": [...] | "*", "orderby": "feld", "limit": 10, "offset": 0 }` – ohne `fields` bzw. mit `"*"` werden alle ALLOWED-Felder geliefert; `orderby` muss ein ALLOWED-Feld sein. Ein leerer/fehlender Body ist erlaubt.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

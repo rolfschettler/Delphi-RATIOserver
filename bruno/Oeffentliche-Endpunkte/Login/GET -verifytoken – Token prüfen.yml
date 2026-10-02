@@ -1,0 +1,31 @@
+info:
+  name: GET /verifytoken – Token prüfen
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/verifytoken"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer Token) — genau das wird hier geprüft. Keine Rollen-Prüfung (WebAction, läuft nicht über den FRouter).
+
+  Prüft, ob das im Authorization-Header (oder alternativ als ?token=...) übergebene JWT gültig und nicht abgelaufen ist.
+
+  Antwort bei gültigem Token (200): {"status":"OK","valid":true,"user":"<username>","role":<role-json-oder-null>}.
+
+  **role** enthält die beim Login übernommenen REGISTRIERUNG-Felder (nr, kennziffer, loginname, username, gesperrt, typ, hauptregistrierung, rollen). **role.rollen** ist die Komma-Liste der Berechtigungen aus REGISTRIERUNG.ROLLEN (eine Rolle/ein Endpunkt pro Zeile, kleingeschrieben). '@'-Blaupausen wie '@FAHRER' wurden beim Login bereits durch die ROLLEN des Datensatzes mit username '@FAHRER' ergänzt (keine Verschachtelung); die '@'-Einträge selbst bleiben in der Liste.
+
+  Gegen role.rollen prüft der Router jede Route mit Auth=true und LocalOnly=false (HasRouteAccess in Shared/webUtils.pas): erlaubt bei leerer Liste (= keine Einschränkung), 'supervisor', passender Routen-Rolle oder Endpunkt genau bzw. per Wildcard ('/adressen/*'); sonst HTTP 403 "Keine Berechtigung für diesen Endpunkt.". Mit diesem Request lässt sich also prüfen, welche Rechte das aktuelle Token trägt.
+
+  Bei fehlendem, ungültigem oder abgelaufenem Token: HTTP 401 mit Fehlermeldung.

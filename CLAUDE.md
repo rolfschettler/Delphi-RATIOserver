@@ -54,7 +54,19 @@ In Controller-Handlern Body-Parameter NICHT manuell parsen, sondern die Methoden
 
 Vorbild/Vorlage: `Demo`-Methode in `ClaudeCodePatterns/DataModulDemoClass.pas`.
 
-## Postman Collections
+## Bruno Collections (Standard für alle neuen Endpunkte)
+Für neue Endpunkte IMMER eine Bruno-Collection im OpenCollection-YAML-Format erstellen (nicht `.bru`, nicht Postman).
+Vorbild: `C:\Users\rsche\Documents\bruno\RATIOserver – Öffentliche Endpunkte` bzw. `bruno\Rollen-Tests` im Repo.
+- Struktur: `opencollection.yml` (Collection-Variablen + `docs`), je Ordner `folder.yml` (`info.type: folder`, `seq`), je Request eine `.yml`.
+- Dateiname/Name: `METHODE -pfad-mit-bindestrichen – Beschreibung.yml`, z.B. `GET -adressen-getadressen – Adressen auflisten.yml`; Ordner `1 – Name`, `2 – Name` …
+- Auth: IMMER `auth: { type: bearer, token: "{{jwttoken}}" }` — NIEMALS manueller `Authorization`-Header. Einzige Ausnahme: Tests, die bewusst ohne Token laufen (`auth: inherit` + Hinweis in `docs`).
+- Variablen: `{{baseURL}}` (z.B. `http://localhost/ibapi`), `{{jwttoken}}`.
+- Login-Request setzt den Token per `bru.setVar("jwttoken", …)` (Laufzeit-Variable) — NICHT `setCollectionVar`, sonst landet der Token in `opencollection.yml`. In `opencollection.yml` steht `jwttoken` immer mit leerem Wert.
+- Passwörter/Secrets NIE in `.yml`: in `.env` neben `opencollection.yml` (per `.gitignore` ausgeschlossen, Vorlage `.env.example`), Zugriff über `{{process.env.NAME}}`.
+- Skripte unter `runtime.scripts` (`before-request` / `after-response`); Tests mit `test(...)` im `after-response`-Skript, Antwort defensiv lesen (`res.getBody()` in try/catch, Body kann String sein).
+- Jeder Request bekommt `settings` (wie Vorbild) und `docs` (Auth, Body, Antwort, Besonderheiten).
+
+## Postman Collections (Altbestand)
 IMMER `auth`-Block verwenden (type: bearer, value: {{jwttoken}}) — NIEMALS manueller Authorization-Header.
 Variablennamen: {{baseURL}} (nicht baseUrl), {{jwttoken}} (nicht token).
 `header`: leeres Array `[]`.

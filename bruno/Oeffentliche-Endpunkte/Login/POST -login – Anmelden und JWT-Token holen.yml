@@ -1,0 +1,59 @@
+info:
+  name: POST /login – Anmelden und JWT-Token holen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/login?user=SUPERVISOR&password={{process.env.PW_SUPERVISOR}}"
+  params:
+    - name: user
+      value: SUPERVISOR
+      type: query
+    - name: password
+      value: "{{process.env.PW_SUPERVISOR}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "user": "SUPERVISOR",
+        "password": "{{process.env.PW_SUPERVISOR}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: "if (res.getStatus() === 200 && res.getBody().token) {\r
+
+        \    bru.setVar(\"jwttoken\", res.getBody().token);\r
+
+        }"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** nicht erforderlich (dieser Endpunkt stellt das Token erst aus). Keine Rollen-Prüfung (WebAction, läuft nicht über den FRouter).
+
+  Meldet einen Benutzer über REGISTRIERUNG.USERNAME an (case-insensitiv, umlautsicher). Das Passwort wird im Klartext erwartet und direkt in Delphi (TBCrypt.CompareHash, Unit uBCrypt) gegen den bcrypt-Hash in REGISTRIERUNG.PWD2 geprüft (Kostenfaktor max. 14). Steht REGISTRIERUNG.GESPERRT auf "JA", wird die Anmeldung trotz korrektem Passwort abgelehnt ('Dieses Benutzerkonto ist gesperrt.').
+
+  Unterstützte Übergabe (Priorität JSON → Form-encoded → URL-Parameter): {"user":"...","password":"..."}. Der Benutzername für das Token selbst (JWT-Subject) wird zusätzlich aus dem Query-Parameter ?user=... gelesen — daher hier sowohl im Body als auch als Query-Parameter mitgeben. Bei Form-encoded/URL-Parametern ein "+" im Passwort als %2B kodieren; die Anfrage muss UTF-8 kodiert sein.
+
+  Antwort bei Erfolg (200): {"token":"<JWT>"}. Das Script dieses Requests speichert den Token automatisch in der Laufzeit-Variable {{jwttoken}}.
+
+  **Token-Inhalt (Claim role):** JSON-Objekt mit nr, kennziffer, loginname, username, gesperrt, typ, hauptregistrierung und rollen (pwd2 wird nie übernommen).
+
+  **Rollen (role.rollen):** REGISTRIERUNG.ROLLEN ist ein BLOB mit einer Rolle bzw. einem Endpunkt pro Zeile und kommt als Komma-Liste (getrimmt, kleingeschrieben, ohne Duplikate) in den Token. Einträge mit '@' (z.B. '@FAHRER') sind Blaupausen: Sie verweisen auf den REGISTRIERUNG-Datensatz mit username '@FAHRER', dessen ROLLEN beim Login eingesetzt werden (ResolveRoleBlueprints in DataModulLoginClass.pas). Keine Verschachtelung ('@'-Einträge innerhalb einer Blaupause werden nicht weiter aufgelöst); die '@'-Einträge selbst bleiben in der Liste, unbekannte Blaupausen ergeben keine Rechte.
+  Beispiel: ROLLEN = Zeilen "@FAHRER" und "/adressen/getadressen" → role.rollen = "@fahrer,<ROLLEN von @FAHRER>,/adressen/getadressen".
+
+  **Auswertung (HasRouteAccess in Shared/webUtils.pas):** Jede Route mit Auth=true und LocalOnly=false wird gegen role.rollen geprüft. Zugriff, wenn rollen leer ist (= keine Einschränkung), 'Supervisor' enthält, eine für die Route hinterlegte Rolle enthält oder den Endpunkt nennt — genau ('/adressen/getadressen') oder per Wildcard ('/adressen/*'). Sonst HTTP 403 "Keine Berechtigung für diesen Endpunkt.". Rollenänderungen wirken erst nach erneutem Login (neues Token).
+
+  Bei falschen Anmeldedaten: HTTP 401 mit Fehlermeldung 'Benutzername oder Passwort sind falsch'.
+
+  Gültigkeit des Tokens: 900 Minuten (15 Std.), sofern nicht über die Server-Konfiguration [security] minutes_valid abweichend gesetzt.

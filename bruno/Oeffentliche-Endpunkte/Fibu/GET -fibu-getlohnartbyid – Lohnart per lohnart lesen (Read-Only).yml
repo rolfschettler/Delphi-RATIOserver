@@ -1,0 +1,36 @@
+info:
+  name: GET /fibu/getlohnartbyid – Lohnart per lohnart lesen (Read-Only)
+  type: http
+  seq: 26
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getlohnartbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "lohnart": 10,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle LOHNART ueber `DoSelectOne('LOHNART', ALLOWED, 'lohnart')`. Primaerschluessel ist hier `lohnart`. Reine Read-Only-Stammdaten-Tabelle ohne Insert/Update/Delete.
+
+  **Erlaubte Felder (ALLOWED):** siehe getlohnart.
+
+  **Body:** `{ "lohnart": <wert>, "fields": [...] | "*" }` — Primaerschluessel `lohnart` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

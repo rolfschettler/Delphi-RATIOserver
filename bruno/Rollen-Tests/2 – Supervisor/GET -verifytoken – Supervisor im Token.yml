@@ -1,0 +1,33 @@
+info:
+  name: GET /verifytoken – Supervisor im Token
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/verifytoken"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+        const rollen = (rumpf && rumpf.role && rumpf.role.rollen) || "";
+
+        test("rollen enthaelt supervisor (ggf. ueber Blaupause aufgeloest)", () =>
+            expect(rollen.split(",")).to.include("supervisor"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Steht Supervisor in einer Blaupause (z.B. @ADMIN), muss es hier nach der
+  Aufloesung trotzdem erscheinen.

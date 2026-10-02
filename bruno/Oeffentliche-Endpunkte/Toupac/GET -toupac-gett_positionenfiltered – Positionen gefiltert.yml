@@ -1,0 +1,44 @@
+info:
+  name: GET /toupac/gett_positionenfiltered – Positionen gefiltert
+  type: http
+  seq: 24
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_positionenfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "vorgangnr": 4711,
+        "postyp": "L",
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert Datensaetze aus T_POSITIONEN, optional gefiltert. Jeder im Body gesetzte (nicht-null) Filter-Parameter erzeugt eine AND-verknuepfte WHERE-Bedingung `feld = :feld`; ohne Filter werden alle Datensaetze geliefert. Ruft intern `DoSelectFilteredDynamic('T_POSITIONEN', ALLOWED, CONDITIONS, FILTER_PARAMS)` auf.
+
+  **Tabelle:** T_POSITIONEN
+
+  **Erlaubte Felder (ALLOWED):** nr, masterpos, postyp, erstellt, geaendert, vorgangnr, agenturnr, menge, personen, leistungscode, kontingentcode, kostelle1, kostelle2, ltraeger, datum_von, datum_bis, leistungnr, provklasse, prov, prov_betrag, provust, ustpflichtig, sachkonto, maxcapacity, mincapacity, capacity, rabatterlaubt, stornierbar, typ, zahlbarsofort, geraet, leistungsgeber, belegt_nr, einzelpreis, gesamtpreis, endpreis, optionstage, regel_mitltyp, katalogreisenr, direktinkasso, ltbezeichnung, reisebezeichnung, alter_von, alter_bis, bemerkung, erm, ermdatum, status, provisionskonto, stornostaffel, sachkontostorno, zeitvon, zeitbis, params, preisschema, leistungsgruppe, inklusiv, preisoption, marge, packagenr, leistungsstatus, ltraegerkennziffer, personenpreis, preisberechnet, kurs, sortierung, rundungsoption, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, termin, referenz1, referenz2, waehrung, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, optionsdatum, teilnehmernr, rabatt, externenr1, externenr2, buchungsdatum, stornodatum, referenz3, referenz4, gruppe, internet, onlinebuchung, app, vk_preis_fremdwaehrung, kurs_vk_fremdwaehrung, waehrung_ek, lcode, menge_alt, auskatalogreise, mindestnaechte, bezeichnung
+
+  **Filter (FILTER_PARAMS, alle optional):** nr, masterpos, vorgangnr, postyp, agenturnr, leistungnr, ltraeger, teilnehmernr, packagenr, katalogreisenr, status, leistungsstatus
+
+  **Body:** `{ "fields": [...] | "*", "<filterfeld>": <wert>, ..., "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` -- ein gueltiges JSON-Objekt im Body ist Pflicht (sonst Fehler "Kein gueltiges JSON im Request-Body").
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.

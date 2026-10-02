@@ -1,0 +1,33 @@
+info:
+  name: POST /fibu/deletefibu – Fibu-Buchungssatz loeschen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/deletefibu"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 1001
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz der Tabelle FIBU ueber die generische Basis-Methode `DoDelete('FIBU', 'nr')`.
+
+  **Body:** `{ "nr": <wert> }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

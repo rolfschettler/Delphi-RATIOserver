@@ -1,0 +1,41 @@
+info:
+  name: GET /adressen/getjoin – Adressen mit Kategoriebezeichnung (Join)
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{baseURL}}/adressen/getjoin"
+  body:
+    type: json
+    data: |-
+      {
+        "gruppe": 1,
+        "name1": "Helga"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Kein generischer CRUD-Endpunkt: führt eine fest im Code hinterlegte Join-Abfrage über `DoJoinedSelect` aus:
+  `SELECT a.name1, a.name2, a.ort, a.gruppe, k.bezeichnung FROM adressen a JOIN adrkats k ON a.gruppe = k.gruppe WHERE a.name1 = :name1 AND a.gruppe = :gruppe`
+
+  **Tabelle:** ADRESSEN (Join ADRKATS)
+
+  **Filterparameter:** gruppe, name1 – beide stehen fest im WHERE (AND). Fehlt ein Parameter, wird er als NULL gebunden; `= NULL` trifft nie zu, die Abfrage liefert dann keine Treffer. Praktisch sind also beide Parameter nötig.
+
+  **Body:** `{ "gruppe": <wert>, "name1": "<wert>" }` – muss ein gültiges JSON-Objekt sein. `fields`/`orderby`/`limit`/`offset` werden nicht ausgewertet.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"header":{...},"data":[...]}` mit den Feldern name1, name2, ort, gruppe, bezeichnung (keine Pagination).

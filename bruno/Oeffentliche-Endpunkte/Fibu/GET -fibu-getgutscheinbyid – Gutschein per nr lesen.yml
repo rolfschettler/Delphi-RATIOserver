@@ -1,0 +1,36 @@
+info:
+  name: GET /fibu/getgutscheinbyid – Gutschein per nr lesen
+  type: http
+  seq: 19
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getgutscheinbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 501,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle GUTSCHEIN ueber `DoSelectOne('GUTSCHEIN', ALLOWED, 'nr')`.
+
+  **Erlaubte Felder (ALLOWED):** siehe getgutschein.
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

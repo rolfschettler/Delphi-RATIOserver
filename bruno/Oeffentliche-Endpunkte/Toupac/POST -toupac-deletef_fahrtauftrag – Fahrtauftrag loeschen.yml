@@ -1,0 +1,39 @@
+info:
+  name: POST /toupac/deletef_fahrtauftrag – Fahrtauftrag loeschen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/deletef_fahrtauftrag"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz aus F_FAHRTAUFTRAG anhand des Primaerschluessels `nr`. Ruft intern `DoDelete('F_FAHRTAUFTRAG', 'nr')` auf.
+
+  **Tabelle:** F_FAHRTAUFTRAG
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

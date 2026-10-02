@@ -65,6 +65,7 @@ type
 
     function LoadMarkdownDocs(): TList<TDocEntry>;
     function IsLocalRequest(Request: TWebRequest): Boolean;
+    function GetUserRolesFromVerifyJson(const AVerifyJson: string): string;
     { Private-Deklarationen }
   public
     { Public-Deklarationen }
@@ -304,6 +305,17 @@ end;
 
 procedure TWebModule1.WebModule1WebActionItem1Action(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 begin
+  // Localhost-Prüfung: /createtoken stellt ohne Anmeldung einen Token mit
+  // beliebiger Rolle aus und darf deshalb nur lokal erreichbar sein.
+  if not IsLocalRequest(Request) then
+  begin
+    Response.StatusCode := 403;
+    Response.ContentType := 'application/json; charset=utf-8';
+    Response.Content := CreateJsonResponse('error', 'Zugriff nur vom lokalen Server erlaubt.');
+    Handled := True;
+    exit;
+  end;
+
   DoCreateToken(Request, Response);
 
 end;
@@ -443,12 +455,19 @@ begin
     Methode:          Die Methode aus dieser Klasse, die aufgerufen wird
     Auth.required: OPTIONAL Hier wird festgelegt, ob eine Authentifizierung vor der Ausführung der Methode durchgeführt wird. (true wenn erforderlich, false wenn ohne..). Default:true
     LocalOnly:     OPTIONAL Wenn true, ist die Route nur vom localhost erreichbar. Default:false
+    Roles:         OPTIONAL Zusaetzlich erlaubte Rollennamen als Komma-Liste, z.B. 'admin,dispo'. Default:''
+
+    Berechtigungen: Jede Route mit Auth=true und LocalOnly=false wird automatisch gegen REGISTRIERUNG.ROLLEN
+                   des Benutzers geprueft (eine Rolle bzw. ein Endpunkt pro Zeile, kommt beim Login in den Token).
+                   Zugriff, wenn ROLLEN leer ist (= keine Einschraenkung), 'Supervisor' enthaelt, eine der Roles
+                   der Route enthaelt oder den Endpunkt selbst nennt (z.B. '/getadressen' oder '/adressen/*'). Sonst 403.
+                   Beispiel: FRouter.AddRoute('/adressen/deleteadressen', CreateDataModulAdressen, TDataModulAdressen(nil).deleteAdresse, true, false, 'admin');
 
 
   *)
 
    //API-NUR LOCAL ZUGRIFF
-     FRouter.AddRoute('/readteilnehmer', CreateDataModulAddOn, TDataModulAddOn(nil).ReadTeilnehmer); // TODO: LocalOnly=true ergänzen
+     FRouter.AddRoute('/readteilnehmer', CreateDataModulAddOn, TDataModulAddOn(nil).ReadTeilnehmer, true, true); //Auth=true,LocalOnly=true
 
   FRouter.AddRoute('/getparams*', CreateDataModulSQL, TDataModulSQL(nil).getparams, false,true);
   FRouter.AddRoute('/getparams/dbonly', CreateDataModulSQL, TDataModulSQL(nil).getparams,false,true);
@@ -472,18 +491,18 @@ begin
 
   FRouter.AddRoute('/print', CreateDataModulPrint, TDataModulPrint(nil).Print,true,false);
 
-  FRouter.AddRoute('/adddemo', CreateDataModulAddOn, TDataModulAddOn(nil).adddemo); // TODO: LocalOnly=true ergänzen
-  FRouter.AddRoute('/adddemopersonal', CreateDataModulAddOn, TDataModulAddOn(nil).adddemopersonal); // TODO: LocalOnly=true ergänzen
+  FRouter.AddRoute('/adddemo', CreateDataModulAddOn, TDataModulAddOn(nil).adddemo, true, true); //Auth=true,LocalOnly=true
+  FRouter.AddRoute('/adddemopersonal', CreateDataModulAddOn, TDataModulAddOn(nil).adddemopersonal, true, true); //Auth=true,LocalOnly=true
 
 
   //Nur als Beispiel für eine Weiterleitung an PHP: FRouter.AddRoute('/getjson', CreateDataModulAddOn, TDataModulAddOn(nil).readjson); // TODO: LocalOnly=true ergänzen
 
-  FRouter.AddRoute('/showroute', CreateDataModulAddOn, TDataModulAddOn(nil).showhtml, false); // TODO: LocalOnly=true ergänzen
+  FRouter.AddRoute('/showroute', CreateDataModulAddOn, TDataModulAddOn(nil).showhtml, false, true); //Auth=false,LocalOnly=true
 
 
-  FRouter.AddRoute('/calculatedistance', CreateDataModulAddOn, TDataModulAddOn(nil).calculatedistance); // TODO: LocalOnly=true ergänzen
-  FRouter.AddRoute('/travelroute',        CreateDataModulAddOn, TDataModulAddOn(nil).travelroute,   false); // TODO: LocalOnly=true ergänzen
-  FRouter.AddRoute('/calculateroute',     CreateDataModulAddOn, TDataModulAddOn(nil).calculateroute); // TODO: LocalOnly=true ergänzen
+  FRouter.AddRoute('/calculatedistance', CreateDataModulAddOn, TDataModulAddOn(nil).calculatedistance, true, true); //Auth=true,LocalOnly=true
+  FRouter.AddRoute('/travelroute',        CreateDataModulAddOn, TDataModulAddOn(nil).travelroute,   false, true); //Auth=false,LocalOnly=true
+  FRouter.AddRoute('/calculateroute',     CreateDataModulAddOn, TDataModulAddOn(nil).calculateroute, true, true); //Auth=true,LocalOnly=true
   FRouter.AddRoute('/ki_getteilnehmer',   CreateDataModulAddOn, TDataModulAddOn(nil).KI_GetTeilnehmer);
   FRouter.AddRoute('/teilnehmerfromcsv', CreateDataModulAddOn, TDataModulAddOn(nil).teilnehmerformcsv);
   FRouter.AddRoute('/getdokument', CreateDataModulAddOn, TDataModulAddOn(nil).getdokument);
@@ -862,6 +881,28 @@ begin
             (sAddr = '::ffff:127.0.0.1');   // IPv4-mapped IPv6
 end;
 
+function TWebModule1.GetUserRolesFromVerifyJson(const AVerifyJson: string): string;
+var
+  Obj: TJSONObject;
+  RoleObj: TJSONValue;
+begin
+  // Liest role.rollen (Komma-Liste) aus dem Ergebnis von DoVerifyToken.
+  // Kein Token / ungueltiges JSON / keine Rollen -> '' (= keine Rollen).
+  Result := '';
+  if AVerifyJson = '' then
+    exit;
+  Obj := ParseJSONObject(AVerifyJson);
+  if Obj = nil then
+    exit;
+  try
+    RoleObj := Obj.GetValue('role');
+    if RoleObj is TJSONObject then
+      Result := TJSONObject(RoleObj).GetValue<string>('rollen', '');
+  finally
+    FreeAndNil(Obj);
+  end;
+end;
+
 procedure TWebModule1.DefActionHandler(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 var
   Factory:    TInstanceFactory;
@@ -869,8 +910,11 @@ var
   Obj:        TObject;
   H:          TRouteHandler;
   PathInfo:   string;
+  VerifyJson: string;
+  RouteRoles: string;
 begin
   PathInfo := Request.PathInfo;
+  VerifyJson := '';
 
   if (Trim(PathInfo) = '') or (Trim(PathInfo) = '/') then
   begin
@@ -884,7 +928,7 @@ begin
   try
 
     if FRouter.IsAuthRequired(ExcludeLastSlash(lowercase(PathInfo))) then
-      DoVerifyToken(Request, Response) // Prüfen auf gültige Authentifizierung
+      VerifyJson := DoVerifyToken(Request, Response) // Prüfen auf gültige Authentifizierung
 
   except
     on E: Exception do
@@ -901,6 +945,22 @@ begin
     begin
       Response.StatusCode := 403;
       Response.Content := CreateJsonResponse('error', 'Zugriff nur vom lokalen Server erlaubt.');
+      Handled := True;
+      exit;
+    end;
+
+  // Rollen-Prüfung: alle angemeldeten, nicht-lokalen Routen sowie Routen mit
+  // explizit hinterlegten Rollen. Ohne geprüften Token gibt es bei Routen mit
+  // Rollen keinen Zugriff (leere Benutzerrollen bedeuten sonst "alles erlaubt").
+  RouteRoles := FRouter.GetRoles(ExcludeLastSlash(lowercase(PathInfo)));
+  if (RouteRoles <> '') or
+     (FRouter.IsAuthRequired(ExcludeLastSlash(lowercase(PathInfo))) and
+      not FRouter.IsLocalOnly(ExcludeLastSlash(lowercase(PathInfo)))) then
+    if ((RouteRoles <> '') and (VerifyJson = '')) or
+       not HasRouteAccess(GetUserRolesFromVerifyJson(VerifyJson), RouteRoles, ExcludeLastSlash(lowercase(PathInfo))) then
+    begin
+      Response.StatusCode := 403;
+      Response.Content := CreateJsonResponse('error', 'Keine Berechtigung für diesen Endpunkt.');
       Handled := True;
       exit;
     end;

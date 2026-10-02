@@ -1,0 +1,11 @@
+info:
+  name: Dispo
+  type: folder
+  seq: 8
+
+request:
+  auth: inherit
+
+docs:
+  content: "Fahrer- und Personaldisposition: Einsätze (EINSATZ), Personalstamm (PERSONALSTAMM), Fahrergruppen, Urlaubsanträge (URLAUBSANTRAG), Fahrtabläufe (FAHRTABLAUF), Linienwegeobjekte (LINIEWEGEOBJEKTE), Zeiträume (ZEITRAUM), Dispo-Belegungen (DISPO), Dispotouren (DISPOTOUR) sowie das FIS-Systemlog (FIS_LOG). Quelle: DataModulDispoClass.pas. **Auth:** alle Routen erfordern einen gültigen Bearer-Token ({{jwttoken}}); LocalOnly ist bei keiner Route gesetzt."
+  type: text/markdown

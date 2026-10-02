@@ -1,0 +1,42 @@
+info:
+  name: GET /fuhrpark/getlandfiltered – Länder gefiltert auflisten
+  type: http
+  seq: 20
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/getlandfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "code": "D",
+        "euland": "J",
+        "orderby": "staat"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle LAND gefiltert auf (Aufruf: `DoSelectFilteredDynamic('LAND', ALLOWED, CONDITIONS, FILTER_PARAMS)`).
+
+  **Erlaubte Felder (ALLOWED):** code, staat, steuer, fiskel, euland, inland, formular, iso2, iso3, sortierung, sachkonto
+
+  **Filter-Parameter (alle optional, jeder gesetzte erzeugt eine AND-verknüpfte WHERE-Bedingung `feld = :feld`):** code, staat, steuer, fiskel, euland, inland, formular, iso2, iso3, sortierung, sachkonto
+
+  **Body:** `{ "fields": [...] | "*", "<filterfeld>": <wert>, ..., "orderby": "feld", "limit": 10, "offset": 0 }`
+
+  **Hinweis:** LAND ist ein reiner Read-Only-Stammdaten-Endpunkt.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** ohne `limit` `{"header":{"<feld>":"<typ>",...},"data":[{...},...]}` (SerializeQuery: `header` = Feldname -> Typ, `data` = Datensaetze); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

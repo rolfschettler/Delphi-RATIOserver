@@ -1,0 +1,39 @@
+info:
+  name: GET /fuhrpark/getfahrtenbuchfiltered – Fahrtenbuch gefiltert auflisten
+  type: http
+  seq: 13
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/getfahrtenbuchfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "kennzeichen": "B-RX 123",
+        "orderby": "von"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle FAHRTENBUCH gefiltert auf (Aufruf: `DoSelectFilteredDynamic('FAHRTENBUCH', ALLOWED, CONDITIONS, FILTER_PARAMS)`).
+
+  **Erlaubte Felder (ALLOWED):** nr, kz, von, bis, strecke, auftragsgeber, kminland, kmausland, kmleer, kmanfang, kmende, kmgesamt, personen, fahrer, umsatz, rvlin, rvlaus, eleistung, kennzeichen, text, steuerfahr, steuermarge, freiemarge, freieumsatz, ratiobusfahrtnr, steuer, sonstigervl, sonstrvlpz, steuermarge2, fahrer2, beguenstigt, zusatz1, zusatz2, km_stand_zustieg_1_kunde, km_stand_ausstieg_l_kunde
+
+  **Filter-Parameter (einziger Filter, optional):** kennzeichen (erzeugt WHERE `kennzeichen = :kennzeichen`)
+
+  **Body:** `{ "fields": [...] | "*", "kennzeichen": "<wert>", "orderby": "feld", "limit": 10, "offset": 0 }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** ohne `limit` `{"header":{"<feld>":"<typ>",...},"data":[{...},...]}` (SerializeQuery: `header` = Feldname -> Typ, `data` = Datensaetze); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

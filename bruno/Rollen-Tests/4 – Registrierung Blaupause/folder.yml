@@ -1,0 +1,15 @@
+info:
+  name: 4 – Registrierung Blaupause
+  type: folder
+  seq: 4
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Neuer Benutzer ueber /registrierung/insertregistrierunglocal (localhost-only)
+    muss automatisch die Blaupause seines typs bekommen (hier @MITARBEITER).
+
+    NEBENWIRKUNG: legt bei jedem Lauf RTEST<Zeitstempel> in REGISTRIERUNG an.
+  type: text/markdown

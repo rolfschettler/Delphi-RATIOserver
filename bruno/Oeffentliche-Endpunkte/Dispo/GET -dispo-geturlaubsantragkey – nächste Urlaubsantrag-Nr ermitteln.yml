@@ -1,0 +1,25 @@
+info:
+  name: GET /dispo/geturlaubsantragkey – nächste Urlaubsantrag-Nr ermitteln
+  type: http
+  seq: 30
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/geturlaubsantragkey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert den nächsten Primärschlüsselwert für URLAUBSANTRAG. Verwendet laut Code denselben Generator wie `/dispo/getnextEinsatzkey`: `SELECT GEN_ID(NEXT_EINSATZ_NR,1) AS NR FROM RDB$DATABASE`. Kein Body erforderlich.
+
+  **Antwort:** `{"header":{"nr":"ftinteger"},"data":[{"nr":303}]}` (Generator-Wert wird bei jedem Aufruf hochgezählt).
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

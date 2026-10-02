@@ -1,0 +1,38 @@
+info:
+  name: POST /dispo/insertfis_log – FIS-Log-Eintrag anlegen
+  type: http
+  seq: 36
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/insertfis_log"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 9002,
+        "datum": "2026-09-01 06:15:00",
+        "einsatznr": 4711,
+        "fahrer": "MU",
+        "status": "bestaetigt",
+        "text": "Fahrer hat Einsatz bestätigt"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in FIS_LOG an. Implementierung: `DoInsert('FIS_LOG', ALLOWED)` – nur ALLOWED-Felder werden aus dem Body übernommen.
+
+  **Erlaubte Felder (ALLOWED, 30):** identisch zu `/dispo/getfis_log` (siehe dort).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

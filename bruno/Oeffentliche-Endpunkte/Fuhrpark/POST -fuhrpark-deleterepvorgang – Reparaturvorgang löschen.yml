@@ -1,0 +1,33 @@
+info:
+  name: POST /fuhrpark/deleterepvorgang – Reparaturvorgang löschen
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/deleterepvorgang"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle REPVORGANG anhand des Primärschlüssels `nr` (Aufruf: `DoDelete('REPVORGANG', 'nr')`).
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

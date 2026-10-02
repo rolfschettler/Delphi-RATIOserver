@@ -1,0 +1,41 @@
+info:
+  name: GET /dokumente/gett_bildtextfiltered – Bildtexte gefiltert auflisten
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseURL}}/dokumente/gett_bildtextfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "reftable": "T_KATALOGREISE",
+        "refnr": 101,
+        "kategorie": "HAUPTBILD",
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet T_BILDTEXT-Datensätze gefiltert auf (`DoSelectFilteredDynamic('T_BILDTEXT', ALLOWED, CONDITIONS, FILTER_PARAMS)`).
+
+  **Erlaubte Felder (ALLOWED):** identisch zu `gett_bildtext` (siehe dort).
+
+  **Filter-Parameter (alle optional, im Body; jeder gesetzte Parameter erzeugt eine AND-verknüpfte `feld = :feld`-Bedingung):** reftable, refnr, kategorie, sprache, internet, app, versteckt, bereich.
+
+  **Hinweis:** Die BLOB-Felder `bild` und `text` sind nur in ALLOWED enthalten, aber nicht filterbar (nicht in FILTER_PARAMS).
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

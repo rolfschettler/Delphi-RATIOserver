@@ -1,0 +1,39 @@
+info:
+  name: POST /dispo/inserturlaubsantrag – Urlaubsantrag anlegen
+  type: http
+  seq: 37
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/inserturlaubsantrag"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 303,
+        "mitarbeiter": "MU",
+        "von": "2026-10-01",
+        "bis": "2026-10-14",
+        "beantragtam": "2026-09-01",
+        "status": "offen",
+        "bemerkung": "Herbsturlaub"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in URLAUBSANTRAG an. Implementierung: `DoInsert('URLAUBSANTRAG', ALLOWED)` – nur ALLOWED-Felder werden aus dem Body übernommen.
+
+  **Erlaubte Felder (ALLOWED, 15):** identisch zu `/dispo/geturlaubsantrag` (siehe dort).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

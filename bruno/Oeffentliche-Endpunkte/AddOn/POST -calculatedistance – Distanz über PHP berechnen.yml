@@ -1,0 +1,37 @@
+info:
+  name: POST /calculatedistance – Distanz über PHP berechnen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/calculatedistance"
+  body:
+    type: json
+    data: |-
+      {
+        "start": "88487 Mietingen",
+        "zwischenstopps": ["Baltringen", "Ochsenhausen"],
+        "ziel": "Biberach"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Leitet den JSON-Body unverändert an den PHP-Endpunkt `calculatedistance` weiter (`PHP_Call('calculatedistance', Params, GetAuthToken)`) und gibt dessen Antwort durch.
+
+  **Body (JSON-Objekt, Pflicht):** `start` (string), `zwischenstopps` (array, optional), `ziel` (string). Ist der Body kein gültiges JSON-Objekt → Exception "Es wurde kein gültiges JSON übergeben".
+
+  **Auth:** erforderlich (Bearer Token; wird an PHP weitergereicht).
+
+  **LocalOnly:** true – nur vom Server selbst erreichbar (Bruno muss auf dem Server laufen), sonst 403.
+
+  **Antwort:** JSON (Content-Type `application/json`), Inhalt vom PHP-Backend bestimmt.

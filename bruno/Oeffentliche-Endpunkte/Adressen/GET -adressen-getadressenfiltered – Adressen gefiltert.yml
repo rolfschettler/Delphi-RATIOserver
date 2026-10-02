@@ -1,0 +1,44 @@
+info:
+  name: GET /adressen/getadressenfiltered – Adressen gefiltert
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseURL}}/adressen/getadressenfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "gruppe": 1,
+        "ort": "Berlin",
+        "orderby": "name1"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus ADRESSEN gefiltert auf (generisches `DoSelectFilteredDynamic`).
+
+  **Tabelle:** ADRESSEN
+
+  **Erlaubte Felder (ALLOWED):** kennziffer, gruppe, anrede, titel, name1, name2, strasse, plz, ort, telefon1, email, matchcode, lvorgang
+
+  **Filterparameter (alle optional, AND-verknüpft, je `feld = :feld`):** gruppe, name1, name2, strasse, ort – nur im Body vorhandene (nicht-null) Parameter erzeugen eine WHERE-Bedingung; ohne Filter werden alle Datensätze geliefert.
+
+  **Body:** `{ "fields": [...] | "*", "gruppe": <wert>, "name1": "...", "name2": "...", "strasse": "...", "ort": "..." }` – zusätzlich `orderby` (ALLOWED-Feld), `limit`, `offset`. Der Body muss ein gültiges JSON-Objekt sein (mindestens `{}`), sonst Fehler.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

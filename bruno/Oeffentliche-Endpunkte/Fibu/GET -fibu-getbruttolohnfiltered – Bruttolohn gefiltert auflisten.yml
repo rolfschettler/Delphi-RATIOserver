@@ -1,0 +1,38 @@
+info:
+  name: GET /fibu/getbruttolohnfiltered – Bruttolohn gefiltert auflisten
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getbruttolohnfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "monteurzeichen": "MZ01",
+        "datum": "2026-07-17",
+        "orderby": "datum"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensaetze der Tabelle BRUTTOLOHN gefiltert ueber `DoSelectFilteredDynamic('BRUTTOLOHN', ALLOWED, CONDITIONS, FILTER_PARAMS)`.
+
+  **Erlaubte Felder (ALLOWED) und gleichzeitig moegliche Filter-Parameter (FILTER_PARAMS):** nr, monteurzeichen, lohnart, datum, einheit, satz, gesamtbetrag, auftragnr, kostenstelle, positionsnr, extauftragnr, extpos, positiosnr, zuschlag, herkunft, faktor, bezeichnung, fahrzeug, kostenstelle1, kostenstelle2, vonzeit, biszeit, kmanfang, kmende, kmgesamt, zusatzfeld1, zusatzfeld2, kommentar. Jeder im Body gesetzte Filter-Parameter erzeugt automatisch eine per AND verknuepfte Gleichheits-Bedingung (`feld = :feld`); alle Filter sind optional.
+
+  **Body:** `{ "fields": [...] | "*", "orderby": "feld", <beliebige Filter-Parameter> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** wie getbruttolohn.

@@ -1,0 +1,48 @@
+info:
+  name: GET /dispo/geteinsatzfiltered – Einsätze nach Zeitraum filtern
+  type: http
+  seq: 10
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/geteinsatzfiltered"
+  params:
+    - name: timemode
+      value: overlaps_range
+      type: query
+      disabled: true
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "von": "2026-09-01 00:00:00",
+        "bis": "2026-09-30 23:59:59",
+        "orderby": "von"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Sonderfall unter den Filtermethoden: KEIN `DoSelectFilteredDynamic`, sondern `DoSelectFiltered('EINSATZ', ALLOWED, Filter, ['von','bis'])` mit manuell gebautem Filterstring, der vom Parameter `timemode` abhängt.
+
+  `timemode` wird zuerst aus dem QueryString (`?timemode=...`), sonst aus dem JSON-Body (`"timemode":"..."`) gelesen. Der Body-Wert wird in Kleinbuchstaben umgewandelt, der QueryString-Wert NICHT (dort muss exakt `overlaps_range` stehen).
+
+  - `timemode` = `overlaps_range` → Filter `bis >= :von AND von <= :bis` (liefert alle Einsätze, deren Zeitspanne den Abfragezeitraum überschneidet)
+  - sonst (Default) → Filter `von >= :von AND von <= :bis` (liefert Einsätze, deren Start im Abfragezeitraum liegt)
+
+  `von`/`bis` sind faktisch Pflicht: fehlt einer der beiden, wird der Parameter als NULL gebunden und die Abfrage liefert keine Datensätze (kein Fehler). Ein gültiges JSON-Objekt als Body ist Pflicht. Den Query-Parameter `timemode` in Bruno bei Bedarf aktivieren.
+
+  **Erlaubte Felder:** identisch zu `/dispo/geteinsatz` (103 Felder, siehe dort).
+
+  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

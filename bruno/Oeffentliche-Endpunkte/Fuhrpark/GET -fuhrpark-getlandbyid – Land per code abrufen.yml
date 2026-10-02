@@ -1,0 +1,38 @@
+info:
+  name: GET /fuhrpark/getlandbyid – Land per code abrufen
+  type: http
+  seq: 19
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/getlandbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "code": "D",
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle LAND anhand des Primärschlüssels `code` (Aufruf: `DoSelectOne('LAND', ALLOWED, 'code')`).
+
+  **Erlaubte Felder (ALLOWED):** code, staat, steuer, fiskel, euland, inland, formular, iso2, iso3, sortierung, sachkonto
+
+  **Body:** `{ "code": "<wert>", "fields": [...] | "*" }`
+
+  **Hinweis:** LAND ist ein reiner Read-Only-Stammdaten-Endpunkt.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

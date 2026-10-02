@@ -1,0 +1,49 @@
+info:
+  name: POST /dokumente/uploaddokument – Datei(en) als Dokumentvorlage(n) hochladen
+  type: http
+  seq: 15
+
+http:
+  method: POST
+  url: "{{baseURL}}/dokumente/uploaddokument"
+  body:
+    type: multipart-form
+    data:
+      - name: text1
+        type: text
+        value: Rechnung August 2026
+      - name: text2
+        type: text
+        value: ""
+      - name: bereich
+        type: text
+        value: Anmiet
+      - name: bearbeiter
+        type: text
+        value: hw
+      - name: file
+        type: file
+        value: []
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Lädt eine oder mehrere Dateien per `multipart/form-data` hoch und legt für JEDE Datei einen eigenen VORLAGEN-Datensatz an. Kein JSON-Body, keine generische CRUD-Methode.
+
+  **Formularfelder (Textfelder, aus `Request.ContentFields` gelesen):** `text1`, `text2` (jeweils auf 200 Zeichen gekürzt), `bereich` (auf 20 Zeichen gekürzt).
+
+  **Hinweis (Code-Auffälligkeit):** Das Feld `bearbeiter` wird im SQL-Insert referenziert, im aktuellen Code jedoch NICHT aus dem Request gelesen (keine Zuweisung aus `Request.ContentFields`) – es bleibt daher stets leer, unabhängig davon, ob es im Formular mitgeschickt wird.
+
+  **Dateifelder (`Request.Files`, beliebig viele):** Für jede Datei wird ein VORLAGEN-Datensatz angelegt mit `art` = Dateiendung (kleingeschrieben, aus dem Dateinamen), `name` = Dateiname (erste 30 Zeichen), `datum`/`geaendertam` = aktuelles Serverdatum, `doktyp` = `'D'` (fest), `haupttext` = Dateiinhalt als BLOB.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** `{"status":"OK"}`

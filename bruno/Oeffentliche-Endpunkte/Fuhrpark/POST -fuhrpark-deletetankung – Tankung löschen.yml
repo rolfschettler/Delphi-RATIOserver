@@ -1,0 +1,33 @@
+info:
+  name: POST /fuhrpark/deletetankung – Tankung löschen
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/deletetankung"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle TANKUNG anhand des Primärschlüssels `nr` (Aufruf: `DoDelete('TANKUNG', 'nr')`).
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

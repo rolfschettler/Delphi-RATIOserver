@@ -1,0 +1,12 @@
+info:
+  name: Touristik
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Touristik-Controller (DataModulTouristikClass.pas). Enthaelt aktuell nur den Demo-Endpunkt als Referenz-Vorlage fuer neue Endpunkte. **Auth:** alle Routen erfordern einen gueltigen Bearer-Token (JWT). Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /touristik/*), sonst HTTP 403 "Keine Berechtigung fuer diesen Endpunkt.".
+  type: text/markdown

@@ -135,8 +135,34 @@ const
     'erstellt','geaendert','gesperrt','pwd2','versuche',
     'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
   );
+var
+  Username, Typ: string;
+  Q: TFDQuery;
 begin
   DoInsert('REGISTRIERUNG', ALLOWED);
+
+  // Rollen-Blaupause passend zum typ zuweisen (kunde -> @KUNDE usw.), wie in
+  // insertRegistrierungLocal. DoInsert ist generisch, daher als UPDATE danach.
+  // Nicht bei Blaupausen selbst (username mit '@') und nicht ohne typ.
+  Username := Trim(getParamFromBody('username'));
+  Typ      := Trim(getParamFromBody('typ'));
+  if (Username = '') or (Typ = '') or Username.StartsWith('@') then
+    exit;
+
+  Q := TFDQuery.Create(nil);
+  try
+    Q.Connection := Connection;
+    // username umlautsicher und case-insensitiv vergleichen -- siehe
+    // CaseInsCondition in webUtils.
+    Q.SQL.Text := 'UPDATE REGISTRIERUNG SET rollen = :rollen' +
+                  ' WHERE ' + CaseInsCondition('username', 'username') +
+                  '   AND rollen IS NULL';
+    Q.ParamByName('rollen').AsString := '@' + UpperCase(Typ);
+    SetCaseInsParams(Q, 'username', Username);
+    Q.ExecSQL;
+  finally
+    Q.Free;
+  end;
 end;
 
 // Route: /registrierung/insertregistrierunglocal  |  Auth: false  |  LocalOnly: true
@@ -165,6 +191,10 @@ procedure TDataModulRegistrierung.insertRegistrierungLocal;
 //   (username = PERSONALSTAMM.zeichen, name1 = name1, name2 = name2).
 //   Ohne Treffer: 'Benutzer ist nicht im Personalstamm vorhanden.'
 //   Der Login wird in Grossschreibung in REGISTRIERUNG gespeichert.
+//
+// Rollen: REGISTRIERUNG.rollen wird automatisch auf die Blaupause des typs
+//   gesetzt (kunde -> @KUNDE, fahrer -> @FAHRER, mitarbeiter -> @MITARBEITER).
+//   Benutzernamen mit '@' am Anfang sind fuer Blaupausen reserviert.
 //
 // typ=mitarbeiter und typ=fahrer legen KEINE Adresse an und verknuepfen keine:
 //   REGISTRIERUNG.kennziffer bleibt NULL, die Antwort liefert
@@ -219,6 +249,10 @@ begin
     raise Exception.Create('Die Felder anrede, name1 und name2 sind bei typ=kunde Pflichtfelder.');
 
   Username := Trim(getParamFromBody('username'));
+
+  // '@' am Anfang ist fuer Rollen-Blaupausen reserviert (z.B. '@FAHRER').
+  if Username.StartsWith('@') then
+    raise Exception.Create('Der Benutzername darf nicht mit @ beginnen.');
 
   // typ=fahrer: username immer in Grossschreibung -- so steht das Zeichen auch
   // im PERSONALSTAMM und so wird der Login gespeichert.
@@ -351,9 +385,13 @@ begin
           Cols := Cols + ',' + ALLOWED[i];
           Vals := Vals + ',:' + ALLOWED[i];
         end;
+      // Rollen-Blaupause passend zum typ zuweisen: kunde -> @KUNDE usw.
+      Cols := Cols + ',rollen';
+      Vals := Vals + ',:rollen';
 
       Q.SQL.Text := 'INSERT INTO REGISTRIERUNG (' + Cols + ') VALUES (' + Vals + ')';
       Q.ParamByName('nr').AsInteger := RegNr;
+      Q.ParamByName('rollen').AsString := '@' + UpperCase(Typ);
       if Kennziffer > 0 then
         Q.ParamByName('kennziffer').AsInteger := Kennziffer;
       for i := Low(ALLOWED) to High(ALLOWED) do

@@ -1,0 +1,38 @@
+info:
+  name: POST /fuhrpark/updatefahrtenbuch – Fahrtenbuch-Eintrag ändern
+  type: http
+  seq: 34
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/updatefahrtenbuch"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "kz": "A",
+        "von": "2026-06-19T08:00",
+        "kmgesamt": 620
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz der Tabelle FAHRTENBUCH anhand des Primärschlüssels `nr` (Aufruf: `DoUpdate('FAHRTENBUCH', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** kz, von, bis, strecke, auftragsgeber, kminland, kmausland, kmleer, kmanfang, kmende, kmgesamt, personen, fahrer, umsatz, rvlin, rvlaus, eleistung, kennzeichen, text, steuerfahr, steuermarge, freiemarge, freieumsatz, ratiobusfahrtnr, steuer, sonstigervl, sonstrvlpz, steuermarge2, fahrer2, beguenstigt, zusatz1, zusatz2, km_stand_zustieg_1_kunde, km_stand_ausstieg_l_kunde
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

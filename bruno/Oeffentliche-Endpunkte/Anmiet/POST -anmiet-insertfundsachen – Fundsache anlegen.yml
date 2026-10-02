@@ -1,0 +1,45 @@
+info:
+  name: POST /anmiet/insertfundsachen – Fundsache anlegen
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{baseURL}}/anmiet/insertfundsachen"
+  body:
+    type: json
+    data: |-
+      {
+        "beschreibung": "Schwarzer Regenschirm",
+        "verlustort": "Bahnhof",
+        "status": "offen",
+        "verlustdatum": "2026-08-30",
+        "erfasst_von": "hw"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen FUNDSACHEN-Datensatz an, OHNE Bilder/Unterschrift (generisches `DoInsert`). Für den Fall inkl. Blob-Feldern siehe `insertfundsachenmitbildern`.
+
+  **Tabelle:** FUNDSACHEN
+
+  **Erlaubte Felder (ALLOWED):** abgeholt_am, abgeholt_von, abholort, bearbeitet_am, bearbeitet_von, beschreibung, erfasst_am, erfasst_von, status, text_intern, verlustdatum, verlustort, zusatzfeld1, zusatzfeld2, zusatzfeld3 – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+
+  **Hinweis:** `nr` ist NICHT in ALLOWED und wird ignoriert (Vergabe datenbankseitig, siehe `getfundsachenkey`).
+
+  **Body:** `{ "beschreibung": "...", "verlustort": "...", "status": "...", ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

@@ -1,0 +1,13 @@
+info:
+  name: 2 – Supervisor
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Anmelden als user_supervisor. "Supervisor" in ROLLEN bedeutet vollen Zugriff,
+    auch auf Endpunkte, die nirgends eingetragen sind.
+  type: text/markdown

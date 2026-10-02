@@ -1,0 +1,69 @@
+opencollection: 1.0.0
+
+info:
+  name: RATIOserver – Rollen-Tests
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: baseURL
+      value: http://localhost/ibapi
+    - name: jwttoken
+      value: ""
+    - name: user_eingeschraenkt
+      value: ""
+    - name: user_supervisor
+      value: ""
+    - name: erlaubt_endpunkt
+      value: /adressen/getkategorien
+    - name: verboten_endpunkt
+      value: /touristik/demo
+
+docs:
+  content: |-
+    Prueft die Rollen-Berechtigungen (REGISTRIERUNG.ROLLEN, Blaupausen `@...`).
+    Als ABLAUF gedacht: Ordner 1 bis 5 der Reihe nach ausfuehren (Runner).
+
+    VARIABLEN (Collection):
+      baseURL              z.B. http://localhost/ibapi
+      jwttoken             Bearer-Token. Jede "Anmelden"-Anfrage legt ihn ab.
+      user_eingeschraenkt  Benutzer, dessen ROLLEN erlaubt_endpunkt enthaelt,
+                           verboten_endpunkt aber NICHT.
+      user_supervisor      Benutzer mit "Supervisor" in ROLLEN (direkt oder
+                           ueber eine Blaupause).
+      erlaubt_endpunkt     Standard /adressen/getkategorien
+      verboten_endpunkt    Standard /touristik/demo
+
+    PASSWOERTER stehen NICHT in dieser Datei, sondern in .env (liegt neben
+    opencollection.yml, ist per .gitignore ausgeschlossen, Vorlage .env.example):
+      PW_EINGESCHRAENKT, PW_SUPERVISOR   Passwoerter der beiden Benutzer
+      TEST_PASSWORD, TEST_PWD2           Testpasswort + bcrypt-Hash fuer den
+                                         Registrierungstest (Ordner 4)
+
+    VORBEREITUNG:
+      - Blaupause @MITARBEITER in REGISTRIERUNG anlegen (gesperrt = 'JA');
+        verboten_endpunkt darf darin NICHT stehen.
+      - Nach jeder Aenderung an ROLLEN neu anmelden (Rollen stehen im Token).
+
+    NEBENWIRKUNG: Ordner 4 legt bei jedem Lauf einen Benutzer RTEST<Zeitstempel>
+    (typ=mitarbeiter, ohne Adresse) in REGISTRIERUNG an.
+
+    Ordner 5 ist nur aussagekraeftig, wenn baseURL von einem ANDEREN Rechner
+    auf den Server zeigt (/createtoken ist localhost-only).
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

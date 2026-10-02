@@ -1,0 +1,39 @@
+info:
+  name: POST /anmiet/deleteanmiet – Anmietung löschen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/anmiet/deleteanmiet"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 12345
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht genau einen ANMIET-Datensatz anhand des Primärschlüssels `nr` (generisches `DoDelete`).
+
+  **Tabelle:** ANMIET
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert> }` – nr ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

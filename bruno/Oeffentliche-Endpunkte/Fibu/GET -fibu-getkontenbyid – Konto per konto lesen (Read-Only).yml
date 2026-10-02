@@ -1,0 +1,36 @@
+info:
+  name: GET /fibu/getkontenbyid – Konto per konto lesen (Read-Only)
+  type: http
+  seq: 23
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getkontenbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "konto": "1000",
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle KONTEN ueber `DoSelectOne('KONTEN', ALLOWED, 'konto')`. Primaerschluessel ist hier `konto` (nicht `nr`). Reine Read-Only-Stammdaten-Tabelle ohne Insert/Update/Delete.
+
+  **Erlaubte Felder (ALLOWED):** siehe getkonten.
+
+  **Body:** `{ "konto": <wert>, "fields": [...] | "*" }` — Primaerschluessel `konto` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

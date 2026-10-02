@@ -1,0 +1,36 @@
+info:
+  name: GET /fuhrpark/getauslandfahrt – Auslandsfahrten auflisten
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/getauslandfahrt"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "datum"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle AUSLANDFAHRT auf (Aufruf: `DoSelect('AUSLANDFAHRT', ALLOWED)`).
+
+  **Erlaubte Felder (ALLOWED):** nr, fahrtnr, landkennung, kmausland, transit, betrag, steuer, grenzeintritt, grenzaustritt, kmleer, grenzeintritt_am, grenzaustritt_am, datum
+
+  **Body:** `{ "fields": [...] | "*", "orderby": "feld", "limit": 10, "offset": 0 }` (alle Angaben optional)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** ohne `limit` `{"header":{"<feld>":"<typ>",...},"data":[{...},...]}` (SerializeQuery: `header` = Feldname -> Typ, `data` = Datensaetze); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

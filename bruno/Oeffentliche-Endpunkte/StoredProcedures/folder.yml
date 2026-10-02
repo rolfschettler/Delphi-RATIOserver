@@ -1,0 +1,11 @@
+info:
+  name: StoredProcedures
+  type: folder
+  seq: 13
+
+request:
+  auth: inherit
+
+docs:
+  content: "Controller für den Aufruf von InterBase Stored Procedures. Quelle: DataModulStoredProceduresClass.pas (basiert auf TDataModulTableBase). Selectable Procedures werden per `SELECT * FROM <SP>(...)` aufgerufen, Parameter kommen über `isParamFromBody`/`getParamFromBody` aus dem JSON-Body; zusätzlich ein Demo-Endpunkt für Parameterquellen. **Auth:** alle Endpunkte erfordern einen gültigen Bearer-Token ({{jwttoken}}), LocalOnly=false. Stored Procedures: SP_ZAHLUNGEN (Zahlungen zu einem Vorgang/Beleg aus der FIBU)."
+  type: text/markdown

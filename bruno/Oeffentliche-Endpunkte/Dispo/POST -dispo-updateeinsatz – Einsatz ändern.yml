@@ -1,0 +1,36 @@
+info:
+  name: POST /dispo/updateeinsatz – Einsatz ändern
+  type: http
+  seq: 38
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/updateeinsatz"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 4711,
+        "bemerkung": "Fahrzeug getauscht",
+        "fahrzeugstatus": "bestaetigt",
+        "geprueft": true
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in EINSATZ anhand des Primärschlüssels. Implementierung: `DoUpdate('EINSATZ', ALLOWED, 'nr')`. Body: `{"nr":<Einsatz-Nr>,"feld1":"wert1",...}` – nur ALLOWED-Felder werden übernommen.
+
+  **Erlaubte Felder (ALLOWED, 103):** identisch zu `/dispo/geteinsatz` (siehe dort).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

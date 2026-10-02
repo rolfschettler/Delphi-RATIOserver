@@ -1,0 +1,40 @@
+info:
+  name: GET /registrierung/getregistrierungfiltered – Registrierungen gefiltert abfragen
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{baseURL}}/registrierung/getregistrierungfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "typ": "kunde",
+        "gesperrt": "NEIN",
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Dynamisch gefilterte Liste von REGISTRIERUNG-Datensaetzen (`DoSelectFilteredDynamic('REGISTRIERUNG', ALLOWED, CONDITIONS, FILTER_PARAMS)`). Jeder im Body gesetzte Filter-Parameter erzeugt automatisch eine AND-verknuepfte WHERE-Bedingung; alle Filter sind optional.
+
+  **Erlaubte Felder (ALLOWED):** nr, kennziffer, username, userkonfig, erstellt, geaendert, gesperrt, versuche, zeitsperre, pushid, letzter_login, hauptregistrierung, typ. Nicht lesbar: pwd, pwd2 und rollen (nicht in ALLOWED; die Rollen eines Benutzers stehen nach dem Login im Token unter role.rollen, siehe /verifytoken).
+
+  **Filter-Parameter (alle optional):** nr, kennziffer, username, erstellt, geaendert, gesperrt, versuche, zeitsperre, pushid, letzter_login, hauptregistrierung, typ. Hinweis: `userkonfig` ist ein Blob-Feld und bewusst nicht filterbar (nur ueber `fields`/ALLOWED lesbar).
+
+  **Body (weitere optionale Parameter):** `fields` (Array oder `"*"`), `orderby`, `limit`, `offset`.
+
+  **Antwort:** wie die ungefilterte Liste – ohne `limit` `{"header":{...},"data":[...]}` (SerializeQuery), mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token).

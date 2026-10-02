@@ -1,0 +1,34 @@
+info:
+  name: GET /dispo/getFreiesPersonal – freies Personal im Zeitraum ermitteln
+  type: http
+  seq: 20
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getFreiesPersonal"
+  body:
+    type: json
+    data: |-
+      {
+        "von": "2026-09-01 00:00:00",
+        "bis": "2026-09-01 23:59:59"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Nicht-generischer Endpunkt mit fest verdrahtetem SQL. Liefert alle Personen aus PERSONALSTAMM, deren `zeichen` in keinem DISPO-Datensatz vorkommt, der sich mit dem angefragten Zeitraum überschneidet (Bedingung: `D.BIS > :von AND D.VON < :bis`, JOIN DISPO/PERSONALSTAMM über `d.objekt = p.zeichen`).
+
+  `von`/`bis` sind im JSON-Body optional; fehlen sie, werden `von='1900-01-01 00:00:00'` und `bis='1900-02-01 00:00:00'` als Default verwendet (liefert dann faktisch alle nicht in diesem historischen Zeitraum verplanten Personen).
+
+  **Antwort:** `{"header":{...},"data":[...]}` (SerializeQuery) mit den Feldern nr, zeichen, anrede, name1, name2 (sortiert nach name2, name1).
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

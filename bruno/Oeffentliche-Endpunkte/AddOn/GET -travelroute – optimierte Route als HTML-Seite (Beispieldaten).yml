@@ -1,0 +1,33 @@
+info:
+  name: GET /travelroute – optimierte Route als HTML-Seite (Beispieldaten)
+  type: http
+  seq: 12
+
+http:
+  method: GET
+  url: "{{baseURL}}/travelroute"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ruft den PHP-Endpunkt `travelroute` auf und liefert eine HTML-Seite mit optimierter Route (TSP über die Zwischenstopps).
+
+  **Body/Parameter:** derzeit KEINE – der Handler ignoriert den Request vollständig und verwendet fest verdrahtete Beispieldaten:
+  `{"startzeit":"10:00","haltezeit":5,"start":"Friedrichshafen","zwischenstopps":["Bad Saulgau","Ravensburg","Ochsenhausen","Bad Buchau"],"ziel":"Biberach"}`.
+  Das Lesen aus dem Request-Body (`ParseJSONObject(Request.Content)`) ist im Code auskommentiert. Für eigene Daten `/calculateroute` (JSON) verwenden; Parameter dort identisch (start, ziel, zwischenstopps, startzeit, haltezeit).
+
+  **Auth:** NICHT erforderlich (Auth=false) – der Bearer-Block schadet nicht.
+
+  **LocalOnly:** true – nur vom Server selbst erreichbar (Bruno muss auf dem Server laufen), sonst 403.
+
+  **Antwort:** HTML (`text/html`), Inhalt vom PHP-Backend bestimmt.
+
+  **Hinweis:** Ohne Authentifizierung aus dem Internet aufrufbar; jeder Aufruf löst eine Routenberechnung im PHP-Backend aus.

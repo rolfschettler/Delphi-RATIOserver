@@ -1,0 +1,11 @@
+info:
+  name: Public
+  type: folder
+  seq: 15
+
+request:
+  auth: inherit
+
+docs:
+  content: "Public-Controller (TDataModulPublic): token-autorisierte Endpunkte fuer den Browser des Gastes - ohne Login, ohne JWT. Autorisiert wird ausschliesslich ueber den Einladungs-Token aus der Mail ({{einladungstoken}}), uebergeben als Body-Feld token oder ersatzweise als Query-Parameter ?token=... (Body hat Vorrang). Der Server bildet SHA-256 ueber den Klartext-Token und sucht ihn in ACCESS_TOKENS (token_hash); geprueft werden REVOKED, EXPIRES_AT, SINGLE_USE/USED_AT sowie REFERENCE_TYPE + PURPOSE (Adress-Endpunkte: ADRESSEN/einladung, Passwort: REGISTRIERUNG/passwort). Fehler kommen als {status:ERROR,message:...} mit 401/403/404/400. **Auth:** Auth=false (kein JWT noetig; der Bearer-Block der Requests schadet nicht). **LocalOnly:** false - bewusst aus dem Internet erreichbar. Tabellen: ACCESS_TOKENS, ADRESSEN, REGISTRIERUNG."
+  type: text/markdown

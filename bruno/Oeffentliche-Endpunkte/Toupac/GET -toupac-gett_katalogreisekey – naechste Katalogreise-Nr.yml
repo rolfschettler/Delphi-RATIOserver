@@ -1,0 +1,33 @@
+info:
+  name: GET /toupac/gett_katalogreisekey – naechste Katalogreise-Nr
+  type: http
+  seq: 39
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_katalogreisekey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert eine neue, eindeutige `nr` fuer einen neuen T_KATALOGREISE-Datensatz. Keine generische Do*-Methode, sondern eigene Query: `SELECT GEN_ID(T_KATALOGREISE_NR_GEN,1) AS nr FROM RDB$DATABASE` (der Generator wird bei jedem Aufruf um 1 erhoeht).
+
+  **Tabelle:** T_KATALOGREISE
+
+  **Key-Feld:** `nr`
+
+  **Body:** kein Body erforderlich.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{ "header": { "nr": "ftinteger" }, "data": [ { "nr": <neue Nummer> } ] }`

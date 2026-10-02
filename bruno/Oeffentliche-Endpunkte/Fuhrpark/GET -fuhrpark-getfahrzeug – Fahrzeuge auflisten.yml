@@ -1,0 +1,38 @@
+info:
+  name: GET /fuhrpark/getfahrzeug – Fahrzeuge auflisten
+  type: http
+  seq: 15
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/getfahrzeug"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "kennzeichen"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle FAHRZEUG auf (Aufruf: `DoSelect('FAHRZEUG', ALLOWED)`).
+
+  **Erlaubte Felder (ALLOWED):** kennzeichen, bezeichnung, hersteller, typ, fahrzeugart, baujahr, leistung, hubraum, fahrgestellnr, motornr, briefnr, scheinnr, standort, angeschaft, abgeschaft, status, treibstoff, sitzplatz, achsen, text, bild, sitznummern, sitzgesperrt, personen, gesperrt, zusatzfeld1, zusatzfeld2, kmsatz, sortierung, reihen, betrieb, profil, zuschlag1, zuschlag2, zuschlagarten, pin, telematikdevice, xkoord, ykoord, standort_aktuell, sv_fahrzeugprofil, din_norm, hinweise, km, lift, rueckfahrkamera, stammfahrer1, stammfahrer2, telematik_gelesen_am (u. a. die BLOB-Felder `text` und `bild`)
+
+  **Body:** `{ "fields": [...] | "*", "orderby": "feld", "limit": 10, "offset": 0 }` (alle Angaben optional)
+
+  **Hinweis:** Für FAHRZEUG existiert weder ein `insert`- noch ein `Key`-Endpunkt – Primärschlüssel ist das Kennzeichen selbst.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** ohne `limit` `{"header":{"<feld>":"<typ>",...},"data":[{...},...]}` (SerializeQuery: `header` = Feldname -> Typ, `data` = Datensaetze); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

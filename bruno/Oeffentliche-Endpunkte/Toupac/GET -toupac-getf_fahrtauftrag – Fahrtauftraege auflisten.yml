@@ -1,0 +1,39 @@
+info:
+  name: GET /toupac/getf_fahrtauftrag – Fahrtauftraege auflisten
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/getf_fahrtauftrag"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensaetze aus F_FAHRTAUFTRAG auf (ungefiltert). Ruft intern `DoSelect('F_FAHRTAUFTRAG', ALLOWED)` auf.
+
+  **Tabelle:** F_FAHRTAUFTRAG
+
+  **Erlaubte Felder (ALLOWED):** nr, fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+
+  **Body (optional):** `{ "fields": [...] | "*", "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` (ohne `fields` bzw. mit `"*"` werden alle ALLOWED-Felder geliefert).
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.

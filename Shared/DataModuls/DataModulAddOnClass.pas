@@ -46,7 +46,7 @@ end;
 {$R *.dfm}
 { TDataModulAddOn }
 
-// Route: /adddemo  |  Auth: true  |  LocalOnly: TODO
+// Route: /adddemo  |  Auth: true  |  LocalOnly: true
 procedure TDataModulAddOn.adddemo;
 var
   Adresse: TAdresse;
@@ -107,7 +107,7 @@ end;
 
 
 
-// Route: /adddemo  |  Auth: true  |  LocalOnly: TODO
+// Route: /adddemopersonal  |  Auth: true  |  LocalOnly: true
 procedure TDataModulAddOn.adddemopersonal;
 var
   Adresse: TAdresse;
@@ -181,7 +181,7 @@ end;
 
 
 
-// Route: /ki_getteilnehmer  |  Auth: true  |  LocalOnly: TODO
+// Route: /ki_getteilnehmer  |  Auth: true  |  LocalOnly: false
 procedure TDataModulAddOn.KI_GetTeilnehmer;
 var
   JSONArray: TJSONArray;
@@ -313,7 +313,7 @@ end;
 
 
 
-// Route: /readteilnehmer  |  Auth: true  |  LocalOnly: TODO
+// Route: /readteilnehmer  |  Auth: true  |  LocalOnly: true
 procedure TDataModulAddOn.ReadTeilnehmer;
 var
   Reader: TStreamReader;
@@ -441,7 +441,7 @@ begin
   end;
 end;
 
-// Route: /calculatedistance  |  Auth: true  |  LocalOnly: TODO
+// Route: /calculatedistance  |  Auth: true  |  LocalOnly: true
 procedure TDataModulAddOn.calculatedistance;
 var
   Params: TJSONObject;
@@ -459,7 +459,7 @@ begin
   end;
 end;
 
-// Route: /teilnehmerfromcsv  |  Auth: true  |  LocalOnly: TODO
+// Route: /teilnehmerfromcsv  |  Auth: true  |  LocalOnly: false
 procedure TDataModulAddOn.teilnehmerformcsv;
 var
   Reader: TStreamReader;
@@ -671,7 +671,7 @@ begin
   end;
 end;
 
-// Route: /travelroute  |  Auth: false  |  LocalOnly: TODO
+// Route: /travelroute  |  Auth: false  |  LocalOnly: true
 procedure TDataModulAddOn.travelroute;
 var
   Params: TJSONObject;
@@ -721,7 +721,7 @@ begin
 end;
 
 
-// Route: /calculateroute  |  Auth: true  |  LocalOnly: TODO
+// Route: /calculateroute  |  Auth: true  |  LocalOnly: true
 procedure TDataModulAddOn.calculateroute;
 var
   Params: TJSONObject;
@@ -750,7 +750,7 @@ begin
 end;
 
 
-// Route: /showroute  |  Auth: false  |  LocalOnly: TODO
+// Route: /showroute  |  Auth: false  |  LocalOnly: true
 procedure TDataModulAddOn.showhtml;
 var
   Params: TJSONObject;

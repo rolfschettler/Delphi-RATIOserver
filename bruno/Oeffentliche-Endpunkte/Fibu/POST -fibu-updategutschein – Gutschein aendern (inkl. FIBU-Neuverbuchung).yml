@@ -1,0 +1,37 @@
+info:
+  name: POST /fibu/updategutschein – Gutschein aendern (inkl. FIBU-Neuverbuchung)
+  type: http
+  seq: 35
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/updategutschein"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 501,
+        "erledigt": "J",
+        "storniert": "N"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Eigenimplementierung, KEIN generisches `DoUpdate`. `nr` muss im Body vorhanden und eine gueltige Zahl sein (sonst Exception "nr fehlt." bzw. "nr ist keine gueltige Zahl"). Es wird `isKeyInBody` (statt `isParamFromBody`) verwendet: ein im Body EXPLIZIT auf `null` gesetztes Feld wird in der Datenbank auf NULL gesetzt (`Query.ParamByName(Field).Clear`), waehrend ein im Body komplett fehlendes Feld unveraendert bleibt. Ist kein einziges ALLOWED-Feld im Body vorhanden, wird eine Exception "Keine gueltigen Felder uebergeben." geworfen. Update und `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` laufen in einer gemeinsamen Transaktion; bei Fehler Rollback.
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** vorgang, bearbeiter, geaendert_am, geaendert_von, erfasst, faellig, kennziffer, gutscheinkonto, kurzbemerkung, bemerkung, betrag, gueltig_bis, erledigt, storniert, storniert_am, stornogrund, fuerkunde, zusatzfeld1, zusatzfeld2, zusatzfeld3, fibukto, kulanz, kostelle1, kostelle2, code, motivnr, fibu_archiv_am, nrkreis, entstehung, zahlungsart.
+
+  **Body:** `{ "nr": <wert>, <zu aendernde Felder> }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK", "nr": <wert> }`

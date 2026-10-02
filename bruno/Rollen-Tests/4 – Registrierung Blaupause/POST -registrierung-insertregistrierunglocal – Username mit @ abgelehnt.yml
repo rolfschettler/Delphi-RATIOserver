@@ -1,0 +1,37 @@
+info:
+  name: POST /registrierung/insertregistrierunglocal – Username mit @ abgelehnt
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseURL}}/registrierung/insertregistrierunglocal"
+  body:
+    type: json
+    data: |-
+      {
+        "username": "@RTEST",
+        "pwd2": "{{process.env.TEST_PWD2}}",
+        "typ": "mitarbeiter"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const text = typeof res.getBody() === "string" ? res.getBody() : JSON.stringify(res.getBody());
+        test("nicht 200", () => expect(res.getStatus()).to.not.equal(200));
+        test("Meldung zum @", () => expect(text).to.contain("@"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  '@' am Anfang ist fuer Blaupausen reserviert -> Registrierung wird abgelehnt.

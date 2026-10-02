@@ -1,0 +1,39 @@
+info:
+  name: POST /fibu/insertdevisenkasse – Devisenkasse-Position anlegen
+  type: http
+  seq: 29
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/insertdevisenkasse"
+  body:
+    type: json
+    data: |-
+      {
+        "belegnr": 100,
+        "bdatum": "2026-07-24",
+        "expedient": "MZ01",
+        "waehrung": "USD",
+        "betrag": 250.00,
+        "konto": "1600",
+        "art": "E"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in DEVISENKASSE an ueber `DoInsert('DEVISENKASSE', ALLOWED)`. Es werden nur die im ALLOWED-Array enthaltenen Felder aus dem Body uebernommen; der Primaerschluessel `nr` ist nicht enthalten und wird ueber getdevisenkassekey separat ermittelt.
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** belegnr, bdatum, expedient, waehrung, betrag, referenznr, bereich, kostelle1, kostelle2, gesperrt, konto, gegenkonto, belegart, art, leistung, zusatzfeld1, bemerkung, wechselkurs, anmietnr, anmiet_uebertragung, fibu_uebertragung.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

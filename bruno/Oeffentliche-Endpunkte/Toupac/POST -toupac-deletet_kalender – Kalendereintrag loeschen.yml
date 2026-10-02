@@ -1,0 +1,39 @@
+info:
+  name: POST /toupac/deletet_kalender – Kalendereintrag loeschen
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/deletet_kalender"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz aus T_KALENDER anhand des Primaerschluessels `nr`. Ruft intern `DoDelete('T_KALENDER', 'nr')` auf.
+
+  **Tabelle:** T_KALENDER
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/getf_fahrtauftragbyid – Fahrtauftrag per nr
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/getf_fahrtauftragbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus F_FAHRTAUFTRAG anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('F_FAHRTAUFTRAG', ALLOWED, 'nr')` auf.
+
+  **Tabelle:** F_FAHRTAUFTRAG
+
+  **Erlaubte Felder (ALLOWED):** nr, fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).

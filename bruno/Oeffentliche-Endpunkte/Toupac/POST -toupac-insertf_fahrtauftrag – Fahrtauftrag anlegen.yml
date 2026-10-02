@@ -1,0 +1,48 @@
+info:
+  name: POST /toupac/insertf_fahrtauftrag – Fahrtauftrag anlegen
+  type: http
+  seq: 17
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/insertf_fahrtauftrag"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fahrtnr": "F-2026-042",
+        "einsatznr": 100,
+        "auftragsart": "Transfer",
+        "personenzahl": 4,
+        "status": "neu",
+        "filiale": 1,
+        "erstelltvon": "hwiest"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in F_FAHRTAUFTRAG an. Ruft intern `DoInsert('F_FAHRTAUFTRAG', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/getf_fahrtauftragkey` ermittelt werden.
+
+  **Tabelle:** F_FAHRTAUFTRAG
+
+  **Erlaubte Felder (ALLOWED):** nr, fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+
+  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

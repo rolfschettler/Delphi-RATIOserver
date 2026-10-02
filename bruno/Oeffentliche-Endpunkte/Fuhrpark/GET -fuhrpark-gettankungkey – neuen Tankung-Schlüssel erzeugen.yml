@@ -1,0 +1,25 @@
+info:
+  name: GET /fuhrpark/gettankungkey – neuen Tankung-Schlüssel erzeugen
+  type: http
+  seq: 28
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/gettankungkey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Erzeugt per InterBase-Generator einen neuen Primärschlüsselwert für die Tabelle TANKUNG: `SELECT GEN_ID(TANKUNG_NR, 1) AS nr FROM RDB$DATABASE`. Kein Body erforderlich, es wird kein Datensatz gelesen oder geschrieben – reine Schlüsselvergabe (z. B. vor einem nachfolgenden Insert).
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Beispiel-Antwort:** `{"header":{"nr":"ftinteger"},"data":[{"nr":123}]}` (SerializeQuery)

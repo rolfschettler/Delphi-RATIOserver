@@ -1,0 +1,25 @@
+info:
+  name: GET /dispo/getfahrergruppen – Fahrergruppen (Konfiguration) auflisten
+  type: http
+  seq: 11
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getfahrergruppen"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Nicht-generischer Endpunkt mit fest verdrahtetem SQL (kein Body, keine Parameter). Liest Fahrergruppen aus der Tabelle KONFIGURATION: `Select nr, name, cast(content as varchar(20000)) As ids from KONFIGURATION where art='G_R_P' and art2='PERSON' order by name`.
+
+  **Antwort:** `{"header":{...},"data":[...]}` (SerializeQuery, Feldnamen klein), z. B. `{"header":{...},"data":[{"nr":1,"name":"Nachtfahrer","ids":"12,45,78"}, ...]}` – `ids` enthält die kommagetrennten Personal-Kennungen der Gruppe.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

@@ -1,0 +1,38 @@
+info:
+  name: GET /schuelerverkehr/getsv_teilnehmer – Teilnehmer auflisten
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/schuelerverkehr/getsv_teilnehmer"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": ["nr", "persnr", "vorname", "nachname", "ort", "einrichtungnr_fk"],
+        "orderby": "nachname"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus der Tabelle SV_TEILNEHMER ohne Filter. Implementierung: `DoSelect('SV_TEILNEHMER', ALLOWED)`.
+
+  **Erlaubte Felder (ALLOWED, 60):** nr, persnr, los, einrichtungnr_fk, kennziffer_fk, kostentraeger_fk, tourbereich, berufsverkehr, anrede, vorname, nachname, strasse, land, plz, ort, ortsteil, bezirk, email, xkoord, ykoord, haltepunktnr_fk, ansprech1, ansprech1_tel, ansprech2, ansprech2_tel, hinweis, importhinweis1, rolli, einzelbefoerderung, begleitperson, begleitpersonname, hilfsmittel, hilfsmittelhinweis, sv_fahrzeugprofil, abrechnungstarif_fk, gruppe, geburtstag, geprueft, inaktiv, erfasstvon, erfasstam, geaendertvon, geaendertam, ansprech1_email, ansprech1_vorname, ansprech1_nachname, ansprech2_email, ansprech2_vorname, ansprech2_nachname, pushid, pwd, datumfeld1, datumfeld2, datumfeld3, datumfeld4, textfeld1, textfeld2, textfeld3, textfeld4, textfeld5.
+
+  **Hinweis:** `pwd` ist in ALLOWED enthalten – bei `"fields":"*"` bzw. ohne `fields` wird das Feld mit ausgeliefert. Im Beispiel daher eine explizite Feldliste.
+
+  **Body (optional):** `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}` – `orderby` muss ein ALLOWED-Feld sein.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+
+  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

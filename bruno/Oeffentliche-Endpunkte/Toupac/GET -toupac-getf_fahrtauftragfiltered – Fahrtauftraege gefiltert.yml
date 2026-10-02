@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/getf_fahrtauftragfiltered – Fahrtauftraege gefiltert
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/getf_fahrtauftragfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "einsatznr": 100
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert Datensaetze aus F_FAHRTAUFTRAG, optional gefiltert. Jeder im Body gesetzte (nicht-null) Filter-Parameter erzeugt eine AND-verknuepfte WHERE-Bedingung `feld = :feld`; ohne Filter werden alle Datensaetze geliefert. Ruft intern `DoSelectFilteredDynamic('F_FAHRTAUFTRAG', ALLOWED, CONDITIONS, FILTER_PARAMS)` auf.
+
+  **Tabelle:** F_FAHRTAUFTRAG
+
+  **Erlaubte Felder (ALLOWED):** nr, fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+
+  **Filter (FILTER_PARAMS, alle optional):** einsatznr
+
+  **Body:** `{ "fields": [...] | "*", "<filterfeld>": <wert>, ..., "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` -- ein gueltiges JSON-Objekt im Body ist Pflicht (sonst Fehler "Kein gueltiges JSON im Request-Body").
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.

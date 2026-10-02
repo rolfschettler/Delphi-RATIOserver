@@ -1,0 +1,46 @@
+info:
+  name: GET /adressen/getzusatztabellefiltered – Zusatzdatensätze gefiltert
+  type: http
+  seq: 13
+
+http:
+  method: GET
+  url: "{{baseURL}}/adressen/getzusatztabellefiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "reftable": "ADRESSEN",
+        "refnr": 42,
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus ZUSATZTABELLE gefiltert auf (generisches `DoSelectFilteredDynamic`).
+
+  **Tabelle:** ZUSATZTABELLE
+
+  **Erlaubte Felder (ALLOWED):** nr, reftable, refnr, modul, bereich, zusatzfeld1–zusatzfeld10, zusatzdatum1–zusatzdatum3, zusatzzahl1–zusatzzahl3, zusatznum1–zusatznum3, zusatzblob1–zusatzblob3, erstellt, geaendert, erfasstvon, geaendertvon, kennziffer, sortierung, bemerkung
+
+  **Filterparameter (alle optional, AND-verknüpft, je `feld = :feld`):** nr, reftable, refnr, modul, bereich, zusatzfeld1–zusatzfeld10, zusatzdatum1–zusatzdatum3, zusatzzahl1–zusatzzahl3, zusatznum1–zusatznum3, erstellt, geaendert, erfasstvon, geaendertvon, kennziffer, sortierung, bemerkung – nur im Body vorhandene (nicht-null) Parameter erzeugen eine WHERE-Bedingung; ohne Filter werden alle Datensätze geliefert.
+
+  **Hinweis:** die Blob-Felder zusatzblob1/2/3 sind nur in ALLOWED enthalten und stehen bewusst NICHT als Filterparameter zur Verfügung.
+
+  **Body:** `{ "fields": [...] | "*", "reftable": "...", "refnr": <wert>, ... }` – zusätzlich `orderby` (ALLOWED-Feld), `limit`, `offset`. Der Body muss ein gültiges JSON-Objekt sein (mindestens `{}`), sonst Fehler.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

@@ -1,0 +1,11 @@
+info:
+  name: Fibu
+  type: folder
+  seq: 5
+
+request:
+  auth: inherit
+
+docs:
+  content: "Controller fuer den Finanzbuchhaltungs-Bereich (DataModulFibuClass.pas). Deckt sechs Entitaeten ab: Bruttolohn (Lohnabrechnungspositionen der Monteure), Gutschein (Gutschein-Vorgaenge mit automatischer FIBU-Verbuchung ueber die Stored Procedure BUILDGSFIBU), Devisenkasse (Fremdwaehrungskasse), Lohnart (Lohnarten-Stammdaten, nur lesend), Fibu (allgemeine FIBU-Buchungssaetze) und Konten (Kontenstamm, nur lesend). Alle Endpunkte erfordern Authentifizierung per Bearer Token (JWT); keiner ist LocalOnly. Fuer Bruttolohn, Gutschein, Devisenkasse und Fibu existieren jeweils die vollen CRUD-Endpunkte (get/getFiltered/getById/getKey/insert/update/delete); Lohnart und Konten sind bewusst reine Stammdaten-Endpunkte ohne Key/Insert/Update/Delete. Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /fibu/*), sonst HTTP 403 \"Keine Berechtigung fuer diesen Endpunkt.\"."
+  type: text/markdown

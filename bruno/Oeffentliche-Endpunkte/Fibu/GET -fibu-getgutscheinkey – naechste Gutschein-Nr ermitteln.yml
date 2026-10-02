@@ -1,0 +1,25 @@
+info:
+  name: GET /fibu/getgutscheinkey – naechste Gutschein-Nr ermitteln
+  type: http
+  seq: 21
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getgutscheinkey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  KEINE generische DoSelect-Variante: fuehrt direkt `SELECT GEN_ID(GUTSCHEIN_NR_GEN, 1) AS nr FROM RDB$DATABASE` aus und liefert den naechsten Generatorwert fuer die Primaernummer `nr`. Kein Body erforderlich. Dieser Generator wird auch intern von insertGutschein zur Ermittlung der neuen `nr` verwendet.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{"nr":"ftinteger"},"data":[{"nr":<naechster_wert>}]}` (SerializeQuery)

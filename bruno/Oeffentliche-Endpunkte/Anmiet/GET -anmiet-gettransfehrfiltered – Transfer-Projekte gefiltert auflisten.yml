@@ -1,0 +1,46 @@
+info:
+  name: GET /anmiet/gettransfehrfiltered – Transfer-Projekte gefiltert auflisten
+  type: http
+  seq: 19
+
+http:
+  method: GET
+  url: "{{baseURL}}/anmiet/gettransfehrfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "kunde": 123,
+        "status": "Angebot",
+        "orderby": "hinfahrt"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet TRANSFEHR-Datensätze gefiltert auf (generisches `DoSelectFilteredDynamic`).
+
+  **Tabelle:** TRANSFEHR
+
+  **Erlaubte Felder (ALLOWED):** identisch zu `gettransfehr` (siehe dort)
+
+  **Filterparameter (alle optional, AND-verknüpft, je `feld = :feld`):** nr, kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart – nur im Body vorhandene (nicht-null) Parameter erzeugen eine WHERE-Bedingung; ohne Filter werden alle Datensätze geliefert.
+
+  **Hinweis:** `text` ist ein Blob-Feld und steht daher nur in ALLOWED, NICHT als Filterparameter zur Verfügung.
+
+  **Body:** `{ "fields": [...] | "*", "kunde": <wert>, "status": "...", ... }` – zusätzlich `orderby` (ALLOWED-Feld), `limit`, `offset`. Der Body muss ein gültiges JSON-Objekt sein (mindestens `{}`), sonst Fehler.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

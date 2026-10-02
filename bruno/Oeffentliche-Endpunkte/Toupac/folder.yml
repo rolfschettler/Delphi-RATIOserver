@@ -1,0 +1,11 @@
+info:
+  name: Toupac
+  type: folder
+  seq: 9
+
+request:
+  auth: inherit
+
+docs:
+  content: "Touristik-Controller (Reisebuero-Vorgaenge, Positionen, Ticketdaten, Leistungstraeger, Leistungen, Katalogreisen, Reisen, Reiseleistungen, Termine, Fahrtauftraege, Kalender). Basiert auf TDataModulTableBase und nutzt die generischen CRUD-Methoden DoSelect / DoSelectFilteredDynamic / DoSelectOne / DoInsert / DoUpdate / DoDelete der Basisklasse; Key-Endpunkte (`...key`) liefern den naechsten Generatorwert. **Auth:** alle Endpunkte erfordern einen gueltigen Bearer-Token ({{jwttoken}}), LocalOnly=false. **Antwortformat Lesezugriffe:** `{ \"header\": {...}, \"data\": [...] }` (SerializeQuery), mit `limit` zusaetzlich `total/limit/offset`. Tabellen: T_VORGANG (Reise-/Buchungsvorgaenge, CRUD), T_POSITIONEN (Vorgangspositionen, nur lesend), T_TICKETDATEN (Ticketdaten, nur lesend), T_LTRAEGER (Leistungstraeger, CRUD), T_LEISTUNG (Leistungsstamm, CRUD), T_KATALOGREISE (Katalogreisen, ohne Delete), T_REISE (Reisen, ohne Delete), T_REISELEISTUNGEN (Leistungen je Katalogreise, CRUD), T_TERMINE (Reisetermine, CRUD), F_FAHRTAUFTRAG (Fahrtauftraege, CRUD), T_KALENDER (Kalender-/Termineintraege, CRUD)."
+  type: text/markdown

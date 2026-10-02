@@ -1,0 +1,35 @@
+info:
+  name: GET /dispo/getzeitraumfiltered – Zeiträume filtern
+  type: http
+  seq: 33
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getzeitraumfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "art": "U",
+        "orderby": "von"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Implementierung: `DoSelectFilteredDynamic('ZEITRAUM', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Alle 9 ALLOWED-Felder sind zugleich Filterparameter (jeweils `feld = :feld`), alle optional, AND-verknüpft.
+
+  **Filter-/ALLOWED-Felder (9):** nr, von, bis, bezeichnung, farbe, art, code, gueltig_bis, gueltig_von.
+
+  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

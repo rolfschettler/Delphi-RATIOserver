@@ -1,0 +1,25 @@
+info:
+  name: GET /dokumente/getvorlagenkey – neuen VORLAGEN-Schlüssel erzeugen
+  type: http
+  seq: 10
+
+http:
+  method: GET
+  url: "{{baseURL}}/dokumente/getvorlagenkey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert einen neuen, eindeutigen Schlüsselwert für `VORLAGEN.nr` über den InterBase-Generator `VORLAGENNR` (`SELECT GEN_ID(VORLAGENNR,1) AS nr FROM RDB$DATABASE`). Kein Body erforderlich.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** `{"header":{"nr":"..."},"data":[{"nr":11}]}` (SerializeQuery, Feldnamen klein).

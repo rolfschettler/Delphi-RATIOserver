@@ -1,0 +1,44 @@
+info:
+  name: POST /anmiet/updatetransfehr – Transfer-Projekt ändern
+  type: http
+  seq: 22
+
+http:
+  method: POST
+  url: "{{baseURL}}/anmiet/updatetransfehr"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 501,
+        "status": "Auftrag",
+        "perszahl": 48,
+        "bearbeiter": "hw"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen bestehenden TRANSFEHR-Datensatz anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+
+  **Tabelle:** TRANSFEHR
+
+  **Erlaubte Felder (ALLOWED):** identisch zur Feldliste von `inserttransfehr` (siehe dort) (`nr` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert>, "feld": "...", ... }` – nr ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

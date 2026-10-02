@@ -1,0 +1,39 @@
+info:
+  name: POST /toupac/deletet_vorgang – Vorgang loeschen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/deletet_vorgang"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz aus T_VORGANG anhand des Primaerschluessels `nr`. Ruft intern `DoDelete('T_VORGANG', 'nr')` auf.
+
+  **Tabelle:** T_VORGANG
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

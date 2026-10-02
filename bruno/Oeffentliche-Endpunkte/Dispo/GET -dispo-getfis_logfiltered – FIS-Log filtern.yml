@@ -1,0 +1,42 @@
+info:
+  name: GET /dispo/getfis_logfiltered – FIS-Log filtern
+  type: http
+  seq: 18
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getfis_logfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "einsatznr": 4711,
+        "datum": "2026-09-01",
+        "fahrer": "MM",
+        "orderby": "datum"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Implementierung: `DoSelectFilteredDynamic('FIS_LOG', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Alle Filterparameter sind optional, jeder gesetzte Parameter erzeugt eine AND-verknüpfte WHERE-Bedingung.
+
+  **Filterparameter (3):**
+  - `einsatznr` → `einsatznr = :einsatznr`
+  - `datum` → `cast(datum as date) = :datum` (Vergleich ignoriert die Uhrzeit, nur das Datum zählt)
+  - `fahrer` → `fahrer = :fahrer`
+
+  **Erlaubte Felder (ALLOWED, 30):** identisch zu `/dispo/getfis_log` (siehe dort).
+
+  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

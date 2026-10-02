@@ -1,0 +1,35 @@
+info:
+  name: POST /dispo/updatepersonalstamm – Personalstamm ändern
+  type: http
+  seq: 41
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/updatepersonalstamm"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 55,
+        "telefon1": "0721-1234567",
+        "bemerkung": "Führerschein verlängert bis 2028"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in PERSONALSTAMM anhand des Primärschlüssels. Implementierung: `DoUpdate('PERSONALSTAMM', ALLOWED, 'nr')`. Body: `{"nr":<Personal-Nr>,"feld1":"wert1",...}` – nur ALLOWED-Felder werden übernommen.
+
+  **Erlaubte Felder (ALLOWED, 65):** identisch zu `/dispo/getpersonalstammfiltered` (siehe dort).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

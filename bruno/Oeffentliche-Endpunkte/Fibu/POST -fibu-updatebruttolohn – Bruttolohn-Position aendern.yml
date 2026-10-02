@@ -1,0 +1,38 @@
+info:
+  name: POST /fibu/updatebruttolohn – Bruttolohn-Position aendern
+  type: http
+  seq: 32
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/updatebruttolohn"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "satz": 15.5,
+        "gesamtbetrag": 620.00,
+        "kommentar": "korrigiert"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aendert einen Datensatz der Tabelle BRUTTOLOHN ueber `DoUpdate('BRUTTOLOHN', ALLOWED, 'nr')`.
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** monteurzeichen, lohnart, datum, einheit, satz, gesamtbetrag, auftragnr, kostenstelle, positionsnr, extauftragnr, extpos, positiosnr, zuschlag, herkunft, faktor, bezeichnung, fahrzeug, kostenstelle1, kostenstelle2, vonzeit, biszeit, kmanfang, kmende, kmgesamt, zusatzfeld1, zusatzfeld2, kommentar.
+
+  **Body:** `{ "nr": <wert>, <zu aendernde Felder> }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

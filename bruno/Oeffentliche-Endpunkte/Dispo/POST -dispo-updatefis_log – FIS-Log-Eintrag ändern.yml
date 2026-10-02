@@ -1,0 +1,35 @@
+info:
+  name: POST /dispo/updatefis_log – FIS-Log-Eintrag ändern
+  type: http
+  seq: 40
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/updatefis_log"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 9001,
+        "status": "abgeschlossen",
+        "erledigt_am": "2026-09-01 14:05:00"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in FIS_LOG anhand des Primärschlüssels. Implementierung: `DoUpdate('FIS_LOG', ALLOWED, 'nr')`. Body: `{"nr":<FIS_LOG-Nr>,"feld1":"wert1",...}` – nur ALLOWED-Felder werden übernommen.
+
+  **Erlaubte Felder (ALLOWED, 30):** identisch zu `/dispo/getfis_log` (siehe dort).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

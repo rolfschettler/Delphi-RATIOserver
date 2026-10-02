@@ -1,0 +1,33 @@
+info:
+  name: POST /fibu/deletedevisenkasse – Devisenkasse-Position loeschen
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/deletedevisenkasse"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 15
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz der Tabelle DEVISENKASSE ueber die generische Basis-Methode `DoDelete('DEVISENKASSE', 'nr')`.
+
+  **Body:** `{ "nr": <wert> }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

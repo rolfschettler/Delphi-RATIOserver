@@ -1,0 +1,43 @@
+info:
+  name: GET /toupac/gett_kalenderfiltered – Kalendereintraege gefiltert
+  type: http
+  seq: 11
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_kalenderfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "bereich": "Buchhaltung",
+        "status": "offen"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert Datensaetze aus T_KALENDER, optional gefiltert. Jeder im Body gesetzte (nicht-null) Filter-Parameter erzeugt eine AND-verknuepfte WHERE-Bedingung `feld = :feld`; ohne Filter werden alle Datensaetze geliefert. Ruft intern `DoSelectFilteredDynamic('T_KALENDER', ALLOWED, CONDITIONS, FILTER_PARAMS)` auf.
+
+  **Tabelle:** T_KALENDER
+
+  **Erlaubte Felder (ALLOWED):** nr, aufgabe, erstellt, terminam, vorlaufzeit, text, bereich, reftable, refnr, benutzer, benutzergruppe, status, von_name, an_name, suchbegriff, prio, typ, zusatzfeld1, zusatzfeld2, erstelltvon
+
+  **Filter (FILTER_PARAMS, alle optional, identisch zu ALLOWED):** nr, aufgabe, erstellt, terminam, vorlaufzeit, text, bereich, reftable, refnr, benutzer, benutzergruppe, status, von_name, an_name, suchbegriff, prio, typ, zusatzfeld1, zusatzfeld2, erstelltvon
+
+  **Body:** `{ "fields": [...] | "*", "<filterfeld>": <wert>, ..., "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` -- ein gueltiges JSON-Objekt im Body ist Pflicht (sonst Fehler "Kein gueltiges JSON im Request-Body").
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.

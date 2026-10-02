@@ -1,0 +1,43 @@
+info:
+  name: POST /toupac/updatet_kalender – Kalendereintrag aktualisieren
+  type: http
+  seq: 21
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/updatet_kalender"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "status": "erledigt",
+        "text": "Kunde zurueckgerufen, alles geklaert"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in T_KALENDER anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_KALENDER', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+
+  **Tabelle:** T_KALENDER
+
+  **Erlaubte Felder (ALLOWED):** nr, aufgabe, erstellt, terminam, vorlaufzeit, text, bereich, reftable, refnr, benutzer, benutzergruppe, status, von_name, an_name, suchbegriff, prio, typ, zusatzfeld1, zusatzfeld2, erstelltvon
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

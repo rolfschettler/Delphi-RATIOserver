@@ -1,0 +1,36 @@
+info:
+  name: GET /fuhrpark/getfahrzeugbyid – Fahrzeug per Kennzeichen abrufen
+  type: http
+  seq: 16
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/getfahrzeugbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "kennzeichen": "B-RX 123",
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle FAHRZEUG anhand des Primärschlüssels `kennzeichen` (Aufruf: `DoSelectOne('FAHRZEUG', ALLOWED, 'kennzeichen')`).
+
+  **Erlaubte Felder (ALLOWED):** kennzeichen, bezeichnung, hersteller, typ, fahrzeugart, baujahr, leistung, hubraum, fahrgestellnr, motornr, briefnr, scheinnr, standort, angeschaft, abgeschaft, status, treibstoff, sitzplatz, achsen, text, bild, sitznummern, sitzgesperrt, personen, gesperrt, zusatzfeld1, zusatzfeld2, kmsatz, sortierung, reihen, betrieb, profil, zuschlag1, zuschlag2, zuschlagarten, pin, telematikdevice, xkoord, ykoord, standort_aktuell, sv_fahrzeugprofil, din_norm, hinweise, km, lift, rueckfahrkamera, stammfahrer1, stammfahrer2, telematik_gelesen_am
+
+  **Body:** `{ "kennzeichen": "<wert>", "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

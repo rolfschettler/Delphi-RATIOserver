@@ -1,0 +1,49 @@
+info:
+  name: POST /toupac/insertt_kalender – Kalendereintrag anlegen
+  type: http
+  seq: 18
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/insertt_kalender"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "aufgabe": "Rueckruf Kunde",
+        "terminam": "2026-09-05",
+        "bereich": "Buchhaltung",
+        "benutzer": "hwiest",
+        "status": "offen",
+        "prio": 1,
+        "typ": "Wiedervorlage",
+        "erstelltvon": "hwiest"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in T_KALENDER an. Ruft intern `DoInsert('T_KALENDER', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_kalenderkey` ermittelt werden.
+
+  **Tabelle:** T_KALENDER
+
+  **Erlaubte Felder (ALLOWED):** nr, aufgabe, erstellt, terminam, vorlaufzeit, text, bereich, reftable, refnr, benutzer, benutzergruppe, status, von_name, an_name, suchbegriff, prio, typ, zusatzfeld1, zusatzfeld2, erstelltvon
+
+  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

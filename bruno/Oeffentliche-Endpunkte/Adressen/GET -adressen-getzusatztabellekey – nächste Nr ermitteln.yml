@@ -1,0 +1,33 @@
+info:
+  name: GET /adressen/getzusatztabellekey – nächste Nr ermitteln
+  type: http
+  seq: 14
+
+http:
+  method: GET
+  url: "{{baseURL}}/adressen/getzusatztabellekey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Kein generischer CRUD-Endpunkt: führt die feste Abfrage `SELECT GEN_ID(ZUSATZTABELLE_NR_GEN, 1) AS nr FROM RDB$DATABASE` aus und liefert den nächsten Generatorwert für den Primärschlüssel `nr` der Tabelle ZUSATZTABELLE. Body wird nicht ausgewertet.
+
+  **Tabelle:** ZUSATZTABELLE
+
+  **Key-Feld:** `nr`
+
+  **Body:** keiner
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"header":{"nr":"ftinteger"},"data":[{"nr":<nächster Wert>}]}`

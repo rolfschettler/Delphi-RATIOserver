@@ -1,0 +1,41 @@
+info:
+  name: POST /registrierung/updateregistrierung – Registrierung aendern
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseURL}}/registrierung/updateregistrierung"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "username": "mmustermann",
+        "gesperrt": "NEIN",
+        "versuche": 0,
+        "letzter_login": "2026-08-31 10:15:00"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aendert einen bestehenden Datensatz in REGISTRIERUNG anhand des Primaerschluessels (`DoUpdate('REGISTRIERUNG', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED):** kennziffer, pwd, username, userkonfig, erstellt, geaendert, gesperrt, pwd2, versuche, zeitsperre, pushid, letzter_login, hauptregistrierung, typ.
+
+  **Body:** `nr` (Pflicht, Integer, Primaerschluessel) plus beliebige der erlaubten Felder.
+
+  **Hinweise:** `rollen` ist NICHT in ALLOWED und laesst sich ueber diesen Endpunkt nicht aendern; eine Aenderung von `typ` passt die Rollen-Blaupause (`@KUNDE` usw.) NICHT an – die automatische Zuweisung gibt es nur bei insertregistrierung. `pwd2` muss ein bcrypt-Hash sein (wird unveraendert gespeichert). `gesperrt` = "JA" sperrt die Anmeldung. Rollenaenderungen wirken erst nach erneutem Login.
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token).

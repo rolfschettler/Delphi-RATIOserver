@@ -1,0 +1,37 @@
+info:
+  name: POST /fuhrpark/updatetankung – Tankung ändern
+  type: http
+  seq: 37
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/updatetankung"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "menge": 180.5,
+        "preis": 1.69
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz der Tabelle TANKUNG anhand des Primärschlüssels `nr` (Aufruf: `DoUpdate('TANKUNG', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** datum, bezeichnung, kraftstoffart, menge, preis, km, landkennung, heimtankung, kennzeichen, lieferantennr, lieferantenname, exttanknr, einsatznr, mitarbeiter, waehrung
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

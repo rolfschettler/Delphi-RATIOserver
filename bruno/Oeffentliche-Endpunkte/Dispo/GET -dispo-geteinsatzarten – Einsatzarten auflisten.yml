@@ -1,0 +1,25 @@
+info:
+  name: GET /dispo/geteinsatzarten – Einsatzarten auflisten
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/geteinsatzarten"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Nicht-generischer Endpunkt mit fest verdrahtetem SQL (kein Body, keine Parameter): `Select nr, code, beschreibung, farbe from einsatzarten order by code`.
+
+  **Antwort:** `{"header":{...},"data":[...]}` (SerializeQuery, Feldnamen klein), z. B. `{"header":{"nr":"ftinteger","code":"ftstring 10",...},"data":[{"nr":1,"code":"L","beschreibung":"Linienfahrt","farbe":16711680}, ...]}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

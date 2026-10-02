@@ -1,0 +1,48 @@
+info:
+  name: POST /toupac/insertt_reise – Reise anlegen
+  type: http
+  seq: 46
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/insertt_reise"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "bezeichnung": "Andalusien entdecken",
+        "code": "AND",
+        "land": "Spanien",
+        "region": "Andalusien",
+        "suchbegriff": "ANDALUSIEN",
+        "gesperrt": "N",
+        "kategorie": "Rundreise"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in T_REISE an. Ruft intern `DoInsert('T_REISE', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_reisekey` ermittelt werden.
+
+  **Tabelle:** T_REISE
+
+  **Erlaubte Felder (ALLOWED):** nr, bezeichnung, code, land, region, suchbegriff, gesperrt, kategorie
+
+  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

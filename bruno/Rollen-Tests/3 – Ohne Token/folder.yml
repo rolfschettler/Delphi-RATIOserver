@@ -1,0 +1,12 @@
+info:
+  name: 3 – Ohne Token
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Geschuetzter Endpunkt ohne Anmeldung -> 401.
+  type: text/markdown

@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/gett_terminebyid – Termin per nr
+  type: http
+  seq: 64
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_terminebyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus T_TERMINE anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_TERMINE', ALLOWED, 'nr')` auf.
+
+  **Tabelle:** T_TERMINE
+
+  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, von, bis, vw, vtage, bemerkung, storniert, gesperrt, sonderangebot, internet, sachkonto, kostelle1, kostelle2, minimumpers, maximumpers, provisionskonto, sachkontostorno, bemerkung_intern, abgesagt_am, schnittstelle_sendtime
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).

@@ -1,0 +1,47 @@
+info:
+  name: POST /login – Anmelden (Token holen)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/login"
+  body:
+    type: json
+    data: |-
+      {
+        "user": "{{user_eingeschraenkt}}",
+        "password": "{{process.env.PW_EINGESCHRAENKT}}"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        // Defensiv: eine abgelehnte Anmeldung ist 401 ohne Token.
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("Token geliefert", () => expect(rumpf && rumpf.token).to.be.a("string").and.not.empty);
+
+        if (rumpf && rumpf.token) {
+            bru.setVar("jwttoken", rumpf.token);
+            console.log("Token gespeichert.");
+        } else {
+            console.warn("Kein Token in der Antwort: " + JSON.stringify(res.getBody()));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Meldet user_eingeschraenkt an (Passwort aus .env: PW_EINGESCHRAENKT) und legt
+  den Token in {{jwttoken}} ab.

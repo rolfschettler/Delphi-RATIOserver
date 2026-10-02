@@ -1,0 +1,37 @@
+info:
+  name: GET /public/getadresse – Adresse per Einladungs-Token lesen
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseURL}}/public/getadresse?token={{einladungstoken}}"
+  params:
+    - name: token
+      value: "{{einladungstoken}}"
+      type: query
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert die Adresse, zu der der Einladungs-Token gehört (Gast-Seite ohne Login). Die Kennziffer kommt ausschließlich aus dem Token (ACCESS_TOKENS.REFERENCE_ID), nie vom Client.
+
+  **Token-Übergabe:** Body-Feld `token` ODER Query-Parameter `?token=...` (Body hat Vorrang; die Query-Variante macht den Lese-Endpunkt auch ohne JavaScript nutzbar). Klartext-Token aus der Mail; serverseitig wird SHA-256 gebildet und gegen `ACCESS_TOKENS.token_hash` geprüft. Erwartet: REFERENCE_TYPE = `ADRESSEN`, PURPOSE = `einladung`, nicht widerrufen, nicht abgelaufen.
+
+  **Auth:** Auth=false – kein JWT nötig, autorisiert allein über den Einladungs-Token (Bearer-Block schadet nicht).
+
+  **LocalOnly:** false – bewusst aus dem Internet erreichbar.
+
+  **Antwort:** `{"status":"OK","data":{"kennziffer":123,"anrede":"Herr","titel":null,"name1":"Max","name2":"Mustermann","strasse":"...","plz":"...","ort":"...","telefon1":"...","email":"...","recipient_email":"<Empfänger der Einladung>"}}` (Einzelobjekt, kein Array).
+
+  **Fehler:** `{"status":"ERROR","message":"..."}` – 401 (kein Token / unbekannt / widerrufen / "Sie haben diesen Vorgang bereits abgeschlossen." / abgelaufen / bereits verwendet), 403 (Token gehört zu anderem Vorgang/Zweck), 404 (Adresse nicht gefunden).
+
+  **Besonderheit:** Lesen setzt `USED_AT` NICHT – Mail-Scanner/Link-Vorschauen verbrennen den Link so nicht. Hinweis: Ein Token in der URL kann in Server-/Proxy-Logs landen.

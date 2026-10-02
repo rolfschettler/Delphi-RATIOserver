@@ -1,0 +1,36 @@
+info:
+  name: GET /dispo/getdispotour – Dispotouren auflisten
+  type: http
+  seq: 46
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getdispotour"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "bezeichnung"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus der Tabelle DISPOTOUR (Tourvorlagen mit Wochentagen, Gültigkeit, Abrechnungsdaten) ohne Filter. Implementierung: `DoSelect('DISPOTOUR', ALLOWED)`.
+
+  **Erlaubte Felder (ALLOWED, 58):** nr, bezeichnung, bemerkung, mon, die, mit, don, fre, sam, son, feiertag, ferien, nichtvon, nichtbis, typ, gruppe, firma, dienstnr, text1, text2, text3, text4, text5, text6, datum1, datum2, gueltig_von, gueltig_bis, nurferien, berechnungswert, einrichtung, einzelrechnung, einzelvorgabe, erfasstam, erfasstvon, fahrer, geaendertam, geaendertvon, hinweis, km, kostentraeger, minuten, nach, preisschema, tournummer, von, zusatzinfo, pauschalbetrag, ktogruppe, haupttour, monatspauschale, haupttournummer, altetournummer, googlelink, leistungsdaten, leistungsdatenvon, abrechnungsdaten, abrechnungsdatenvon.
+
+  **Body (optional):** `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}` – `orderby` muss ein ALLOWED-Feld sein.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+
+  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

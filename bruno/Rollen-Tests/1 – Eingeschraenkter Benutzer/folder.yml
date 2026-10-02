@@ -1,0 +1,13 @@
+info:
+  name: 1 – Eingeschraenkter Benutzer
+  type: folder
+  seq: 1
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Anmelden als user_eingeschraenkt, dann erlaubten und verbotenen Endpunkt
+    aufrufen. Prueft auch abschliessenden Slash und Grossschreibung im Pfad.
+  type: text/markdown

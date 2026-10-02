@@ -1,0 +1,51 @@
+info:
+  name: POST /adressen/insertadressen – Adresse anlegen
+  type: http
+  seq: 15
+
+http:
+  method: POST
+  url: "{{baseURL}}/adressen/insertadressen"
+  body:
+    type: json
+    data: |-
+      {
+        "gruppe": 1,
+        "anrede": "Herr",
+        "titel": "Dr.",
+        "name1": "Mustermann",
+        "name2": "",
+        "strasse": "Hauptstrasse 1",
+        "plz": "12345",
+        "ort": "Berlin",
+        "telefon1": "030123456",
+        "email": "mustermann@example.de",
+        "code": "K0001"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in der Tabelle ADRESSEN an (generisches `DoInsert`).
+
+  **Tabelle:** ADRESSEN
+
+  **Erlaubte Felder (ALLOWED):** gruppe, anrede, titel, name1, name2, strasse, plz, ort, telefon1, email, code – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+
+  **Hinweis:** `kennziffer` (Primärschlüssel) ist NICHT in ALLOWED und wird ignoriert – die Vergabe muss datenbankseitig erfolgen (`/adressen/getadressenkey` liefert nur den nächsten Wert).
+
+  **Body:** `{ "gruppe": ..., "anrede": "...", "name1": "...", "ort": "...", ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

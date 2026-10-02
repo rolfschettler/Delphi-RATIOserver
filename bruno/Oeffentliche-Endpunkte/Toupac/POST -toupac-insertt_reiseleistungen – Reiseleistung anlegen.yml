@@ -1,0 +1,52 @@
+info:
+  name: POST /toupac/insertt_reiseleistungen – Reiseleistung anlegen
+  type: http
+  seq: 52
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/insertt_reiseleistungen"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "katalogreisenr": 42,
+        "leistungnr": 17,
+        "code": "DZHP",
+        "von": "2027-05-01",
+        "bis": "2027-05-08",
+        "vontag": 1,
+        "bistag": 8,
+        "inklusiv": "J",
+        "status": "aktiv",
+        "sortierung": 10,
+        "ek_kalk": 450.00
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in T_REISELEISTUNGEN an. Ruft intern `DoInsert('T_REISELEISTUNGEN', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_reiseleistungenkey` ermittelt werden.
+
+  **Tabelle:** T_REISELEISTUNGEN
+
+  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, leistungnr, rabatterlaubt, standard, leistungsgeber, code, geraet, von, bis, internet, vontag, bistag, zeitvon, zeitbis, bemerkung, params, status, inklusiv, leistungsgruppe, preisoption, marge, adresskennziffer, vontagref, rundungsoption, sortierung, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, gesperrt, kopiertaus, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, provklasse, referenz1, referenz2, preis_steuerfrei, sachkonto_steuerfrei, onlinebuchung, app, termin, optionsdatum, referenz3, referenz4
+
+  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

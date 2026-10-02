@@ -12,6 +12,7 @@ type
   TDataModulLoginClass = class(TDataModulBaseClass)
   private
     { Private-Deklarationen }
+    function ResolveRoleBlueprints(const ARoles: string): string;
 
   public
     { Public-Deklarationen }
@@ -34,6 +35,54 @@ begin
 end;
 
 { TTDataModulLoginClass }
+
+function TDataModulLoginClass.ResolveRoleBlueprints(const ARoles: string): string;
+(*
+  Loest Blaupausen in REGISTRIERUNG.ROLLEN auf.
+  Ein Eintrag mit '@' (z.B. '@FAHRER') verweist auf den Datensatz in
+  REGISTRIERUNG mit username = '@FAHRER'; dessen ROLLEN werden uebernommen.
+  Beispiel: '@FAHRER, @KUNDE, /adressen/getadressen'
+    -> Inhalt von @FAHRER + Inhalt von @KUNDE + /adressen/getadressen
+
+  - Keine Verschachtelung: '@'-Eintraege innerhalb einer Blaupause werden
+    nicht weiter aufgeloest (keine Endlosschleife moeglich).
+  - Die '@'-Eintraege selbst bleiben in der Liste. Dadurch ist die Liste nie
+    leer, wenn eine Blaupause fehlt -- leer hiesse sonst "voller Zugriff".
+  - Unbekannte Blaupausen werden ignoriert (ergeben keine Rechte).
+  Ergebnis ist eine Komma-Liste (NormalizeRoleList).
+*)
+var
+  Q: TFDQuery;
+  S, R: string;
+begin
+  R := '';
+  Q := nil;
+  try
+    for S in NormalizeRoleList(ARoles).Split([',']) do
+    begin
+      if S = '' then
+        continue;
+      R := R + ',' + S;
+      if not S.StartsWith('@') then
+        continue;
+
+      if Q = nil then
+      begin
+        Q := TFDQuery.Create(nil);
+        Q.Connection := Connection;
+        Q.SQL.Text := 'SELECT rollen FROM registrierung WHERE UPPER(username) = :username';
+      end;
+      Q.Close;
+      Q.ParamByName('username').AsString := UpperCase(S);
+      Q.Open;
+      if not Q.IsEmpty then
+        R := R + ',' + Q.FieldByName('rollen').AsString;
+    end;
+  finally
+    Q.Free;
+  end;
+  Result := NormalizeRoleList(R);
+end;
 
 function TDataModulLoginClass.login(sl: TStringList): boolean;
 (*
@@ -141,7 +190,7 @@ begin
       close;
       // Umlautsicherer, case-insensitiver Vergleich -- Erlaeuterung des
       // Musters bei CaseInsCondition in webUtils.
-      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,pwd2 from registrierung' +
+      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,rollen,pwd2 from registrierung' +
                   ' where ' + CaseInsCondition('username', 'username');
       ParamByName('username_asc').AsString   := UpperCaseAscii(username);
       ParamByName('username_asclo').AsString := UpperCaseAscii(ToLowerUni(username));
@@ -177,9 +226,14 @@ begin
     if SameText(gesperrt, 'JA') then
       raise Exception.Create('Dieses Benutzerkonto ist gesperrt.');
 
-    // pwd2 (Hash) gehört nicht in die Role bzw. in den Token
+    // pwd2 (Hash) gehört nicht in die Role bzw. in den Token.
+    // rollen (BLOB, eine Rolle pro Zeile) mit aufgeloesten Blaupausen als
+    // Komma-Liste ablegen -- ein mehrzeiliger Wert wuerde in sl in mehrere
+    // Eintraege zerfallen.
     for var i := 0 to query.FieldCount - 1 do
-      if not SameText(query.fields[i].FieldName, 'pwd2') then
+      if SameText(query.fields[i].FieldName, 'rollen') then
+        sl.add('rollen=' + ResolveRoleBlueprints(query.fields[i].AsString))
+      else if not SameText(query.fields[i].FieldName, 'pwd2') then
         sl.add(lowercase(query.fields[i].FieldName) + '=' + trim(query.fields[i].AsString));
     result:=true;
   except

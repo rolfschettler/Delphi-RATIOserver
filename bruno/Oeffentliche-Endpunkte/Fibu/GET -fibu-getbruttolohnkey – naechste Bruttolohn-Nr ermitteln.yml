@@ -1,0 +1,25 @@
+info:
+  name: GET /fibu/getbruttolohnkey – naechste Bruttolohn-Nr ermitteln
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getbruttolohnkey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  KEINE generische DoSelect-Variante: fuehrt direkt `SELECT GEN_ID(BRUTTOLOHN, 1) AS nr FROM RDB$DATABASE` aus und liefert den naechsten Generatorwert fuer die Primaernummer `nr`. Kein Body erforderlich.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{"nr":"ftinteger"},"data":[{"nr":<naechster_wert>}]}` (SerializeQuery)

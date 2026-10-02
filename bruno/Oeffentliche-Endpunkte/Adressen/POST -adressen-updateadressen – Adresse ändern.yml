@@ -1,0 +1,46 @@
+info:
+  name: POST /adressen/updateadressen – Adresse ändern
+  type: http
+  seq: 18
+
+http:
+  method: POST
+  url: "{{baseURL}}/adressen/updateadressen"
+  body:
+    type: json
+    data: |-
+      {
+        "kennziffer": 42,
+        "name1": "Mustermann",
+        "ort": "Berlin",
+        "telefon1": "030123456"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in ADRESSEN anhand des Primärschlüssels `kennziffer` (generisches `DoUpdate`).
+
+  **Tabelle:** ADRESSEN
+
+  **Erlaubte Felder (ALLOWED):** gruppe, anrede, titel, name1, name2, strasse, plz, ort, telefon1, email (`kennziffer` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+
+  **Hinweis:** `code` kann hierüber NICHT geändert werden (nur beim Insert erlaubt).
+
+  **Key-Feld:** `kennziffer`
+
+  **Body:** `{ "kennziffer": <wert>, "feld": "...", ... }` – kennziffer ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

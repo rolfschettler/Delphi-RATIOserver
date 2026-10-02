@@ -1,0 +1,36 @@
+info:
+  name: GET /registrierung/getregistrierungbyid – Registrierung per nr abfragen
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{baseURL}}/registrierung/getregistrierungbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen REGISTRIERUNG-Datensatz anhand des Primaerschluessels (`DoSelectOne('REGISTRIERUNG', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED):** nr, kennziffer, username, userkonfig, erstellt, geaendert, gesperrt, versuche, zeitsperre, pushid, letzter_login, hauptregistrierung, typ. Nicht lesbar: pwd, pwd2 und rollen (nicht in ALLOWED; die Rollen eines Benutzers stehen nach dem Login im Token unter role.rollen, siehe /verifytoken).
+
+  **Body:** `nr` (Pflicht, Integer, Primaerschluessel), `fields` (optional, Array oder `"*"`).
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).
+
+  **Auth:** erforderlich (Bearer Token).

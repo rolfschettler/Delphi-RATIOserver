@@ -1,0 +1,36 @@
+info:
+  name: GET /fibu/getfibubyid – Fibu-Buchungssatz per nr lesen
+  type: http
+  seq: 15
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getfibubyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 1001,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle FIBU ueber `DoSelectOne('FIBU', ALLOWED, 'nr')`.
+
+  **Erlaubte Felder (ALLOWED):** siehe getfibu.
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

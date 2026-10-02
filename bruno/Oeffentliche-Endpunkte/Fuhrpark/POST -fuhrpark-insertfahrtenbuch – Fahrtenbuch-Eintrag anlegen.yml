@@ -1,0 +1,44 @@
+info:
+  name: POST /fuhrpark/insertfahrtenbuch – Fahrtenbuch-Eintrag anlegen
+  type: http
+  seq: 30
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/insertfahrtenbuch"
+  body:
+    type: json
+    data: |-
+      {
+        "kz": "A",
+        "von": "2026-06-19T08:00",
+        "bis": "2026-06-19T18:00",
+        "strecke": "Berlin - München",
+        "auftragsgeber": "Musterfirma GmbH",
+        "kennzeichen": "B-RX 123",
+        "fahrer": "Schmidt",
+        "personen": 45,
+        "kmgesamt": 600,
+        "umsatz": 1200.00
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in der Tabelle FAHRTENBUCH an (Aufruf: `DoInsert('FAHRTENBUCH', ALLOWED)`). Nur die in ALLOWED gelisteten Felder werden aus dem Body übernommen; der Primärschlüssel `nr` ist NICHT enthalten (vorher per `getfahrtenbuchkey` beziehen).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** kz, von, bis, strecke, auftragsgeber, kminland, kmausland, kmleer, kmanfang, kmende, kmgesamt, personen, fahrer, umsatz, rvlin, rvlaus, eleistung, kennzeichen, text, steuerfahr, steuermarge, freiemarge, freieumsatz, ratiobusfahrtnr, steuer, sonstigervl, sonstrvlpz, steuermarge2, fahrer2, beguenstigt, zusatz1, zusatz2, km_stand_zustieg_1_kunde, km_stand_ausstieg_l_kunde
+
+  **Body:** `{ "kz": "<wert>", ... }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

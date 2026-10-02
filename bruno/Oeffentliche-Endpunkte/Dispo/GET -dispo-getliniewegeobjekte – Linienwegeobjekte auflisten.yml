@@ -1,0 +1,34 @@
+info:
+  name: GET /dispo/getliniewegeobjekte – Linienwegeobjekte auflisten
+  type: http
+  seq: 21
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getliniewegeobjekte"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus der Tabelle LINIEWEGEOBJEKTE (`DoSelect('LINIEWEGEOBJEKTE', ALLOWED)`) ohne Filter. Body optional: `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}`.
+
+  **Erlaubte Felder (ALLOWED, 14):** nr, art, beschreibung, imageindex, dauer, farbe, fahrerkostenkm, fahrerkostenstd, fahrzeugkostenkm, fahrzeugkostenstd, profil, system, eart, lohnart.
+
+  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

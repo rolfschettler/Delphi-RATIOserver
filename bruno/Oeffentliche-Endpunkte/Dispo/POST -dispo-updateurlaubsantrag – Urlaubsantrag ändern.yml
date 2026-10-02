@@ -1,0 +1,36 @@
+info:
+  name: POST /dispo/updateurlaubsantrag – Urlaubsantrag ändern
+  type: http
+  seq: 42
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/updateurlaubsantrag"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 302,
+        "status": "genehmigt",
+        "genehmigtam": "2026-09-01",
+        "genehmigtvon": "HW"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in URLAUBSANTRAG anhand des Primärschlüssels. Implementierung: `DoUpdate('URLAUBSANTRAG', ALLOWED, 'nr')`. Body: `{"nr":<Urlaubsantrag-Nr>,"feld1":"wert1",...}` – nur ALLOWED-Felder werden übernommen.
+
+  **Erlaubte Felder (ALLOWED, 15):** identisch zu `/dispo/geturlaubsantrag` (siehe dort).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

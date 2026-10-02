@@ -1,0 +1,33 @@
+info:
+  name: POST /fibu/deletebruttolohn – Bruttolohn-Position loeschen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/deletebruttolohn"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz der Tabelle BRUTTOLOHN ueber die generische Basis-Methode `DoDelete('BRUTTOLOHN', 'nr')`.
+
+  **Body:** `{ "nr": <wert> }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

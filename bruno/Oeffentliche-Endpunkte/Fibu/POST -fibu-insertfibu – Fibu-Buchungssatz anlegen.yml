@@ -1,0 +1,39 @@
+info:
+  name: POST /fibu/insertfibu – Fibu-Buchungssatz anlegen
+  type: http
+  seq: 30
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/insertfibu"
+  body:
+    type: json
+    data: |-
+      {
+        "betrag": 100.00,
+        "soll": "1000",
+        "haben": "8400",
+        "belegfeld1": "RE1001",
+        "belegdatum": "2026-07-30",
+        "text": "Rechnung Muster GmbH",
+        "gebucht": "N"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in FIBU an ueber `DoInsert('FIBU', ALLOWED)`. Es werden nur die im ALLOWED-Array enthaltenen Felder aus dem Body uebernommen; der Primaerschluessel `nr` ist nicht enthalten und wird ueber getfibukey separat ermittelt.
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** betrag, soll, haben, belegfeld1, belegfeld2, belegdatum, kostelle1, kostelle2, skonto, text, gebucht, art, rechnungnr, stschl, ustbetrag, steuerkonto, stkontotyp, stsatz, stapel, opos, journalnr, erfasstdurch, vorlaufnr, archiv, text2, freigabe, uebertragung, fwbetrag, waehrung, kurs, zugeordnetzu, erfasst_am, laufnummer, belegart, journalisierungsnr, stand, fortlaufnr_provorgang, pkguid, leistungsdatum, iban, swift, kontoinhaber, mandant.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

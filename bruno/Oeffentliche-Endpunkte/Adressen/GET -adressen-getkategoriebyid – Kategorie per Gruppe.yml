@@ -1,0 +1,42 @@
+info:
+  name: GET /adressen/getkategoriebyid – Kategorie per Gruppe
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{baseURL}}/adressen/getkategoriebyid"
+  body:
+    type: json
+    data: |-
+      {
+        "gruppe": 1,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Kategoriedatensatz aus ADRKATS anhand des Primärschlüssels `gruppe` (generisches `DoSelectOne`).
+
+  **Tabelle:** ADRKATS
+
+  **Erlaubte Felder (ALLOWED):** gruppe, kat1–kat12, bezeichnung, debitkredit, symbol, kat13–kat24
+
+  **Key-Feld:** `gruppe`
+
+  **Body:** `{ "gruppe": <wert>, "fields": [...] | "*" }` – gruppe ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.

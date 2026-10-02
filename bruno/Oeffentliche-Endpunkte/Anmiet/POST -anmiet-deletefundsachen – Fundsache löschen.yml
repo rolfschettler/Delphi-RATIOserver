@@ -1,0 +1,39 @@
+info:
+  name: POST /anmiet/deletefundsachen – Fundsache löschen
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/anmiet/deletefundsachen"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 101
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht genau einen FUNDSACHEN-Datensatz anhand des Primärschlüssels `nr` (generisches `DoDelete`).
+
+  **Tabelle:** FUNDSACHEN
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert> }` – nr ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

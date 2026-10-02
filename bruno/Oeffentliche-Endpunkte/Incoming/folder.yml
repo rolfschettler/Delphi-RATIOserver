@@ -1,0 +1,12 @@
+info:
+  name: Incoming
+  type: folder
+  seq: 11
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Incoming-Controller (DataModulIncomingClass.pas) – Teilnehmerverwaltung Incoming-Touristik (Tabelle T_TEILNEHMER) sowie ein Demo-Referenzendpunkt. **Auth:** alle Routen erfordern einen gueltigen Bearer-Token (JWT). Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /incoming/*), sonst HTTP 403 "Keine Berechtigung fuer diesen Endpunkt.".
+  type: text/markdown

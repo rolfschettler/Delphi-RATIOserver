@@ -1,0 +1,33 @@
+info:
+  name: POST /fibu/deletegutschein – Gutschein loeschen (inkl. FIBU-Neuverbuchung)
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/deletegutschein"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 501
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Eigenimplementierung, KEIN generisches `DoDelete`. `nr` muss im Body vorhanden und eine gueltige Zahl sein (sonst Exception "nr fehlt." bzw. "nr ist keine gueltige Zahl"). Loescht die Zeile aus GUTSCHEIN und fuehrt anschliessend in derselben Transaktion `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` aus, um die zugehoerige FIBU-Verbuchung neu aufzubauen. Bei Fehler wird die Transaktion zurueckgerollt (Rollback) und die Exception weitergereicht.
+
+  **Body:** `{ "nr": <wert> }` — Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK", "nr": <wert> }`

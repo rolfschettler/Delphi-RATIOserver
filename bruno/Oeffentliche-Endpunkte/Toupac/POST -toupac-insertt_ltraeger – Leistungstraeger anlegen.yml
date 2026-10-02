@@ -1,0 +1,50 @@
+info:
+  name: POST /toupac/insertt_ltraeger – Leistungstraeger anlegen
+  type: http
+  seq: 33
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/insertt_ltraeger"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "kennziffer": 10042,
+        "code": "HOTPAL",
+        "bezeichnung": "Hotel Palma Playa",
+        "land": "Spanien",
+        "ort": "Palma de Mallorca",
+        "typ": "Hotel",
+        "optionstage": 14,
+        "waehrung": "EUR",
+        "gesperrt": "N"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in T_LTRAEGER an. Ruft intern `DoInsert('T_LTRAEGER', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_ltraegerkey` ermittelt werden.
+
+  **Tabelle:** T_LTRAEGER
+
+  **Erlaubte Felder (ALLOWED):** nr, kennziffer, code, bezeichnung, land, ort, typ, sachkonto, kostelle1, kostelle2, optionstage, klasse, stornostaffel, suchbegriff, kategorie, waehrung, gesperrt, bemerkung_intern
+
+  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

@@ -1,0 +1,45 @@
+info:
+  name: POST /public/updateadresse – Adresse per Einladungs-Token ändern
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/public/updateadresse"
+  body:
+    type: json
+    data: |-
+      {
+        "token": "{{einladungstoken}}",
+        "anrede": "Herr",
+        "name1": "Max",
+        "name2": "Mustermann",
+        "strasse": "Musterstraße 1",
+        "plz": "88487",
+        "ort": "Mietingen",
+        "telefon1": "07392 123456",
+        "email": "max.mustermann@example.com"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert die Adresse, zu der der Einladungs-Token gehört (`UPDATE ADRESSEN SET ... WHERE kennziffer = <aus Token>`). Der Schlüssel kommt ausschließlich aus dem Token, nie aus dem Body – IDOR ist strukturell ausgeschlossen. Darf beliebig oft aufgerufen werden, solange der Gast nicht `/public/adresse/abschliessen` aufruft.
+
+  **Token-Übergabe:** Body-Feld `token` (empfohlen) oder ersatzweise `?token=...`. Erwartet: REFERENCE_TYPE = `ADRESSEN`, PURPOSE = `einladung`.
+
+  **Erlaubte Felder (ALLOWED):** anrede, titel, name1, name2, strasse, plz, ort, telefon1, email – bewusst OHNE `gruppe`/`kennziffer`. Nur im Body vorhandene Felder werden geschrieben; ein explizites JSON `null` setzt das Feld auf NULL. Kein gültiges Feld → 400 "Keine gueltigen Felder uebergeben.".
+
+  **Auth:** Auth=false – kein JWT nötig, autorisiert allein über den Einladungs-Token (Bearer-Block schadet nicht).
+
+  **LocalOnly:** false – bewusst aus dem Internet erreichbar.
+
+  **Antwort:** `{"status":"OK"}`; Token-Fehler wie bei `/public/getadresse` (401/403).

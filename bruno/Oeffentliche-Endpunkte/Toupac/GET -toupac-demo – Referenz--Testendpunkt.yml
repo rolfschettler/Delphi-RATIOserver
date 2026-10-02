@@ -1,0 +1,49 @@
+info:
+  name: GET /toupac/demo – Referenz-/Testendpunkt
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/demo?id=42&filter=Mueller"
+  params:
+    - name: id
+      value: "42"
+      type: query
+    - name: filter
+      value: Mueller
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Helga",
+        "menge": 5
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Demo-/Referenzendpunkt (kein Datenbankzugriff). Zeigt den sicheren Zugriff auf Parameter aus zwei Quellen:
+  1) URL-Query-Parameter `id` (Integer) und `filter` (String) ueber `Request.QueryFields`.
+  2) JSON-Body-Parameter `name` (String) und `menge` (Integer) ueber `isParamFromBody`/`getParamFromBody`.
+
+  Fehlende Parameter erzeugen keinen Fehler, sondern erscheinen im Ergebnis als JSON `null`. Beliebige Kombination moeglich: nur URL, nur Body, beides oder nichts.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Beispiel-Antwort:**
+  ```json
+  {
+    "url": { "id": 42, "filter": "Mueller" },
+    "body": { "name": "Helga", "menge": 5 }
+  }
+  ```

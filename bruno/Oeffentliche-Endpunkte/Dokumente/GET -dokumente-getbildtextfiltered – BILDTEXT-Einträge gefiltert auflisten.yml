@@ -1,0 +1,47 @@
+info:
+  name: GET /dokumente/getbildtextfiltered – BILDTEXT-Einträge gefiltert auflisten
+  type: http
+  seq: 17
+
+http:
+  method: GET
+  url: "{{baseURL}}/dokumente/getbildtextfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": ["nr", "art", "code", "ueberschrift", "sprache", "versteckt"],
+        "art": "K",
+        "code": 101,
+        "sprache": "de",
+        "orderby": "nr",
+        "limit": 20,
+        "offset": 0
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle BILDTEXT (NICHT T_BILDTEXT – eigene Tabelle mit anderer Struktur) gefiltert auf (`DoSelectFilteredDynamic('BILDTEXT', ALLOWED, CONDITIONS, FILTER_PARAMS)`).
+
+  **Erlaubte Felder (ALLOWED):** nr, bild, text, art, code, imgtype, ueberschrift, bildindex, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, lastlock, erfasst_am, versteckt, bildformat, textformat.
+
+  **Filter-Parameter (alle optional, im Body; jeder gesetzte, nicht-null Parameter erzeugt eine AND-verknüpfte `feld = :feld`-Bedingung):** nr, art, code, imgtype, ueberschrift, bildindex, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, lastlock, erfasst_am, versteckt, bildformat, textformat.
+
+  **Weitere Body-Felder:** `fields` (Array oder `"*"`), `orderby` (muss in ALLOWED sein), `limit`/`offset` (optional, Pagination per `ROWS x TO y`).
+
+  **Hinweis:** Die BLOB-Felder `bild` und `text` sind nur in ALLOWED enthalten, aber nicht filterbar; sie werden als Base64-String zurückgegeben (im Beispiel bewusst nicht angefordert, um die Antwort klein zu halten). Die Beispielwerte für `art`/`code` sind Platzhalter.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** false.
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

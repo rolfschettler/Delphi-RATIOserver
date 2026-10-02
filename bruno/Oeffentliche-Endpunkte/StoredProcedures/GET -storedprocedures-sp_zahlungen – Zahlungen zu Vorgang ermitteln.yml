@@ -1,0 +1,44 @@
+info:
+  name: GET /storedprocedures/sp_zahlungen – Zahlungen zu Vorgang ermitteln
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/storedprocedures/sp_zahlungen"
+  body:
+    type: json
+    data: |-
+      {
+        "vorgang": "25000123",
+        "bereich": "TOUPAC",
+        "selart": 0
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ruft die selectable Stored Procedure SP_ZAHLUNGEN auf: `SELECT * FROM SP_ZAHLUNGEN(:vorgang, :bereich, :selart)` (kein EXECUTE PROCEDURE, keine Transaktion – reiner Lesezugriff). Funktioniert mit GET oder POST.
+
+  **Stored Procedure:** SP_ZAHLUNGEN(VORGANG CHAR(20), BEREICH CHAR(20), SELART INTEGER)
+
+  **Body-Parameter:**
+  - `vorgang` (String, **Pflicht**) – Rechnungsnummer = Belegfeld1 der FIBU. Fehlt der Parameter (oder ist `null`), Fehler `Parameter "vorgang" fehlt`. Bei `bereich`="TOUPAC" vergleicht die Prozedur intern gegen T_VORGANG.RECHNUNGSNR (numerisch) – ein nicht-numerischer Wert (z. B. "GS18576") führt zu einem InterBase-Konversionsfehler (HTTP 400). Gutschein-Belege gehören nach `bereich`="GUTSCHEIN".
+  - `bereich` (String, optional, Default leer) – ausgewertet werden "TOUPAC", "TPSAMMEL" und "GUTSCHEIN". Bei anderen Werten bleibt das Debitor-/Kreditorkonto unbestimmt, `selart` 0 und 3 liefern dann ein leeres Ergebnis.
+  - `selart` (Integer, optional, Default 0; nicht-numerisch → 0):
+    - 0 = nur Zahlungen des Debitors
+    - 1 = alle Zahlungen
+    - 2 = Summe aller Zahlungen (eine Zeile)
+    - 3 = Summe aller Zahlungen des Debitors (eine Zeile)
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+
+  **Antwort:** `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery) mit 14 Spalten: betrag, belegdatum, konto, text, debitor, erfasstdurch, erfasst_am, bezeichnung, kostelle1, kostelle2, vorlaufnr, journalisierungsnr, uebertragung, nr. Bei `selart` 2 und 3 ist nur `betrag` gefüllt, die übrigen Spalten sind `null`. Fehler: `{"status":"error","message":"..."}`.

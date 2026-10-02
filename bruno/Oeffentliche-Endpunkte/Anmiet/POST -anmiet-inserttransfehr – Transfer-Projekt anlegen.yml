@@ -1,0 +1,51 @@
+info:
+  name: POST /anmiet/inserttransfehr – Transfer-Projekt anlegen
+  type: http
+  seq: 21
+
+http:
+  method: POST
+  url: "{{baseURL}}/anmiet/inserttransfehr"
+  body:
+    type: json
+    data: |-
+      {
+        "kunde": 123,
+        "ansprechpartner": "Frau Schmidt",
+        "hinfahrt": "2026-10-15",
+        "rueckfahrt": "2026-10-18",
+        "abfahrthin": "Berlin ZOB",
+        "ankunfthin": "Hamburg Hbf",
+        "kurztext": "Klassenfahrt Hamburg",
+        "perszahl": 45,
+        "status": "Angebot",
+        "bearbeiter": "hw",
+        "reiseart": "Gruppenreise"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen TRANSFEHR-Datensatz an (generisches `DoInsert`).
+
+  **Tabelle:** TRANSFEHR
+
+  **Erlaubte Felder (ALLOWED):** kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, text, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+
+  **Hinweis:** Der Primärschlüssel `nr` ist NICHT in ALLOWED und wird ignoriert – die Vergabe muss datenbankseitig (Generator TRANSFEHR_NR_GEN/Trigger) erfolgen; `/anmiet/gettransfehrkey` liefert nur den nächsten Generatorwert. `text` (BLOB) wird als einfacher Parameterwert geschrieben (kein Base64-Decoding).
+
+  **Body:** `{ "kunde": <wert>, "hinfahrt": "...", "rueckfahrt": "...", "kurztext": "...", ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

@@ -1,0 +1,38 @@
+info:
+  name: GET /verifytoken – Rollen im Token
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/verifytoken"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+        const rollen = (rumpf && rumpf.role && rumpf.role.rollen) || "";
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("Token gueltig", () => expect(rumpf && rumpf.valid).to.equal(true));
+        test("rollen gesetzt (nicht leer = eingeschraenkt)", () => expect(rollen).to.not.be.empty);
+        test("rollen ist Komma-Liste ohne Zeilenumbrueche", () => expect(rollen).to.not.match(/[\r\n]/));
+        test("kein Supervisor", () => expect(rollen.split(",")).to.not.include("supervisor"));
+        test("erlaubt_endpunkt enthalten", () =>
+            expect(rollen.split(",")).to.include(String(bru.getCollectionVar("erlaubt_endpunkt")).toLowerCase()));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Zeigt den Token-Inhalt. role.rollen ist die aufgeloeste Komma-Liste
+  (Blaupausen bereits eingesetzt, '@'-Eintraege bleiben stehen).

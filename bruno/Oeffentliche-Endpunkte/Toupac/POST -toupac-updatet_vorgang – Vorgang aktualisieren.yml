@@ -1,0 +1,45 @@
+info:
+  name: POST /toupac/updatet_vorgang – Vorgang aktualisieren
+  type: http
+  seq: 22
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/updatet_vorgang"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "status": "storniert",
+        "stornogrund": "Kunde erkrankt",
+        "stornodatum": "2026-08-31",
+        "geaendertvon": "hwiest"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in T_VORGANG anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_VORGANG', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+
+  **Tabelle:** T_VORGANG
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** agenturnr, buchender, vorgangsnr, erstellt, geaendert, personen, datum_von, datum_bis, endpreis, status, agenturcode, katalogreisenr, reisebezeichnung, optionsdatum, expedient, bemerkung, fibukontokunde, fibukontoagentur, sachkontoreise, buchungsdatum, faelligam, veranstalter, sammelrechnung, nrkreis, rechnungsnr, stand, direktinkasso, anzahlung, anzfaelligam, erstelltvon, geaendertvon, ansprechpartner, entstehung, bereich, zusatzinfo, reisegruppe, zahlungsart, ausreise, kontaktentstehung, reiseart, ziel, filiale, zugeordnetzu, abteilung, hauptkategorie, vgedruckt, bgedruckt, auftrag_erteilt_am, auftrag_erteilt_von, stornogrund, lastmaxstatus, sammelrechnungnr, originalreisedatum, terminnr, terminnr_rueck, knotenhin, knotenrueck, statusinfo, vorgangsstatus, vertretung, lastgeaendert, fibu_archiv_am, stornodatum, aufteilung, abrechnungsart, hotelkategorie, versandart, unterschrift, untertitel, app, festbuchung_am, schnittstelle_sendtime, sprache, aktion, bank, externe_nummer, rechnungsart, stornotermin, vk_waehrung, mandant
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

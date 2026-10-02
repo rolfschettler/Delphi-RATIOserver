@@ -1,0 +1,37 @@
+info:
+  name: POST /incoming/updatet_teilnehmer – Teilnehmer aendern
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseURL}}/incoming/updatet_teilnehmer"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 501,
+        "telefon1": "0170-7654321",
+        "status": "storniert"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aendert einen bestehenden Datensatz in T_TEILNEHMER anhand des Primaerschluessels (`DoUpdate('T_TEILNEHMER', ALLOWED, 'nr')`). `nr` ist hier NICHT Teil von ALLOWED (nur Schluesselfeld im Body), kann also nicht per Update veraendert werden.
+
+  **Erlaubte Felder (ALLOWED):** vorgangnr, anrede, name, kennziffer, geburtstag, jahre, shuttle, info1, info2, ref1, ref2, gruppe, sitzfest, hininfo, rueckinfo, ausstiegrueck, profil, status, reservierungsnr, kabinengruppe, infofaehre, zustieghin, ausstieghin, zustiegrueck, ausstieg_rueck, sitzhin, sitzrueck, leistungen, passnummer, ausgestellt_in, ausgestellt_am, gueltig_bis, passinfo, passid, nation, geburtsort, name1, name2, name3, namenszusatz, titel, email, land, ort, ortsteil, plz, region, strasse, telefon1, telefon2, telefon3, xkoord, ykoord, heimatort, pass_name1, pass_name2, zusatzdaten.
+
+  **Body:** `nr` (Pflicht, Integer, Primaerschluessel) plus beliebige der erlaubten Felder.
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token).

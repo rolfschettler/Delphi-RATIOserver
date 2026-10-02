@@ -1,0 +1,38 @@
+info:
+  name: GET /getgeneratorvalue – nächsten Generatorwert holen
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{baseURL}}/getgeneratorvalue"
+  body:
+    type: json
+    data: |-
+      {
+        "generator": "T_BILDTEXT_NR_GEN",
+        "increment": 1
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert den nächsten Wert eines beliebigen InterBase-Generators, gleichbedeutend mit `GEN_ID(<generator>, <increment>)`. Der Generatorname wird in Großbuchstaben gewandelt und vorab gegen `RDB$GENERATORS` geprüft (muss existieren) – erst dann in die SQL eingesetzt (Schutz gegen SQL-Injection).
+
+  **Body:** `generator` (Pflicht, string; fehlt → "Parameter \"generator\" fehlt."), `increment` (optional, Integer, Default 1).
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** false.
+
+  **Antwort:** `{"generator":"T_BILDTEXT_NR_GEN","value":123}`; unbekannter Generator → Exception "Generator \"X\" existiert nicht.".
+
+  **Besonderheit:** Der Aufruf VERÄNDERT den Generator (kein reines Lesen). `increment` ist nicht begrenzt – auch `0` (aktuellen Wert lesen) oder negative Werte (Zurücksetzen!) sind möglich, und zwar für jeden Generator der Datenbank.

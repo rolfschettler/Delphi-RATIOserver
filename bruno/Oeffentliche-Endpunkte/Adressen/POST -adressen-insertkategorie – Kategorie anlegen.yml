@@ -1,0 +1,42 @@
+info:
+  name: POST /adressen/insertkategorie – Kategorie anlegen
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{baseURL}}/adressen/insertkategorie"
+  body:
+    type: json
+    data: |-
+      {
+        "gruppe": 1,
+        "bezeichnung": "Kunden",
+        "debitkredit": "D",
+        "symbol": "K"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in der Tabelle ADRKATS an (generisches `DoInsert`).
+
+  **Tabelle:** ADRKATS
+
+  **Erlaubte Felder (ALLOWED):** gruppe, kat1–kat12, bezeichnung, debitkredit, symbol, kat13–kat24 – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+
+  **Body:** `{ "gruppe": <wert>, "bezeichnung": "...", "debitkredit": "...", "symbol": "...", ... }` – `gruppe` ist der Primärschlüssel und muss beim Insert mitgegeben werden.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

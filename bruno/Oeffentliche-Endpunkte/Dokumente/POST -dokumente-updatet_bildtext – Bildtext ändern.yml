@@ -1,0 +1,38 @@
+info:
+  name: POST /dokumente/updatet_bildtext – Bildtext ändern
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{baseURL}}/dokumente/updatet_bildtext"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 55,
+        "kategorie": "titelbild",
+        "versteckt": "N",
+        "bild": "<Base64-codierte-JPEG-Bilddaten>"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen bestehenden T_BILDTEXT-Datensatz. Kein generisches CRUD, sondern eigens implementiert: `nr` ist im Body zwingend erforderlich und dient als Schlüssel der WHERE-Bedingung (`WHERE nr = :nr`), wird selbst aber nicht mitgeschrieben. Es wird DYNAMISCH nur für jedes im Body tatsächlich vorhandene Feld eine `feld = :feld`-Klausel gesetzt (mindestens 1 Feld/Blob erforderlich, sonst Exception "Keine gueltigen Felder uebergeben.").
+
+  **Erlaubte Felder (ALLOWED):** reftable, refnr, bildindex, bildmodifed, textmodified, kategorie, lastlock, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, erfasst_am, versteckt, bildformat, textformat, bereich.
+
+  **Zusätzliche BLOB-Felder (BLOB_ALLOWED):** `bild`, `text` – Base64-codiert, optional; JSON `null` setzt den Blob auf NULL; ansonsten Base64-Syntaxprüfung und für `bild` zusätzlich JPEG-Signaturprüfung (siehe `insertt_bildtext`).
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** `{"status":"OK"}`

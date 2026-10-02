@@ -1,0 +1,42 @@
+info:
+  name: POST /fuhrpark/inserttankung – Tankung anlegen
+  type: http
+  seq: 32
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/inserttankung"
+  body:
+    type: json
+    data: |-
+      {
+        "datum": "2026-07-17",
+        "bezeichnung": "Tankstop A5",
+        "kraftstoffart": "Diesel",
+        "menge": 180.5,
+        "preis": 1.65,
+        "km": 123456,
+        "kennzeichen": "B-RX 123",
+        "waehrung": "EUR"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in der Tabelle TANKUNG an (Aufruf: `DoInsert('TANKUNG', ALLOWED)`). Nur die in ALLOWED gelisteten Felder werden aus dem Body übernommen; der Primärschlüssel `nr` ist NICHT enthalten (vorher per `gettankungkey` beziehen).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** datum, bezeichnung, kraftstoffart, menge, preis, km, landkennung, heimtankung, kennzeichen, lieferantennr, lieferantenname, exttanknr, einsatznr, mitarbeiter, waehrung
+
+  **Body:** `{ "datum": "<wert>", ... }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

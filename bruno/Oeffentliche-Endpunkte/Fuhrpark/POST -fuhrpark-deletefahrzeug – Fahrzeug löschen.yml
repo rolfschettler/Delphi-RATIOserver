@@ -1,0 +1,33 @@
+info:
+  name: POST /fuhrpark/deletefahrzeug – Fahrzeug löschen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/deletefahrzeug"
+  body:
+    type: json
+    data: |-
+      {
+        "kennzeichen": "B-RX 123"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle FAHRZEUG anhand des Primärschlüssels `kennzeichen` (Aufruf: `DoDelete('FAHRZEUG', 'kennzeichen')`).
+
+  **Body:** `{ "kennzeichen": "<wert>" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

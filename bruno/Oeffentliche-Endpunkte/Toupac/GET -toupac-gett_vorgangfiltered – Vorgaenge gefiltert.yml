@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/gett_vorgangfiltered – Vorgaenge gefiltert
+  type: http
+  seq: 15
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_vorgangfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "agenturnr": 100
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert Datensaetze aus T_VORGANG, optional gefiltert. Jeder im Body gesetzte (nicht-null) Filter-Parameter erzeugt eine AND-verknuepfte WHERE-Bedingung `feld = :feld`; ohne Filter werden alle Datensaetze geliefert. Ruft intern `DoSelectFilteredDynamic('T_VORGANG', ALLOWED, CONDITIONS, FILTER_PARAMS)` auf.
+
+  **Tabelle:** T_VORGANG
+
+  **Erlaubte Felder (ALLOWED):** nr, agenturnr, buchender, vorgangsnr, erstellt, geaendert, personen, datum_von, datum_bis, endpreis, status, agenturcode, katalogreisenr, reisebezeichnung, optionsdatum, expedient, bemerkung, fibukontokunde, fibukontoagentur, sachkontoreise, buchungsdatum, faelligam, veranstalter, sammelrechnung, nrkreis, rechnungsnr, stand, direktinkasso, anzahlung, anzfaelligam, erstelltvon, geaendertvon, ansprechpartner, entstehung, bereich, zusatzinfo, reisegruppe, zahlungsart, ausreise, kontaktentstehung, reiseart, ziel, filiale, zugeordnetzu, abteilung, hauptkategorie, vgedruckt, bgedruckt, auftrag_erteilt_am, auftrag_erteilt_von, stornogrund, lastmaxstatus, sammelrechnungnr, originalreisedatum, terminnr, terminnr_rueck, knotenhin, knotenrueck, statusinfo, vorgangsstatus, vertretung, lastgeaendert, fibu_archiv_am, stornodatum, aufteilung, abrechnungsart, hotelkategorie, versandart, unterschrift, untertitel, app, festbuchung_am, schnittstelle_sendtime, sprache, aktion, bank, externe_nummer, rechnungsart, stornotermin, vk_waehrung, mandant
+
+  **Filter (FILTER_PARAMS, alle optional):** agenturnr
+
+  **Body:** `{ "fields": [...] | "*", "<filterfeld>": <wert>, ..., "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` -- ein gueltiges JSON-Objekt im Body ist Pflicht (sonst Fehler "Kein gueltiges JSON im Request-Body").
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.

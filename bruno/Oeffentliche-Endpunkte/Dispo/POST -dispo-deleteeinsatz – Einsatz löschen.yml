@@ -1,0 +1,33 @@
+info:
+  name: POST /dispo/deleteeinsatz – Einsatz löschen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/deleteeinsatz"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 4711
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle EINSATZ. Implementierung: `DoDelete('EINSATZ', 'nr')`.
+
+  **Body:** `{"nr": <Einsatz-Nr>}`
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

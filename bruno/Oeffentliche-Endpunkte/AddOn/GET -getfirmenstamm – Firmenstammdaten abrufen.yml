@@ -1,0 +1,29 @@
+info:
+  name: GET /getfirmenstamm – Firmenstammdaten abrufen
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseURL}}/getfirmenstamm"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert den (einzigen) Datensatz der Tabelle FIRMENSTAMM (Mandanten-Stammdaten) per `SELECT * FROM FIRMENSTAMM`. Kein Body, keine Parameter, keine Feld-Whitelist.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** false.
+
+  **Antwort:** JSON-Array (`SerializeQuery`), alle Spalten der Tabelle; BLOB-Felder als Base64-String.
+
+  **Hinweis:** Wegen `SELECT *` werden ALLE Spalten ausgeliefert – auch eventuell interne/sensible Konfigurationsfelder.

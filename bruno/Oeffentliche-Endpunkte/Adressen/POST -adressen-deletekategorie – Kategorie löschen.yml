@@ -1,0 +1,39 @@
+info:
+  name: POST /adressen/deletekategorie – Kategorie löschen
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/adressen/deletekategorie"
+  body:
+    type: json
+    data: |-
+      {
+        "gruppe": 1
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Kategorie-/Gruppendatensatz aus ADRKATS anhand des Primärschlüssels `gruppe` (generisches `DoDelete`).
+
+  **Tabelle:** ADRKATS
+
+  **Key-Feld:** `gruppe`
+
+  **Body:** `{ "gruppe": <wert> }` – gruppe ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

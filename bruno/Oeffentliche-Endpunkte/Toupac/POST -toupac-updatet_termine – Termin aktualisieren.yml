@@ -1,0 +1,43 @@
+info:
+  name: POST /toupac/updatet_termine – Termin aktualisieren
+  type: http
+  seq: 67
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/updatet_termine"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "maximumpers": 35,
+        "bemerkung_intern": "Zusatzbus bestaetigt"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in T_TERMINE anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_TERMINE', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+
+  **Tabelle:** T_TERMINE
+
+  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, von, bis, vw, vtage, bemerkung, storniert, gesperrt, sonderangebot, internet, sachkonto, kostelle1, kostelle2, minimumpers, maximumpers, provisionskonto, sachkontostorno, bemerkung_intern, abgesagt_am, schnittstelle_sendtime
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

@@ -1,0 +1,46 @@
+info:
+  name: GET /print – Formular als PDF drucken
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseURL}}/print?bereich=Anmiet&art=Rechnung&formularname=Standard&nr=12345"
+  params:
+    - name: bereich
+      value: Anmiet
+      type: query
+    - name: art
+      value: Rechnung
+      type: query
+    - name: formularname
+      value: Standard
+      type: query
+    - name: nr
+      value: "12345"
+      type: query
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Erzeugt ein FastReport-Formular serverseitig als PDF (`ReportForm.DoExportieren(bereich, art, formularname, 'PDF', '', stream)`) und liefert es aus. Kein Body.
+
+  **Query-Parameter:**
+  - `bereich`, `art`, `formularname` – bestimmen das zu druckende Formular.
+  - ALLE Query-Parameter (inkl. der drei obigen) werden zusätzlich als externe Report-Parameter (`ExternalParamas`, Typ String) an das Formular übergeben – z.B. `nr` als Datensatz-Schlüssel. Welche Parameter ein Formular erwartet, hängt von der Formulardefinition ab (Beispielwerte oben sind Platzhalter).
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** false (im Router explizit `true,false`; der Kommentar im Handler "LocalOnly: TODO" ist veraltet).
+
+  **Antwort:** PDF (`application/pdf`). Fehler → Exception "Fehler beim Erstellen des Formulars:<Meldung>".
+
+  **Besonderheit:** Aufrufe werden über einen globalen Report-Lock (`AcquireReportLock`) serialisiert, da FastReport nicht vollständig threadsicher ist – parallele Druckaufrufe warten aufeinander.

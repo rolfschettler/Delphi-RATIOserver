@@ -1,0 +1,43 @@
+info:
+  name: POST /calculateroute – optimierte Route als JSON berechnen
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseURL}}/calculateroute"
+  body:
+    type: json
+    data: |-
+      {
+        "startzeit": "16:00",
+        "haltezeit": 3,
+        "start": "88487 Mietingen",
+        "zwischenstopps": ["Bad Saulgau", "Baltringen", "Ochsenhausen"],
+        "ziel": "Biberach"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Berechnet eine optimierte Route (Reihenfolge der Zwischenstopps per TSP) über den PHP-Endpunkt `calculateroute` (`PHP_Call`). Gleiche Parameter wie `/travelroute`, Antwort jedoch JSON statt HTML.
+
+  **Body (JSON-Objekt):**
+  - Pflicht: `start` (string), `ziel` (string)
+  - Optional: `zwischenstopps` (array, max. 8, Reihenfolge wird optimiert), `startzeit` ("HH:MM", Default "00:00"), `haltezeit` (Minuten pro Stopp, Default 0)
+
+  Ungültiges/kein JSON-Objekt → Exception "calculateroute: Es wurde kein gültiges JSON übergeben".
+
+  **Auth:** erforderlich (Bearer Token; wird an PHP weitergereicht).
+
+  **LocalOnly:** true – nur vom Server selbst erreichbar (Bruno muss auf dem Server laufen), sonst 403.
+
+  **Antwort:** JSON (`application/json`), Inhalt vom PHP-Backend bestimmt.

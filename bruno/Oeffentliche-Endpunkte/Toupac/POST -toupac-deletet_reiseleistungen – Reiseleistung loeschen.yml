@@ -1,0 +1,39 @@
+info:
+  name: POST /toupac/deletet_reiseleistungen – Reiseleistung loeschen
+  type: http
+  seq: 54
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/deletet_reiseleistungen"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz aus T_REISELEISTUNGEN anhand des Primaerschluessels `nr`. Ruft intern `DoDelete('T_REISELEISTUNGEN', 'nr')` auf.
+
+  **Tabelle:** T_REISELEISTUNGEN
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

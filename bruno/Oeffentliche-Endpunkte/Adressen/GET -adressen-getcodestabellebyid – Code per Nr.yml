@@ -1,0 +1,42 @@
+info:
+  name: GET /adressen/getcodestabellebyid – Code per Nr
+  type: http
+  seq: 22
+
+http:
+  method: GET
+  url: "{{baseURL}}/adressen/getcodestabellebyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 1,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus CODESTABELLE anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+
+  **Tabelle:** CODESTABELLE
+
+  **Erlaubte Felder (ALLOWED):** nr, bezeichnung, code, bereich
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.

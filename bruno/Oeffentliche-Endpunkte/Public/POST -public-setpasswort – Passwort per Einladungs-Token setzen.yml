@@ -1,0 +1,42 @@
+info:
+  name: POST /public/setpasswort – Passwort per Einladungs-Token setzen
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseURL}}/public/setpasswort"
+  body:
+    type: json
+    data: |-
+      {
+        "token": "{{einladungstoken}}",
+        "pwd2": "$2y$10$PLATZHALTER-bcrypt-Hash-von-NeuesPasswort123!-aus-PHP-password_hash"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Setzt ein neues Passwort für den Benutzer, zu dem der Passwort-Token gehört (`UPDATE REGISTRIERUNG SET PWD2 = :pwd2 WHERE NR = <aus Token>`). Danach wird dieser Token abgeschlossen (`CloseToken`) und alle ANDEREN offenen Passwort-Links desselben Benutzers widerrufen (`RevokeOtherPasswordTokens`).
+
+  **Body:**
+  - `token` (Pflicht; ersatzweise `?token=...`). Erwartet: REFERENCE_TYPE = `REGISTRIERUNG`, PURPOSE = `passwort` – eine Adress-Einladung wird mit 403 abgewiesen.
+  - `pwd2` (Pflicht): KEIN Klartext-Passwort, sondern der fertige bcrypt-Hash aus PHP (`password_hash`). Plausibilitätsprüfung: muss mit `$` beginnen und mindestens 20 Zeichen lang sein, sonst 400 "pwd2 ist kein gueltiger Passwort-Hash.". Der Beispielwert ist ein Platzhalter und KEIN gültiger Hash (für einen echten Test einen mit `password_hash('NeuesPasswort123!', PASSWORD_DEFAULT)` erzeugten Hash einsetzen).
+
+  Nur `PWD2` wird geschrieben (fest verdrahtet) – GESPERRT, VERSUCHE, ZEITSPERRE, TYP etc. sind bewusst nicht änderbar.
+
+  **Auth:** Auth=false – kein JWT nötig, autorisiert allein über den Passwort-Token (Bearer-Block schadet nicht).
+
+  **LocalOnly:** false – bewusst aus dem Internet erreichbar.
+
+  **Antwort:** `{"status":"OK"}`; Token-Fehler 401/403 wie bei `/public/getadresse`.
+
+  **Achtung beim Testen:** Überschreibt das Passwort und verbraucht den Token endgültig. Die drei Schritte (Passwort, CloseToken, Revoke) laufen in getrennten Transaktionen.

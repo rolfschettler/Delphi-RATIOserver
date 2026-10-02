@@ -1,0 +1,43 @@
+info:
+  name: POST /registrierung/insertregistrierung – Registrierung anlegen
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseURL}}/registrierung/insertregistrierung"
+  body:
+    type: json
+    data: |-
+      {
+        "kennziffer": 12345,
+        "username": "mmustermann",
+        "pwd2": "<bcrypt-hash>",
+        "typ": "kunde",
+        "gesperrt": "NEIN",
+        "versuche": 0,
+        "hauptregistrierung": 1
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in REGISTRIERUNG an (`DoInsert('REGISTRIERUNG', ALLOWED)`). Nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen; `nr` wird nicht ueber diesen Endpunkt vergeben (siehe getregistrierungkey bzw. Trigger).
+
+  **Erlaubte Felder (ALLOWED):** kennziffer, pwd, username, userkonfig, erstellt, geaendert, gesperrt, pwd2, versuche, zeitsperre, pushid, letzter_login, hauptregistrierung, typ. (`userkonfig` steht im Code doppelt in ALLOWED – ohne Auswirkung.) `rollen` ist NICHT in ALLOWED und kann ueber diesen Endpunkt nicht direkt gesetzt werden.
+
+  **pwd2:** wird unveraendert gespeichert und muss bereits ein bcrypt-Hash sein (z.B. aus PHP `password_hash()`, Kostenfaktor max. 14) – /login vergleicht das Klartext-Passwort gegen diesen Hash. Ein Klartext-Wert in pwd2 fuehrt dazu, dass die Anmeldung immer scheitert.
+
+  **Rollen-Blaupause (automatisch):** Nach dem Insert wird `rollen` automatisch auf `'@' + UPPER(typ)` gesetzt (z.B. typ `kunde` -> `@KUNDE`, `fahrer` -> `@FAHRER`, `mitarbeiter` -> `@MITARBEITER`), sofern `typ` und `username` im Body gesetzt sind und `username` nicht mit `@` beginnt (Datensaetze mit `@`-Username sind selbst Blaupausen). Technisch ein nachgelagertes `UPDATE REGISTRIERUNG SET rollen = :rollen WHERE username = :username AND rollen IS NULL`. Beim Login wird die Blaupause durch die ROLLEN des Datensatzes mit username `@KUNDE` usw. ersetzt/ergaenzt (siehe Login-Request). Ohne typ bleibt rollen leer (= keine Einschraenkung bei der Rollen-Pruefung).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token).

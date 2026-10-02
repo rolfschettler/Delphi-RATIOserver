@@ -1,0 +1,36 @@
+info:
+  name: GET /fuhrpark/gettankungbyid – Tankung per nr abrufen
+  type: http
+  seq: 26
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/gettankungbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle TANKUNG anhand des Primärschlüssels `nr` (Aufruf: `DoSelectOne('TANKUNG', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED):** nr, datum, bezeichnung, kraftstoffart, menge, preis, km, landkennung, heimtankung, kennzeichen, lieferantennr, lieferantenname, exttanknr, einsatznr, mitarbeiter, waehrung
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

@@ -1,0 +1,37 @@
+info:
+  name: POST /fibu/updatedevisenkasse – Devisenkasse-Position aendern
+  type: http
+  seq: 33
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/updatedevisenkasse"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 15,
+        "betrag": 300.00,
+        "waehrung": "EUR"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aendert einen Datensatz der Tabelle DEVISENKASSE ueber `DoUpdate('DEVISENKASSE', ALLOWED, 'nr')`.
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** belegnr, bdatum, expedient, waehrung, betrag, referenznr, bereich, kostelle1, kostelle2, gesperrt, konto, gegenkonto, belegart, art, leistung, zusatzfeld1, bemerkung, wechselkurs, anmietnr, anmiet_uebertragung, fibu_uebertragung.
+
+  **Body:** `{ "nr": <wert>, <zu aendernde Felder> }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

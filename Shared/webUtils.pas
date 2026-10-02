@@ -49,6 +49,20 @@ function JsonOrNull(Gesetzt: Boolean; Value: Integer): TJSONValue; overload;
 // kein gültiges JSON-Objekt ist. Nicht-Objekt-Werte werden freigegeben (kein Leak).
 function ParseJSONObject(const AJson: string): TJSONObject;
 
+// Rollen-Liste normalisieren: trennt an Zeilenumbruch (CR/LF), Komma und Semikolon,
+// trimmt, wandelt in Kleinbuchstaben, entfernt Leereintraege und Dubletten.
+// Ergebnis ist eine Komma-Liste, z.B. 'supervisor,dispo,/getadressen'.
+function NormalizeRoleList(const ARoles: string): string;
+
+// Rollenpruefung fuer eine Route.
+//   UserRoles:  Rollen des Benutzers (Komma-Liste aus dem Token, Feld 'rollen')
+//   RouteRoles: optionale Rollennamen der Route (Komma-Liste aus AddRoute)
+//   Path:       aufgerufener Pfad (lowercase, ohne abschliessenden Slash)
+// Zugriff, wenn UserRoles leer ist (= keine Einschraenkung), der Benutzer
+// 'supervisor' hat, eine Benutzerrolle in RouteRoles vorkommt oder ein
+// Benutzereintrag den Endpunkt selbst nennt ('/getadressen' bzw. '/adressen/*').
+function HasRouteAccess(const UserRoles, RouteRoles, Path: string): boolean;
+
 // Serialisiert ein geöffnetes Dataset als { "header": {...Feldtypen...}, "data": [...] }
 // WithBlob = True: BLOB-Felder als Base64, sonst als Platzhalter 'BLOB'
 function SerializeQuery(Dataset: TDataSet; WithBlob: Boolean = true): string;
@@ -245,6 +259,74 @@ begin
     Result := TJSONObject(V)
   else
     V.Free;   // nil-sicher; gibt geparste Nicht-Objekt-Werte frei
+end;
+
+function NormalizeRoleList(const ARoles: string): string;
+var
+  Parts: TArray<string>;
+  Seen: TStringList;
+  S: string;
+begin
+  Result := '';
+  Parts := ARoles.Split([#13, #10, ',', ';']);
+  Seen := TStringList.Create;
+  try
+    Seen.CaseSensitive := false;
+    for S in Parts do
+    begin
+      var R := LowerCase(Trim(S));
+      if (R = '') or (Seen.IndexOf(R) >= 0) then
+        continue;
+      Seen.Add(R);
+    end;
+    Seen.Delimiter := ',';
+    Seen.StrictDelimiter := true;
+    Result := Seen.DelimitedText;
+  finally
+    Seen.Free;
+  end;
+end;
+
+function HasRouteAccess(const UserRoles, RouteRoles, Path: string): boolean;
+var
+  UserList, RouteList: TArray<string>;
+  U, R, Prefix, APath: string;
+begin
+  Result := false;
+
+  // Keine Rollen hinterlegt = keine Einschraenkung
+  if NormalizeRoleList(UserRoles) = '' then
+    exit(true);
+
+  APath := LowerCase(ExcludeLastSlash(Path));
+  UserList := NormalizeRoleList(UserRoles).Split([',']);
+  RouteList := NormalizeRoleList(RouteRoles).Split([',']);
+
+  for U in UserList do
+  begin
+    // Supervisor darf alles
+    if U = 'supervisor' then
+      exit(true);
+
+    // Benutzerrolle ist fuer die Route freigegeben
+    for R in RouteList do
+      if U = R then
+        exit(true);
+
+    // Benutzereintrag nennt den Endpunkt direkt ('/getadressen' oder 'getadressen')
+    if U.StartsWith('/') then
+      Prefix := U
+    else
+      Prefix := '/' + U;
+    if Prefix.EndsWith('*') then
+    begin
+      Prefix := ExcludeLastSlash(Prefix.TrimRight(['*']));
+      if APath.StartsWith(Prefix + '/') then
+        exit(true);
+    end
+    else if ExcludeLastSlash(Prefix) = APath then
+      exit(true);
+  end;
 end;
 
 // ---------------------------------------------------------------------------

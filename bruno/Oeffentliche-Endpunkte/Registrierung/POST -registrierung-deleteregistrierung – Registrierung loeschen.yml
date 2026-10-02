@@ -1,0 +1,33 @@
+info:
+  name: POST /registrierung/deleteregistrierung – Registrierung loeschen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/registrierung/deleteregistrierung"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz aus REGISTRIERUNG anhand des Primaerschluessels (`DoDelete('REGISTRIERUNG', 'nr')`).
+
+  **Body:** `nr` (Pflicht, Integer, Primaerschluessel).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token).

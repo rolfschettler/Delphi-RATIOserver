@@ -1,0 +1,44 @@
+info:
+  name: POST /toupac/updatet_ltraeger – Leistungstraeger aktualisieren
+  type: http
+  seq: 34
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/updatet_ltraeger"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "bezeichnung": "Hotel Palma Playa & Spa",
+        "optionstage": 21,
+        "bemerkung_intern": "Neuer Vertrag ab 2027"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in T_LTRAEGER anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_LTRAEGER', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+
+  **Tabelle:** T_LTRAEGER
+
+  **Erlaubte Felder (ALLOWED):** nr, kennziffer, code, bezeichnung, land, ort, typ, sachkonto, kostelle1, kostelle2, optionstage, klasse, stornostaffel, suchbegriff, kategorie, waehrung, gesperrt, bemerkung_intern
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

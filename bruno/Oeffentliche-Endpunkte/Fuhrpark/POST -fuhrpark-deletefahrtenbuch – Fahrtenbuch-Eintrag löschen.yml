@@ -1,0 +1,33 @@
+info:
+  name: POST /fuhrpark/deletefahrtenbuch – Fahrtenbuch-Eintrag löschen
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/deletefahrtenbuch"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle FAHRTENBUCH anhand des Primärschlüssels `nr` (Aufruf: `DoDelete('FAHRTENBUCH', 'nr')`).
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

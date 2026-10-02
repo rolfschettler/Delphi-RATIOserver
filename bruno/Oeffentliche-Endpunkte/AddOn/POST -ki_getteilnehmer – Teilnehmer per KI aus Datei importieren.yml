@@ -1,0 +1,45 @@
+info:
+  name: POST /ki_getteilnehmer – Teilnehmer per KI aus Datei importieren
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseURL}}/ki_getteilnehmer?vorgangnr=4711"
+  params:
+    - name: vorgangnr
+      value: "4711"
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value: []
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Lädt eine Datei (Teilnehmerliste in beliebigem Layout) per `multipart/form-data` hoch, lässt die Teilnehmer per KI (OpenAI, `KI_Support.getTeilnehmer`, API-Key aus der Server-Konfiguration Sektion `KI`/`token`) extrahieren und importiert sie in T_TEILNEHMER (`nr` per Generator `T_TEILNEHMER_NR_GEN`, `name` = "Nachname Vorname", `name1` = Vorname, `name2` = Nachname, `geburtstag` (Format dd.mm.yyyy), `email`). Alles in EINER Transaktion.
+
+  **Query-Parameter:** `vorgangnr` (Pflicht, Integer; fehlt/0 → Exception).
+
+  **Datei (`Request.Files[0]`, Pflicht):** nur die erste Datei wird verarbeitet. Unterstützte Endungen: .pdf .txt .csv .jpg .jpeg .png .gif .webp .docx .xlsx (sonst Exception).
+
+  **Duplikate:** Datensätze mit gleicher `vorgangnr` + `name1` + `name2` werden übersprungen. Unbekannte Werte liefert die KI als `??????` → Feld bleibt NULL.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** false.
+
+  **Antwort:** `{"status":"OK","imported":N,"skipped":M}`
+
+  **Hinweis:** Die Datei wird an einen externen KI-Dienst (OpenAI) übertragen – personenbezogene Daten (Datenschutz beachten). Jeder Aufruf verursacht API-Kosten.

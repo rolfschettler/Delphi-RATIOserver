@@ -1,0 +1,31 @@
+info:
+  name: POST /dokumente/deletevorlagen – Dokumentvorlage löschen
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/dokumente/deletevorlagen"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 10
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht genau einen VORLAGEN-Datensatz anhand des Primärschlüssels `nr` (generisches `DoDelete('VORLAGEN', 'nr')`).
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** `{"status":"OK"}`

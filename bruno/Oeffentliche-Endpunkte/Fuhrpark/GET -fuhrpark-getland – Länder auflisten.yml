@@ -1,0 +1,38 @@
+info:
+  name: GET /fuhrpark/getland – Länder auflisten
+  type: http
+  seq: 18
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/getland"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "sortierung"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle LAND auf (Aufruf: `DoSelect('LAND', ALLOWED)`).
+
+  **Erlaubte Felder (ALLOWED):** code, staat, steuer, fiskel, euland, inland, formular, iso2, iso3, sortierung, sachkonto
+
+  **Body:** `{ "fields": [...] | "*", "orderby": "feld", "limit": 10, "offset": 0 }` (alle Angaben optional)
+
+  **Hinweis:** LAND ist ein reiner Read-Only-Stammdaten-Endpunkt – es existieren weder Insert-, Update-, Delete- noch Key-Route.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** ohne `limit` `{"header":{"<feld>":"<typ>",...},"data":[{...},...]}` (SerializeQuery: `header` = Feldname -> Typ, `data` = Datensaetze); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

@@ -1,0 +1,44 @@
+info:
+  name: POST /registrierung/insertregistrierunglocal – Mitarbeiter anlegen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/registrierung/insertregistrierunglocal"
+  body:
+    type: json
+    data: |-
+      {
+        "username": "{{testuser}}",
+        "pwd2": "{{process.env.TEST_PWD2}}",
+        "typ": "mitarbeiter"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        // Bei jedem Lauf ein neuer Benutzer (Dublettensperre)
+        bru.setVar("testuser", "RTEST" + Date.now());
+    - type: after-response
+      code: |-
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        if (res.getStatus() !== 200)
+            console.warn(JSON.stringify(res.getBody()));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Auth: nicht erforderlich (localhost-only), {{jwttoken}} wird trotzdem mitgeschickt.
+
+  pwd2 ist der bcrypt-Hash von TEST_PASSWORD (beides in .env).
+  Erwartet: REGISTRIERUNG.ROLLEN = '@MITARBEITER'.

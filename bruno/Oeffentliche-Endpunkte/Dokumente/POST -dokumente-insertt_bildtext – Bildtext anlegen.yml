@@ -1,0 +1,42 @@
+info:
+  name: POST /dokumente/insertt_bildtext – Bildtext anlegen
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{baseURL}}/dokumente/insertt_bildtext"
+  body:
+    type: json
+    data: |-
+      {
+        "reftable": "ANMIET",
+        "refnr": 12345,
+        "kategorie": "titelbild",
+        "sprache": "de",
+        "internet": "J",
+        "versteckt": "N",
+        "bild": "<Base64-codierte-JPEG-Bilddaten>",
+        "text": null
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen T_BILDTEXT-Datensatz an. Kein generisches CRUD, sondern eigens implementiert: `nr` wird serverseitig über den InterBase-Generator `T_BILDTEXT_NR_GEN` erzeugt (`GEN_ID(T_BILDTEXT_NR_GEN,1)`) und darf NICHT im Body angegeben werden. Es wird DYNAMISCH nur für jedes im Body tatsächlich vorhandene Feld eine Spalte in das INSERT aufgenommen.
+
+  **Erlaubte Felder (ALLOWED):** reftable, refnr, bildindex, bildmodifed, textmodified, kategorie, lastlock, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, erfasst_am, versteckt, bildformat, textformat, bereich.
+
+  **Zusätzliche BLOB-Felder (BLOB_ALLOWED):** `bild`, `text` – jeweils Base64-codiert, optional. Ist der Schlüssel im Body vorhanden, aber der Wert JSON `null`, bleibt der Blob NULL. Ist ein Wert gesetzt, wird er auf syntaktisch gültiges Base64 geprüft (`IsValidBase64Value`) und dekodiert; für das Feld `bild` wird zusätzlich die JPEG-Signatur geprüft (`IsValidJpegSignature`: Start FF D8 FF, Ende FF D9) – bei ungültigem Wert wird ein Fehler geworfen.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** `{"status":"OK","nr":<serverseitig generierte Nr>}`

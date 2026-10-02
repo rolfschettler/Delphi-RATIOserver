@@ -1,0 +1,37 @@
+info:
+  name: POST /public/adresse/abschliessen – Einladung abschließen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/public/adresse/abschliessen"
+  body:
+    type: json
+    data: |-
+      {
+        "token": "{{einladungstoken}}"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  "Ich bin fertig": Der Gast schließt seinen Adress-Einladungslink selbst ab (`CloseToken`: `ACCESS_TOKENS.REVOKED = 1`, `USED_AT = CURRENT_TIMESTAMP`, `USED_FROM_IP` = RemoteAddr). Danach ist der Link unbrauchbar – weitere Aufrufe mit demselben Token liefern 401 "Sie haben diesen Vorgang bereits abgeschlossen.".
+
+  **Body:** `token` (Pflicht; ersatzweise `?token=...`). Erwartet: REFERENCE_TYPE = `ADRESSEN`, PURPOSE = `einladung`.
+
+  **Auth:** Auth=false – kein JWT nötig, autorisiert allein über den Einladungs-Token (Bearer-Block schadet nicht).
+
+  **LocalOnly:** false – bewusst aus dem Internet erreichbar.
+
+  **Antwort:** `{"status":"OK"}`; Token-Fehler wie bei `/public/getadresse` (401/403).
+
+  **Achtung beim Testen:** Der Aufruf verbraucht den Token endgültig.

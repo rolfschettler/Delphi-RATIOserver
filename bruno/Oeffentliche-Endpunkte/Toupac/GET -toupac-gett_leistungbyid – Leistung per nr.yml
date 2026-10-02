@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/gett_leistungbyid – Leistung per nr
+  type: http
+  seq: 57
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_leistungbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus T_LEISTUNG anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_LEISTUNG', ALLOWED, 'nr')` auf.
+
+  **Tabelle:** T_LEISTUNG
+
+  **Erlaubte Felder (ALLOWED):** nr, code, kontingentcode, ltraeger, buchungsinfo, altervon, alterbis, preisvon, preisbis, dauerbis, dauervon, stornierbar, provklasse, ustpflicht, zahlbarsofort, rabatterlaubt, typ, subtyp, sachkonto, kostelle1, kostelle2, capacity, maxcapacity, mincapacity, internet, suchbegriff, stornostaffel, params, preisoption, tarifcode, versicherungsart, onlinebuchung, kennziffer, app, gesperrt, bezeichnung, optionstage
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).

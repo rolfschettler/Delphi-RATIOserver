@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/gett_positionenbyid – Position per nr
+  type: http
+  seq: 25
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_positionenbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus T_POSITIONEN anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_POSITIONEN', ALLOWED, 'nr')` auf.
+
+  **Tabelle:** T_POSITIONEN
+
+  **Erlaubte Felder (ALLOWED):** nr, masterpos, postyp, erstellt, geaendert, vorgangnr, agenturnr, menge, personen, leistungscode, kontingentcode, kostelle1, kostelle2, ltraeger, datum_von, datum_bis, leistungnr, provklasse, prov, prov_betrag, provust, ustpflichtig, sachkonto, maxcapacity, mincapacity, capacity, rabatterlaubt, stornierbar, typ, zahlbarsofort, geraet, leistungsgeber, belegt_nr, einzelpreis, gesamtpreis, endpreis, optionstage, regel_mitltyp, katalogreisenr, direktinkasso, ltbezeichnung, reisebezeichnung, alter_von, alter_bis, bemerkung, erm, ermdatum, status, provisionskonto, stornostaffel, sachkontostorno, zeitvon, zeitbis, params, preisschema, leistungsgruppe, inklusiv, preisoption, marge, packagenr, leistungsstatus, ltraegerkennziffer, personenpreis, preisberechnet, kurs, sortierung, rundungsoption, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, termin, referenz1, referenz2, waehrung, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, optionsdatum, teilnehmernr, rabatt, externenr1, externenr2, buchungsdatum, stornodatum, referenz3, referenz4, gruppe, internet, onlinebuchung, app, vk_preis_fremdwaehrung, kurs_vk_fremdwaehrung, waehrung_ek, lcode, menge_alt, auskatalogreise, mindestnaechte, bezeichnung
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).

@@ -1,0 +1,50 @@
+info:
+  name: POST /toupac/insertt_vorgang – Vorgang anlegen
+  type: http
+  seq: 19
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/insertt_vorgang"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "agenturnr": 100,
+        "vorgangsnr": "V-2026-042",
+        "personen": 2,
+        "datum_von": "2026-10-01",
+        "datum_bis": "2026-10-08",
+        "endpreis": 1499.00,
+        "status": "gebucht",
+        "reisebezeichnung": "Mallorca Pauschalreise",
+        "erstelltvon": "hwiest"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in T_VORGANG an. Ruft intern `DoInsert('T_VORGANG', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_vorgangkey` ermittelt werden.
+
+  **Tabelle:** T_VORGANG
+
+  **Erlaubte Felder (ALLOWED):** nr, agenturnr, buchender, vorgangsnr, erstellt, geaendert, personen, datum_von, datum_bis, endpreis, status, agenturcode, katalogreisenr, reisebezeichnung, optionsdatum, expedient, bemerkung, fibukontokunde, fibukontoagentur, sachkontoreise, buchungsdatum, faelligam, veranstalter, sammelrechnung, nrkreis, rechnungsnr, stand, direktinkasso, anzahlung, anzfaelligam, erstelltvon, geaendertvon, ansprechpartner, entstehung, bereich, zusatzinfo, reisegruppe, zahlungsart, ausreise, kontaktentstehung, reiseart, ziel, filiale, zugeordnetzu, abteilung, hauptkategorie, vgedruckt, bgedruckt, auftrag_erteilt_am, auftrag_erteilt_von, stornogrund, lastmaxstatus, sammelrechnungnr, originalreisedatum, terminnr, terminnr_rueck, knotenhin, knotenrueck, statusinfo, vorgangsstatus, vertretung, lastgeaendert, fibu_archiv_am, stornodatum, aufteilung, abrechnungsart, hotelkategorie, versandart, unterschrift, untertitel, app, festbuchung_am, schnittstelle_sendtime, sprache, aktion, bank, externe_nummer, rechnungsart, stornotermin, vk_waehrung, mandant
+
+  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

@@ -1,0 +1,12 @@
+info:
+  name: Registrierung
+  type: folder
+  seq: 7
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Registrierung-Controller (DataModulRegistrierungClass.pas) – Verwaltung von Benutzerregistrierungen/Konten (Tabelle REGISTRIERUNG). Enthaelt nur die oeffentlichen, nicht-lokalen Routen (Auth=true, LocalOnly=false); die lokalen Endpunkte insertregistrierunglocal, checkusernamelocal und getuserlocal (users/getuserlocal) sind LocalOnly und nicht Teil dieser Collection. **Auth:** alle hier gelisteten Routen erfordern einen gueltigen Bearer-Token (JWT). Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /registrierung/*), sonst HTTP 403 "Keine Berechtigung fuer diesen Endpunkt.". insertregistrierung setzt nach dem Insert automatisch rollen = "@" + UPPER(typ) (z.B. @KUNDE), wenn typ und username gesetzt sind und username nicht mit "@" beginnt; rollen selbst ist ueber diese Endpunkte weder les- noch schreibbar.
+  type: text/markdown

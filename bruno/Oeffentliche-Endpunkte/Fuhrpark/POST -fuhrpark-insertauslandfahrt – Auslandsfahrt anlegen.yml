@@ -1,0 +1,46 @@
+info:
+  name: POST /fuhrpark/insertauslandfahrt – Auslandsfahrt anlegen
+  type: http
+  seq: 29
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/insertauslandfahrt"
+  body:
+    type: json
+    data: |-
+      {
+        "fahrtnr": 100,
+        "landkennung": "F",
+        "kmausland": 250,
+        "transit": "N",
+        "betrag": 120.00,
+        "steuer": 22.80,
+        "grenzeintritt": "Kehl",
+        "grenzaustritt": "Kehl",
+        "kmleer": 0,
+        "grenzeintritt_am": "2026-07-01T08:00",
+        "grenzaustritt_am": "2026-07-03T18:00",
+        "datum": "2026-07-01"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in der Tabelle AUSLANDFAHRT an (Aufruf: `DoInsert('AUSLANDFAHRT', ALLOWED)`). Nur die in ALLOWED gelisteten Felder werden aus dem Body übernommen; der Primärschlüssel `nr` ist NICHT enthalten (vorher per `getauslandfahrtkey` beziehen).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** fahrtnr, landkennung, kmausland, transit, betrag, steuer, grenzeintritt, grenzaustritt, kmleer, grenzeintritt_am, grenzaustritt_am, datum
+
+  **Body:** `{ "fahrtnr": <wert>, ... }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

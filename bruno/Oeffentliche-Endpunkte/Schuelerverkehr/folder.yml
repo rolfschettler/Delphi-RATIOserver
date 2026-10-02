@@ -1,0 +1,11 @@
+info:
+  name: Schuelerverkehr
+  type: folder
+  seq: 12
+
+request:
+  auth: inherit
+
+docs:
+  content: "Schülerverkehr-Controller (Teilnehmer der Schülerbeförderung). Quelle: DataModulSchuelerverkehrClass.pas, basiert auf TDataModulTableBase und nutzt die generischen Lese-Methoden DoSelect / DoSelectFilteredDynamic / DoSelectOne der Basisklasse; zusätzlich ein Demo-Endpunkt für Parameterquellen. Derzeit nur lesende Routen (kein insert/update/delete/key). **Auth:** alle Endpunkte erfordern einen gültigen Bearer-Token ({{jwttoken}}), LocalOnly=false. Tabellen: SV_TEILNEHMER (Schülerverkehr-Teilnehmer)."
+  type: text/markdown

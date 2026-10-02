@@ -1,0 +1,36 @@
+info:
+  name: GET /fibu/getdevisenkassebyid – Devisenkasse per nr lesen
+  type: http
+  seq: 11
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getdevisenkassebyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 15,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz der Tabelle DEVISENKASSE ueber `DoSelectOne('DEVISENKASSE', ALLOWED, 'nr')`.
+
+  **Erlaubte Felder (ALLOWED):** siehe getdevisenkasse.
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).

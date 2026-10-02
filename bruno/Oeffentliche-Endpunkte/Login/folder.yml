@@ -1,0 +1,11 @@
+info:
+  name: Login
+  type: folder
+  seq: 1
+
+request:
+  auth: inherit
+
+docs:
+  content: "Login-Flow: Token holen und verifizieren. Diese beiden Endpunkte werden nicht über den FRouter, sondern direkt als WebActionItems im WebModule behandelt (siehe Shared/WebModuleUnit1.pas, WebModuleUnit1.dfm). Beide laufen ausserhalb der Rollen-Pruefung des Routers. Der Login legt die Rollen des Benutzers (REGISTRIERUNG.ROLLEN, @-Blaupausen aufgeloest) als Komma-Liste unter role.rollen in den Token; /verifytoken zeigt sie an."
+  type: text/markdown

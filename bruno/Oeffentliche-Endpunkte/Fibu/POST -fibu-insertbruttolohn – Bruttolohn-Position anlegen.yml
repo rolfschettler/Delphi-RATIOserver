@@ -1,0 +1,41 @@
+info:
+  name: POST /fibu/insertbruttolohn – Bruttolohn-Position anlegen
+  type: http
+  seq: 28
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/insertbruttolohn"
+  body:
+    type: json
+    data: |-
+      {
+        "monteurzeichen": "MZ01",
+        "lohnart": 1,
+        "datum": "2026-07-17",
+        "einheit": "STD",
+        "satz": 15.5,
+        "gesamtbetrag": 620.00,
+        "auftragnr": "A-2026-001",
+        "kostenstelle": "K100",
+        "bezeichnung": "Montagearbeiten"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in BRUTTOLOHN an ueber `DoInsert('BRUTTOLOHN', ALLOWED)`. Es werden nur die im ALLOWED-Array enthaltenen Felder aus dem Body uebernommen; der Primaerschluessel `nr` ist NICHT in ALLOWED enthalten und muss vorab z.B. ueber getbruttolohnkey ermittelt und separat gehandhabt werden (der generische DoInsert erwartet keinen `nr`-Wert im Body dieser Methode).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** monteurzeichen, lohnart, datum, einheit, satz, gesamtbetrag, auftragnr, kostenstelle, positionsnr, extauftragnr, extpos, positiosnr, zuschlag, herkunft, faktor, bezeichnung, fahrzeug, kostenstelle1, kostenstelle2, vonzeit, biszeit, kmanfang, kmende, kmgesamt, zusatzfeld1, zusatzfeld2, kommentar.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

@@ -1,0 +1,35 @@
+info:
+  name: POST /dispo/updatefahrtablauf – Fahrtablauf ändern
+  type: http
+  seq: 39
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/updatefahrtablauf"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 815,
+        "bis_ist": "2026-09-01 06:22:00",
+        "geprueft": true
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in FAHRTABLAUF anhand des Primärschlüssels. Implementierung: `DoUpdate('FAHRTABLAUF', ALLOWED, 'nr')`. Body: `{"nr":<Fahrtablauf-Nr>,"feld1":"wert1",...}` – nur ALLOWED-Felder werden übernommen.
+
+  **Erlaubte Felder (ALLOWED, 70):** identisch zu `/dispo/getfahrtablauf` (siehe dort).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

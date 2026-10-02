@@ -1,0 +1,34 @@
+info:
+  name: GET /dispo/geteinsatz – Einsätze auflisten
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/geteinsatz"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "von"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus der Tabelle EINSATZ (`DoSelect('EINSATZ', ALLOWED)`) ohne Filter. Body optional: `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}`.
+
+  **Erlaubte Felder (ALLOWED, 103):** nr, von, bis, bezeichnung, typ, hinweis, auftragnr, fahrzeug, fahrer1, fahrer2, fahrzeugstatus, fahrer1status, fahrer2status, gruppe, lognr, bemerkung, km, stunden, abfahrtsort, abfahrtszeit, firma, dienstnr, einsatznr, linie, tournr, toureinsatznr, disponentinfo, geprueft, bereich, liniedienstplannr, dienstobjektnr, abrechnungstd, fahrtenplan, stationid, dispostatus, markiert, angemeldet, liniemappenr, ausdienst, betrieb, fahrzeugprofil, fahrerprofil, standort, betreiber, telematikorderid, telematiksendtime, telematikchangetime, telematikfreigabe, durchgefuehrt_von, ivuorderid, ivusendtime, ivustatus, gsbetrag, nachauftragnehmer, minuten, rueckkehrort, maxfislognr, angemeldet1, angemeldet2, maxfislog1, maxfislog2, einsatzstatus, stornogrund, perszahl, personen, sv_tournr, sv_tournummer, sv_fahrtnummer, sv_fahrtnr, sv_fahrtbezeichnung, sv_sammeleinzel_auftragnr, sv_gutschrift_auftragnr, sv_begleit_auftragnr, sv_tourbezeichnung, xkoord_start, ykoord_start, xkoord_ende, ykoord_ende, erledigt_am, storniert_am, umlauf, anhaenger, begleiter, fahrer3, fahrer3status, fis_abgelehnt, fis_abgelehnt_fahrer2, fis_abgelehnt_fahrer3, fis_abgeschlossen, fis_abgeschlossen_fahrer2, fis_abgeschlossen_fahrer3, fis_bestaetigt, fis_bestaetigt_fahrer2, fis_bestaetigt_fahrer3, fis_geaendert, fis_geaendert_fahrer2, fis_geaendert_fahrer3, fis_gelesen, fis_gelesen_fahrer2, fis_gelesen_fahrer3, geaendert, geaendertvon, zielort.
+
+  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

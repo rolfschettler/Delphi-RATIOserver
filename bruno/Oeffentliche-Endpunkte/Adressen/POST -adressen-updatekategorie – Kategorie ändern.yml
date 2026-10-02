@@ -1,0 +1,43 @@
+info:
+  name: POST /adressen/updatekategorie – Kategorie ändern
+  type: http
+  seq: 19
+
+http:
+  method: POST
+  url: "{{baseURL}}/adressen/updatekategorie"
+  body:
+    type: json
+    data: |-
+      {
+        "gruppe": 1,
+        "bezeichnung": "Kunden (aktualisiert)",
+        "symbol": "K"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in ADRKATS anhand des Primärschlüssels `gruppe` (generisches `DoUpdate`).
+
+  **Tabelle:** ADRKATS
+
+  **Erlaubte Felder (ALLOWED):** kat1–kat12, bezeichnung, debitkredit, symbol, kat13–kat24 (`gruppe` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+
+  **Key-Feld:** `gruppe`
+
+  **Body:** `{ "gruppe": <wert>, "feld": "...", ... }` – gruppe ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

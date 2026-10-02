@@ -1,0 +1,39 @@
+info:
+  name: POST /adressen/deleteadressen – Adresse löschen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/adressen/deleteadressen"
+  body:
+    type: json
+    data: |-
+      {
+        "kennziffer": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Adressdatensatz aus ADRESSEN anhand des Primärschlüssels `kennziffer` (generisches `DoDelete`).
+
+  **Tabelle:** ADRESSEN
+
+  **Key-Feld:** `kennziffer`
+
+  **Body:** `{ "kennziffer": <wert> }` – kennziffer ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

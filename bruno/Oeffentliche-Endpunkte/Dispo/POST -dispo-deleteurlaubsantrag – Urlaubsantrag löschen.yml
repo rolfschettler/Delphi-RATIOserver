@@ -1,0 +1,33 @@
+info:
+  name: POST /dispo/deleteurlaubsantrag – Urlaubsantrag löschen
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/deleteurlaubsantrag"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 302
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle URLAUBSANTRAG. Implementierung: `DoDelete('URLAUBSANTRAG', 'nr')`.
+
+  **Body:** `{"nr": <Urlaubsantrag-Nr>}`
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

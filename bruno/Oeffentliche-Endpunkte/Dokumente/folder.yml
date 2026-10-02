@@ -1,0 +1,11 @@
+info:
+  name: Dokumente
+  type: folder
+  seq: 10
+
+request:
+  auth: inherit
+
+docs:
+  content: Controller für Dokumentvorlagen (VORLAGEN, inkl. Datei-Upload per multipart/form-data) und Bildtexte (T_BILDTEXT, mit Base64-codierten Bild-/Text-BLOBs, inkl. JPEG-Signaturprüfung für Bilder) sowie lesender Zugriff auf die Alt-Tabelle BILDTEXT (getbildtextfiltered / getbildtextbyid). Alle Endpunkte erfordern Authentifizierung (Bearer Token, JWT).
+  type: text/markdown

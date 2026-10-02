@@ -1,0 +1,50 @@
+info:
+  name: GET /schuelerverkehr/demo – Demo/Test-Endpunkt für Parameterquellen
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseURL}}/schuelerverkehr/demo?id=42&filter=Mueller"
+  params:
+    - name: id
+      value: "42"
+      type: query
+    - name: filter
+      value: Mueller
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Helga",
+        "menge": 5
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Referenz-/Test-Endpunkt (identisch zum Demo-Muster der anderen Controller), kein Datenbankzugriff. Demonstriert den sicheren Zugriff auf Parameter aus zwei Quellen gleichzeitig und den Umgang mit fehlenden Werten:
+
+  1) URL/QueryString: `id` (Integer, via `Request.QueryFields`, sicher mit `StrToIntDef`, Default 0) und `filter` (String, leer = nicht gesetzt).
+  2) JSON-Body: `name` (String) und `menge` (Integer via `StrToIntDef`), gelesen über `isParamFromBody`/`getParamFromBody` der Basisklasse.
+
+  Fehlende Werte erzeugen keinen Fehler, sondern erscheinen im Ergebnis als JSON `null` (über `JsonOrNull`). Kombinationen testbar: nur URL, nur Body, beides, oder gar nichts. Die Methode ist egal (GET oder POST).
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+
+  **Antwort** (über `SendJson`):
+  ```json
+  {
+    "url":  { "id": 42, "filter": "Mueller" },
+    "body": { "name": "Helga", "menge": 5 }
+  }
+  ```

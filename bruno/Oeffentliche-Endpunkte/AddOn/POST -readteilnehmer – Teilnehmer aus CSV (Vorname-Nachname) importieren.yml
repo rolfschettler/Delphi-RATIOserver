@@ -1,0 +1,49 @@
+info:
+  name: POST /readteilnehmer – Teilnehmer aus CSV (Vorname/Nachname) importieren
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{baseURL}}/readteilnehmer?vorgangnr=4711"
+  params:
+    - name: vorgangnr
+      value: "4711"
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value: []
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Importiert Teilnehmer aus einer hochgeladenen CSV-Datei (`multipart/form-data`, Trennzeichen `;`, Encoding Systemstandard/ANSI mit BOM-Erkennung) in T_TEILNEHMER (`nr` per Generator `T_TEILNEHMER_NR_GEN`). Alles in EINER Transaktion.
+
+  **Query-Parameter:** `vorgangnr` (Pflicht, Integer; fehlt/0 → Exception).
+
+  **Datei (`Request.Files[0]`, Pflicht):** Leerzeilen und Zeilen mit `#` am Anfang werden übersprungen. Erste gültige Zeile = Header mit den (case-sensitiven) Spaltennamen `Vorname` → name1, `Nachname` → name2, `Geburtstag` → geburtstag (ISO-8601, z.B. 1980-05-17), `E-Mail` → email. Fehlende Spalten → Feld bleibt NULL.
+
+  Beispiel:
+  ```
+  Vorname;Nachname;Geburtstag;E-Mail
+  Max;Mustermann;1980-05-17;max.mustermann@example.com
+  ```
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** true – nur vom Server selbst erreichbar (Bruno muss auf dem Server laufen), sonst 403.
+
+  **Antwort:** `{"status":"OK","imported":N}`
+
+  **Besonderheit:** Keine Duplikatprüfung (im Gegensatz zu `/teilnehmerfromcsv` und `/ki_getteilnehmer`); `name` wird nicht befüllt.

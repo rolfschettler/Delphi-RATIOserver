@@ -1,0 +1,43 @@
+info:
+  name: POST /adressen/updatezusatztabelle – Zusatzdatensatz ändern
+  type: http
+  seq: 20
+
+http:
+  method: POST
+  url: "{{baseURL}}/adressen/updatezusatztabelle"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "bemerkung": "Aktualisierter Kommentar",
+        "bereich": "Kontakt"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in ZUSATZTABELLE anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+
+  **Tabelle:** ZUSATZTABELLE
+
+  **Erlaubte Felder (ALLOWED):** reftable, refnr, modul, bereich, zusatzfeld1–zusatzfeld10, zusatzdatum1–zusatzdatum3, zusatzzahl1–zusatzzahl3, zusatznum1–zusatznum3, zusatzblob1–zusatzblob3, erstellt, geaendert, erfasstvon, geaendertvon, kennziffer, sortierung, bemerkung (`nr` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert>, "feld": "...", ... }` – nr ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

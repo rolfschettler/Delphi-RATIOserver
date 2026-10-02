@@ -1,0 +1,34 @@
+info:
+  name: GET /dispo/getfis_log – FIS-Log auflisten
+  type: http
+  seq: 16
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getfis_log"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "datum"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus der Tabelle FIS_LOG (`DoSelect('FIS_LOG', ALLOWED)`) ohne Filter. Body optional: `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}`.
+
+  **Erlaubte Felder (ALLOWED, 30):** nr, datum, xkoord, ykoord, status, einsatznr, taetigkeit, herkunft, fahrer, fahrzeug, zusatzfeld1, zusatzfeld2, kmstand, distance, dauer, fremdnr, text, standort, zeitpunkt, sortierung, loginname, art, textfeld1, textfeld2, textfeld3, datumfeld1, datumfeld2, datumfeld3, wert, erledigt_am.
+
+  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

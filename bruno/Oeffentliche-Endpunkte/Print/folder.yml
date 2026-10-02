@@ -1,0 +1,11 @@
+info:
+  name: Print
+  type: folder
+  seq: 16
+
+request:
+  auth: inherit
+
+docs:
+  content: "Print-Controller (TDataModulPrint): erzeugt FastReport-Formulare serverseitig als PDF (ReportForm.DoExportieren, Export PDF). Der Aufruf ist durch einen globalen Report-Lock serialisiert (FastReport nicht vollstaendig threadsicher). Alle Query-Parameter werden als externe Report-Parameter an das Formular durchgereicht. **Auth:** Bearer-Token ({{jwttoken}}) erforderlich, LocalOnly=false. Tabellen: abhaengig vom Formular (Formulardefinitionen ueber bereich/art/formularname)."
+  type: text/markdown

@@ -1,0 +1,55 @@
+info:
+  name: GET /incoming/demo – Demo-Endpunkt (URL- und Body-Parameter)
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/incoming/demo?id=42&filter=Mueller"
+  params:
+    - name: id
+      value: "42"
+      type: query
+    - name: filter
+      value: Mueller
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Helga",
+        "menge": 5
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Referenz-/Demo-Endpunkt (`TDataModulIncoming.Demo`) zur Demonstration des sicheren Zugriffs auf Parameter aus zwei Quellen: URL-Query (`Request.QueryFields`) und JSON-Body (`isParamFromBody`/`getParamFromBody`).
+
+  **Parameter aus der URL (Query-String):**
+  - `id` (numerisch, optional) – fehlt er, wird `id: null` geliefert, sonst der Integer-Wert.
+  - `filter` (String, optional) – fehlt er (leerer String), wird `filter: null` geliefert.
+
+  **Parameter aus dem JSON-Body (optional):**
+  - `name` (String)
+  - `menge` (Zahl)
+
+  Fehlende Werte erzeugen keinen Fehler, sondern erscheinen im Ergebnis als JSON `null`.
+
+  **Antwort (Beispiel):**
+  ```json
+  {
+    "url": { "id": 42, "filter": "Mueller" },
+    "body": { "name": "Helga", "menge": 5 }
+  }
+  ```
+
+  **Auth:** erforderlich (Bearer Token).

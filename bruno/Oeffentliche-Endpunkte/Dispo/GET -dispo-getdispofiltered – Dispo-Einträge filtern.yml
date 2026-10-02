@@ -1,0 +1,48 @@
+info:
+  name: GET /dispo/getdispofiltered – Dispo-Einträge filtern
+  type: http
+  seq: 45
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getdispofiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "von": "2026-10-01 00:00:00",
+        "bis": "2026-10-31 23:59:59",
+        "objekt": "MU",
+        "orderby": "von"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Implementierung: `DoSelectFilteredDynamic('DISPO', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Jeder im Body gesetzte (nicht-null) Filterparameter erzeugt eine AND-verknüpfte WHERE-Bedingung.
+
+  **Filterparameter (5, alle optional):**
+  - `von` → `bis >= :von`
+  - `bis` → `von <= :bis`
+  - `objekt` → `objekt = :objekt`
+  - `einsatznr` → `einsatznr = :einsatznr`
+  - `dienstobjnr` → `dienstobjnr = :dienstobjnr`
+
+  **Zeitraum (Overlap):** `von` + `bis` zusammen liefern alle DISPO-Einträge, die den Zeitraum [von, bis] überschneiden. `von` und `bis` nur gemeinsam angeben – ist nur eines von beiden gesetzt, bricht der Handler mit Fehler ab.
+
+  **Erlaubte Felder (ALLOWED, 9):** identisch zu `/dispo/getdispo` (siehe dort).
+
+  **Body:** `{"fields":[...]|"*","von":"...","bis":"...","objekt":"...","einsatznr":N,"dienstobjnr":N,"orderby":"feld","limit":10,"offset":0}` – ein gültiges JSON-Objekt ist Pflicht (ggf. `{}`).
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+
+  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

@@ -1,0 +1,41 @@
+info:
+  name: POST /dispo/inserteinsatz – Einsatz anlegen
+  type: http
+  seq: 34
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/inserteinsatz"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 4712,
+        "von": "2026-09-01 06:00:00",
+        "bis": "2026-09-01 14:00:00",
+        "bezeichnung": "Linienfahrt Stadtmitte",
+        "typ": "L",
+        "fahrzeug": "KA-XY 123",
+        "fahrer1": "MU",
+        "gruppe": "1",
+        "bereich": "Nord"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in EINSATZ an. Implementierung: `DoInsert('EINSATZ', ALLOWED)` – nur ALLOWED-Felder werden aus dem Body übernommen.
+
+  **Erlaubte Felder (ALLOWED, 103):** identisch zu `/dispo/geteinsatz` (siehe dort).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

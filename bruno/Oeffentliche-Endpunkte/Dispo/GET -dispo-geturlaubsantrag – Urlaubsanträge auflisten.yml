@@ -1,0 +1,34 @@
+info:
+  name: GET /dispo/geturlaubsantrag – Urlaubsanträge auflisten
+  type: http
+  seq: 27
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/geturlaubsantrag"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "von"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus der Tabelle URLAUBSANTRAG (`DoSelect('URLAUBSANTRAG', ALLOWED)`) ohne Filter. Body optional: `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}`.
+
+  **Erlaubte Felder (ALLOWED, 15):** nr, mitarbeiter, von, bis, beantragtam, genehmigtam, genehmigtvon, bemerkung, text1, text2, text3, status, statusam, statusvon, vertretung.
+
+  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

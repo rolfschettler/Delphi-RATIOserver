@@ -1,0 +1,40 @@
+info:
+  name: GET /fuhrpark/gettankungfiltered – Tankungen gefiltert auflisten
+  type: http
+  seq: 27
+
+http:
+  method: GET
+  url: "{{baseURL}}/fuhrpark/gettankungfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "kennzeichen": "B-RX 123",
+        "kraftstoffart": "Diesel",
+        "orderby": "datum"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze der Tabelle TANKUNG gefiltert auf (Aufruf: `DoSelectFilteredDynamic('TANKUNG', ALLOWED, CONDITIONS, FILTER_PARAMS)`).
+
+  **Erlaubte Felder (ALLOWED):** nr, datum, bezeichnung, kraftstoffart, menge, preis, km, landkennung, heimtankung, kennzeichen, lieferantennr, lieferantenname, exttanknr, einsatznr, mitarbeiter, waehrung
+
+  **Filter-Parameter (alle optional, jeder gesetzte erzeugt eine AND-verknüpfte WHERE-Bedingung `feld = :feld`):** nr, datum, bezeichnung, kraftstoffart, menge, preis, km, landkennung, heimtankung, kennzeichen, lieferantennr, lieferantenname, exttanknr, einsatznr, mitarbeiter, waehrung
+
+  **Body:** `{ "fields": [...] | "*", "<filterfeld>": <wert>, ..., "orderby": "feld", "limit": 10, "offset": 0 }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** ohne `limit` `{"header":{"<feld>":"<typ>",...},"data":[{...},...]}` (SerializeQuery: `header` = Feldname -> Typ, `data` = Datensaetze); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

@@ -1,0 +1,38 @@
+info:
+  name: GET /fibu/getfibufiltered – Fibu-Buchungssaetze gefiltert auflisten
+  type: http
+  seq: 16
+
+http:
+  method: GET
+  url: "{{baseURL}}/fibu/getfibufiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "belegfeld1": "RE1001",
+        "gebucht": "N",
+        "orderby": "belegdatum"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensaetze der Tabelle FIBU gefiltert ueber `DoSelectFilteredDynamic('FIBU', ALLOWED, CONDITIONS, FILTER_PARAMS)`.
+
+  **Erlaubte Felder (ALLOWED) und gleichzeitig moegliche Filter-Parameter:** nr, betrag, soll, haben, belegfeld1, belegfeld2, belegdatum, kostelle1, kostelle2, skonto, text, gebucht, art, rechnungnr, stschl, ustbetrag, steuerkonto, stkontotyp, stsatz, stapel, opos, journalnr, erfasstdurch, vorlaufnr, archiv, text2, freigabe, uebertragung, fwbetrag, waehrung, kurs, zugeordnetzu, erfasst_am, laufnummer, belegart, journalisierungsnr, stand, fortlaufnr_provorgang, pkguid, leistungsdatum, iban, swift, kontoinhaber, mandant. Jeder gesetzte Filter-Parameter erzeugt automatisch eine per AND verknuepfte Gleichheits-Bedingung; alle Filter sind optional.
+
+  **Body:** `{ "fields": [...] | "*", "orderby": "feld", <beliebige Filter-Parameter> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** wie getfibu.

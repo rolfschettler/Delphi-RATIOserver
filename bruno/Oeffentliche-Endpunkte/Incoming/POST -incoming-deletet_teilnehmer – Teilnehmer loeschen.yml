@@ -1,0 +1,33 @@
+info:
+  name: POST /incoming/deletet_teilnehmer – Teilnehmer loeschen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/incoming/deletet_teilnehmer"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 501
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz aus T_TEILNEHMER anhand des Primaerschluessels (`DoDelete('T_TEILNEHMER', 'nr')`).
+
+  **Body:** `nr` (Pflicht, Integer, Primaerschluessel).
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token).

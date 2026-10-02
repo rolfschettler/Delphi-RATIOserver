@@ -1,0 +1,33 @@
+info:
+  name: POST /fuhrpark/deleteauslandfahrt – Auslandsfahrt löschen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/deleteauslandfahrt"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle AUSLANDFAHRT anhand des Primärschlüssels `nr` (Aufruf: `DoDelete('AUSLANDFAHRT', 'nr')`).
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

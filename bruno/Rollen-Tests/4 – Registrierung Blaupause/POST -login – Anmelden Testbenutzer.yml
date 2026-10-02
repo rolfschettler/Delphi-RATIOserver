@@ -1,0 +1,44 @@
+info:
+  name: POST /login – Anmelden Testbenutzer
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/login"
+  body:
+    type: json
+    data: |-
+      {
+        "user": "{{testuser}}",
+        "password": "{{process.env.TEST_PASSWORD}}"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+
+        if (rumpf && rumpf.token) {
+            bru.setVar("jwttoken", rumpf.token);
+            console.log("Token gespeichert.");
+        } else {
+            console.warn("Kein Token in der Antwort: " + JSON.stringify(res.getBody()));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Meldet den eben angelegten Testbenutzer an.

@@ -1,0 +1,38 @@
+info:
+  name: GET /dispo/getdispotourbyid – Dispotour per Nr abrufen
+  type: http
+  seq: 47
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getdispotourbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus DISPOTOUR anhand des Primärschlüssels. Implementierung: `DoSelectOne('DISPOTOUR', ALLOWED, 'nr')`.
+
+  **Key-Feld:** `nr` (Pflicht im Body, sonst Fehler `"nr" fehlt im Request-Body.`).
+
+  **Body:** `{"nr":<Tour-Nr>,"fields":[...]|"*"}`
+
+  **Erlaubte Felder:** identisch zu `/dispo/getdispotour` (58 Felder, siehe dort).
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` – 0 oder 1 Datensatz.

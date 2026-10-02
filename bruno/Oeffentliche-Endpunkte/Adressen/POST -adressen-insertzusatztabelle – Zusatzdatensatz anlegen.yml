@@ -1,0 +1,45 @@
+info:
+  name: POST /adressen/insertzusatztabelle – Zusatzdatensatz anlegen
+  type: http
+  seq: 17
+
+http:
+  method: POST
+  url: "{{baseURL}}/adressen/insertzusatztabelle"
+  body:
+    type: json
+    data: |-
+      {
+        "reftable": "ADRESSEN",
+        "refnr": 42,
+        "modul": "CRM",
+        "bereich": "Kontakt",
+        "bemerkung": "Neu angelegter Zusatzdatensatz"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in der Tabelle ZUSATZTABELLE an (generisches `DoInsert`).
+
+  **Tabelle:** ZUSATZTABELLE
+
+  **Erlaubte Felder (ALLOWED):** reftable, refnr, modul, bereich, zusatzfeld1–zusatzfeld10, zusatzdatum1–zusatzdatum3, zusatzzahl1–zusatzzahl3, zusatznum1–zusatznum3, zusatzblob1–zusatzblob3, erstellt, geaendert, erfasstvon, geaendertvon, kennziffer, sortierung, bemerkung – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+
+  **Hinweis:** Der Primärschlüssel `nr` ist NICHT in ALLOWED und wird ignoriert – die Vergabe muss datenbankseitig (Generator/Trigger) erfolgen; `/adressen/getzusatztabellekey` liefert nur den nächsten Generatorwert.
+
+  **Body:** `{ "reftable": "...", "refnr": <wert>, "modul": "...", "bereich": "...", "bemerkung": "...", ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

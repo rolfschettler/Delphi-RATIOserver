@@ -1,0 +1,45 @@
+info:
+  name: POST /login – Anmelden Supervisor
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/login"
+  body:
+    type: json
+    data: |-
+      {
+        "user": "{{user_supervisor}}",
+        "password": "{{process.env.PW_SUPERVISOR}}"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+
+        if (rumpf && rumpf.token) {
+            bru.setVar("jwttoken", rumpf.token);
+            console.log("Token gespeichert.");
+        } else {
+            console.warn("Kein Token in der Antwort: " + JSON.stringify(res.getBody()));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Meldet user_supervisor an (Passwort aus .env: PW_SUPERVISOR) und legt den
+  Token in {{jwttoken}} ab.

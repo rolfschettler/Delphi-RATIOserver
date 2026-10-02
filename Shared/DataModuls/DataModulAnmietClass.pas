@@ -400,7 +400,8 @@ const
     'verlustort','zusatzfeld1','zusatzfeld2','zusatzfeld3'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
-  CONDITIONS: array[0..18] of string = (
+  // Die BLOB-Felder bilder, bild_klein und unterschrift sind nicht filterbar.
+  CONDITIONS: array[0..15] of string = (
     'nr = :nr',
     'abgeholt_am = :abgeholt_am',
     'abgeholt_von = :abgeholt_von',
@@ -408,13 +409,10 @@ const
     'bearbeitet_am = :bearbeitet_am',
     'bearbeitet_von = :bearbeitet_von',
     'beschreibung = :beschreibung',
-    'bilder = :bilder',
-    'bild_klein = :bild_klein',
     'erfasst_am = :erfasst_am',
     'erfasst_von = :erfasst_von',
     'status = :status',
     'text_intern = :text_intern',
-    'unterschrift = :unterschrift',
     'verlustdatum = :verlustdatum',
     'verlustort = :verlustort',
     'zusatzfeld1 = :zusatzfeld1',

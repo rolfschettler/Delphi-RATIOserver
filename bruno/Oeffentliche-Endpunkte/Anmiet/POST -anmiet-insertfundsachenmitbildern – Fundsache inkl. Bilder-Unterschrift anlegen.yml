@@ -1,0 +1,48 @@
+info:
+  name: POST /anmiet/insertfundsachenmitbildern – Fundsache inkl. Bilder/Unterschrift anlegen
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{baseURL}}/anmiet/insertfundsachenmitbildern"
+  body:
+    type: json
+    data: |-
+      {
+        "beschreibung": "Schwarzer Regenschirm",
+        "verlustort": "Bahnhof",
+        "status": "offen",
+        "verlustdatum": "2026-08-30",
+        "erfasst_von": "hw",
+        "bilder": "<Base64-codierte-Bilddaten>",
+        "bild_klein": null,
+        "unterschrift": null
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen FUNDSACHEN-Datensatz in einem einzigen INSERT an, inkl. optionaler Base64-codierter BLOB-Felder. Kein generisches CRUD, sondern eigens implementiert (Parameter über `isParamFromBody`/`getParamFromBody`/`isKeyInBody`): Nur für im Body vorhandene Felder wird eine Spalte in das INSERT aufgenommen; ohne gültiges Feld Fehler „Keine gueltigen Felder uebergeben.“.
+
+  **Tabelle:** FUNDSACHEN
+
+  **Erlaubte Felder (ALLOWED, wie insertfundsachen):** abgeholt_am, abgeholt_von, abholort, bearbeitet_am, bearbeitet_von, beschreibung, erfasst_am, erfasst_von, status, text_intern, verlustdatum, verlustort, zusatzfeld1, zusatzfeld2, zusatzfeld3
+
+  **Zusätzliche BLOB-Felder (BLOB_ALLOWED):** `bilder`, `bild_klein`, `unterschrift` – jeweils als Base64-String. Optional: Ist der Schlüssel vorhanden, der Wert aber JSON `null`, bleibt der Blob NULL. Ist ein Wert gesetzt, wird er auf gültiges Base64 geprüft (`IsValidBase64Value`, Whitespace wird ignoriert) und dekodiert; bei ungültigem Wert Fehler. KEINE Bildformat-Prüfung.
+
+  **Body:** `{ "beschreibung": "...", ..., "bilder": "<Base64>", "bild_klein": "<Base64>" | null, "unterschrift": "<Base64>" | null }` – `nr` wird ignoriert.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

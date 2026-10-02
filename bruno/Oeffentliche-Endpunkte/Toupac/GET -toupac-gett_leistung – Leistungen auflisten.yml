@@ -1,0 +1,40 @@
+info:
+  name: GET /toupac/gett_leistung – Leistungen auflisten
+  type: http
+  seq: 55
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_leistung"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensaetze aus T_LEISTUNG auf (ungefiltert). Ruft intern `DoSelect('T_LEISTUNG', ALLOWED)` auf.
+
+  **Tabelle:** T_LEISTUNG
+
+  **Erlaubte Felder (ALLOWED):** nr, code, kontingentcode, ltraeger, buchungsinfo, altervon, alterbis, preisvon, preisbis, dauerbis, dauervon, stornierbar, provklasse, ustpflicht, zahlbarsofort, rabatterlaubt, typ, subtyp, sachkonto, kostelle1, kostelle2, capacity, maxcapacity, mincapacity, internet, suchbegriff, stornostaffel, params, preisoption, tarifcode, versicherungsart, onlinebuchung, kennziffer, app, gesperrt, bezeichnung, optionstage
+
+  **Body (optional):** `{ "fields": [...] | "*", "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` (ohne `fields` bzw. mit `"*"` werden alle ALLOWED-Felder geliefert).
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.

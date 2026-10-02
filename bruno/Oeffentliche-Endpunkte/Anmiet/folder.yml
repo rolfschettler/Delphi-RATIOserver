@@ -1,0 +1,11 @@
+info:
+  name: Anmiet
+  type: folder
+  seq: 6
+
+request:
+  auth: inherit
+
+docs:
+  content: "Controller für Anmietungen (ANMIET – Fahrzeugvermietungs-/Reisevorgänge), Fundsachen (FUNDSACHEN, inkl. Foto-/Unterschrift-Upload als Base64-Blobs) und Transfer-Projekte (TRANSFEHR – Fahrtprojekte mit Hin-/Rückfahrt, vollständiges CRUD inkl. Key-Generator). Alle Endpunkte erfordern Authentifizierung (Bearer Token, JWT) und sind nicht auf lokale Aufrufe beschränkt (Auth=true, LocalOnly=false)."
+  type: text/markdown

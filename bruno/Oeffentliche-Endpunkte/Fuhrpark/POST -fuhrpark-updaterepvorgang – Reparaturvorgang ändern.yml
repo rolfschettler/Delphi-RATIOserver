@@ -1,0 +1,37 @@
+info:
+  name: POST /fuhrpark/updaterepvorgang – Reparaturvorgang ändern
+  type: http
+  seq: 36
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/updaterepvorgang"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "erledigt": "J",
+        "notizen": "Bremsen erneuert"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz der Tabelle REPVORGANG anhand des Primärschlüssels `nr` (Aufruf: `DoUpdate('REPVORGANG', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** kennzeichen, bezeichnung, vorgangsart, unfall, erledigt, datum, meldungam, meldungvon, beschreibung, dringlichkeit, zyklischertermin, wiedervorlage, notizen
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

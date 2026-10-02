@@ -1,0 +1,37 @@
+info:
+  name: POST /fuhrpark/updateauslandfahrt – Auslandsfahrt ändern
+  type: http
+  seq: 33
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/updateauslandfahrt"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "betrag": 150.00,
+        "steuer": 28.50
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz der Tabelle AUSLANDFAHRT anhand des Primärschlüssels `nr` (Aufruf: `DoUpdate('AUSLANDFAHRT', ALLOWED, 'nr')`).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** fahrtnr, landkennung, kmausland, transit, betrag, steuer, grenzeintritt, grenzaustritt, kmleer, grenzeintritt_am, grenzaustritt_am, datum
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

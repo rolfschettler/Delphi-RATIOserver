@@ -1,0 +1,42 @@
+info:
+  name: POST /fuhrpark/insertrepvorgang – Reparaturvorgang anlegen
+  type: http
+  seq: 31
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/insertrepvorgang"
+  body:
+    type: json
+    data: |-
+      {
+        "kennzeichen": "B-RX 123",
+        "bezeichnung": "Bremsen prüfen",
+        "vorgangsart": "Wartung",
+        "unfall": "N",
+        "erledigt": "N",
+        "datum": "2026-08-31",
+        "beschreibung": "Bremsbeläge quietschen",
+        "dringlichkeit": "hoch"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in der Tabelle REPVORGANG an (Aufruf: `DoInsert('REPVORGANG', ALLOWED)`). Nur die in ALLOWED gelisteten Felder werden aus dem Body übernommen; der Primärschlüssel `nr` ist NICHT enthalten (vorher per `getrepvorgangkey` beziehen).
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** kennzeichen, bezeichnung, vorgangsart, unfall, erledigt, datum, meldungam, meldungvon, beschreibung, dringlichkeit, zyklischertermin, wiedervorlage, notizen
+
+  **Body:** `{ "kennzeichen": "<wert>", ... }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

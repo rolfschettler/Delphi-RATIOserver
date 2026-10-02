@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/gett_katalogreisebyid – Katalogreise per nr
+  type: http
+  seq: 38
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_katalogreisebyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus T_KATALOGREISE anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_KATALOGREISE', ALLOWED, 'nr')` auf.
+
+  **Tabelle:** T_KATALOGREISE
+
+  **Erlaubte Felder (ALLOWED):** nr, reisenr, reisethema, code, katalognr, terminschema, internet, befkategorie, sachkonto, sachkontostorno, sachkontoprov, kostelle1, kostelle2, kostelle1storno, kostelle2storno, kostelle1prov, kostelle2prov, erstelltam, fbrabatt, fbbis, angebot, status, url1, url2, url3, url4, xkoord, ykoord, maximumpers, minimumpers, bemerkung, kategorie, anzahlungsbetrag, anzahlungsart, nrkreis, stornostaffel, zusatzinfo, katalogseite, veranstalter, hauptkategorie, pauschalierungsfaktor, versicherungsart, geaendertam, geaendertvon, erstelltvon, untertitel, mandant
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).

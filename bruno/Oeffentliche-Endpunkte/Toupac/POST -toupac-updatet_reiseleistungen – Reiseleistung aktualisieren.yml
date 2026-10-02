@@ -1,0 +1,43 @@
+info:
+  name: POST /toupac/updatet_reiseleistungen – Reiseleistung aktualisieren
+  type: http
+  seq: 53
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/updatet_reiseleistungen"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "ek_kalk": 480.00,
+        "bemerkung": "EK-Preis angepasst"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in T_REISELEISTUNGEN anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_REISELEISTUNGEN', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+
+  **Tabelle:** T_REISELEISTUNGEN
+
+  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, leistungnr, rabatterlaubt, standard, leistungsgeber, code, geraet, von, bis, internet, vontag, bistag, zeitvon, zeitbis, bemerkung, params, status, inklusiv, leistungsgruppe, preisoption, marge, adresskennziffer, vontagref, rundungsoption, sortierung, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, gesperrt, kopiertaus, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, provklasse, referenz1, referenz2, preis_steuerfrei, sachkonto_steuerfrei, onlinebuchung, app, termin, optionsdatum, referenz3, referenz4
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

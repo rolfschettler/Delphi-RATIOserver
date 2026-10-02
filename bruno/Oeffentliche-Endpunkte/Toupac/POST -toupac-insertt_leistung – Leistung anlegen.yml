@@ -1,0 +1,53 @@
+info:
+  name: POST /toupac/insertt_leistung – Leistung anlegen
+  type: http
+  seq: 59
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/insertt_leistung"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "code": "DZHP",
+        "ltraeger": 42,
+        "bezeichnung": "Doppelzimmer Halbpension",
+        "typ": "Hotel",
+        "stornierbar": "J",
+        "rabatterlaubt": "J",
+        "capacity": 20,
+        "maxcapacity": 25,
+        "mincapacity": 1,
+        "internet": "J",
+        "optionstage": 14,
+        "gesperrt": "N"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in T_LEISTUNG an. Ruft intern `DoInsert('T_LEISTUNG', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_leistungkey` ermittelt werden.
+
+  **Tabelle:** T_LEISTUNG
+
+  **Erlaubte Felder (ALLOWED):** nr, code, kontingentcode, ltraeger, buchungsinfo, altervon, alterbis, preisvon, preisbis, dauerbis, dauervon, stornierbar, provklasse, ustpflicht, zahlbarsofort, rabatterlaubt, typ, subtyp, sachkonto, kostelle1, kostelle2, capacity, maxcapacity, mincapacity, internet, suchbegriff, stornostaffel, params, preisoption, tarifcode, versicherungsart, onlinebuchung, kennziffer, app, gesperrt, bezeichnung, optionstage
+
+  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

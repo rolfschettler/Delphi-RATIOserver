@@ -1,0 +1,45 @@
+opencollection: 1.0.0
+
+info:
+  name: RATIOserver – Öffentliche Endpunkte
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: jwttoken
+      value: ""
+    - name: baseURL
+      value: localhost/ibapi
+    - name: phpurl
+      value: localhost/php
+    - name: einladungstoken
+      value: ""
+
+docs:
+  content: |-
+    Öffentliche REST-Endpunkte des RATIOserver (Delphi WebBroker, FireDAC/InterBase). Enthält nur die Endpunkte, die laut Router-Konfiguration (Shared/WebModuleUnit1.pas, Abschnitt "PUBLIC API") auch außerhalb von localhost erreichbar sind — reine Diagnose-/PHP-Entwicklungs-Endpunkte (z.B. /select, /insert, /tablestructure) und Localhost-only-Routen (z.B. /public/checkmailtoken, /registrierung/insertregistrierunglocal, /users/getuserlocal) sind nicht Teil dieser Collection.
+
+    Jeder Controller (DataModul) hat einen eigenen Unterordner, die Endpunkte darin sind nach ihrer Route sortiert.
+
+    **Authentifizierung:** Alle Endpunkte außer /login und den /public/-Routen (Einladungs-Token) benötigen ein gültiges JWT-Bearer-Token. /createtoken ist nur vom localhost erreichbar und deshalb nicht Teil dieser Collection. Zuerst den Request "Login" im Ordner "Login" ausführen (setzt automatisch die Laufzeit-Variable {{jwttoken}} per bru.setVar – sie wird nicht in opencollection.yml gespeichert; das Passwort kommt aus .env: PW_SUPERVISOR, Vorlage .env.example), danach laufen alle weiteren Requests mit Bearer-Auth über {{jwttoken}}.
+
+    **Rollen:** Jede Route mit Auth und ohne LocalOnly wird gegen REGISTRIERUNG.ROLLEN des angemeldeten Benutzers geprüft (im Token unter role.rollen). Erlaubt ist, was dort als Endpunkt steht (genau oder mit Wildcard, z.B. /adressen/*), über eine Blaupause (@FAHRER usw.) eingebunden ist oder wenn "Supervisor" enthalten ist. Leeres ROLLEN = keine Einschränkung. Sonst 403 "Keine Berechtigung für diesen Endpunkt.". Rollen-Tests: Collection bruno/Rollen-Tests.
+
+    Das Backend erwartet auch bei GET-Leseoperationen einen JSON-Body (z.B. "fields"/"orderby"/Filterparameter) – die GET-Requests dieser Collection senden ihn deshalb mit.
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

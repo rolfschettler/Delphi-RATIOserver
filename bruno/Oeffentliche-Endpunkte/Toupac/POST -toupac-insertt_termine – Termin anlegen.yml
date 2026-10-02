@@ -1,0 +1,50 @@
+info:
+  name: POST /toupac/insertt_termine – Termin anlegen
+  type: http
+  seq: 66
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/insertt_termine"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "katalogreisenr": 42,
+        "von": "2027-05-01",
+        "bis": "2027-05-08",
+        "storniert": "N",
+        "gesperrt": "N",
+        "internet": "J",
+        "minimumpers": 12,
+        "maximumpers": 30,
+        "bemerkung": "Fruehjahrstermin"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in T_TERMINE an. Ruft intern `DoInsert('T_TERMINE', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_terminekey` ermittelt werden.
+
+  **Tabelle:** T_TERMINE
+
+  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, von, bis, vw, vtage, bemerkung, storniert, gesperrt, sonderangebot, internet, sachkonto, kostelle1, kostelle2, minimumpers, maximumpers, provisionskonto, sachkontostorno, bemerkung_intern, abgesagt_am, schnittstelle_sendtime
+
+  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

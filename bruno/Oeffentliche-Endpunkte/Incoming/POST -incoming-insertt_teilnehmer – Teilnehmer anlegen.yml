@@ -1,0 +1,46 @@
+info:
+  name: POST /incoming/insertt_teilnehmer – Teilnehmer anlegen
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseURL}}/incoming/insertt_teilnehmer"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 501,
+        "vorgangnr": 1001,
+        "anrede": "Herr",
+        "name": "Max Mustermann",
+        "name1": "Max",
+        "name2": "Mustermann",
+        "geburtstag": "1980-05-12",
+        "email": "max.mustermann@example.com",
+        "telefon1": "0170-1234567",
+        "strasse": "Musterstr. 1",
+        "plz": "70173",
+        "ort": "Stuttgart",
+        "land": "DE",
+        "status": "bestaetigt"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in T_TEILNEHMER an (`DoInsert('T_TEILNEHMER', ALLOWED)`). Anders als bei update ist `nr` hier Teil von ALLOWED und muss mitgegeben werden (z.B. Wert aus gett_teilnehmernextnr).
+
+  **Erlaubte Felder (ALLOWED):** nr, vorgangnr, anrede, name, kennziffer, geburtstag, jahre, shuttle, info1, info2, ref1, ref2, gruppe, sitzfest, hininfo, rueckinfo, ausstiegrueck, profil, status, reservierungsnr, kabinengruppe, infofaehre, zustieghin, ausstieghin, zustiegrueck, ausstieg_rueck, sitzhin, sitzrueck, leistungen, passnummer, ausgestellt_in, ausgestellt_am, gueltig_bis, passinfo, passid, nation, geburtsort, name1, name2, name3, namenszusatz, titel, email, land, ort, ortsteil, plz, region, strasse, telefon1, telefon2, telefon3, xkoord, ykoord, heimatort, pass_name1, pass_name2, zusatzdaten.
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token).

@@ -1,0 +1,34 @@
+info:
+  name: GET /dispo/getfahrtablauf – Fahrtabläufe auflisten
+  type: http
+  seq: 12
+
+http:
+  method: GET
+  url: "{{baseURL}}/dispo/getfahrtablauf"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus der Tabelle FAHRTABLAUF (`DoSelect('FAHRTABLAUF', ALLOWED)`) ohne Filter. Body optional: `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}`.
+
+  **Erlaubte Felder (ALLOWED, 70):** nr, datum, von_soll, von_ist, bis_soll, bis_ist, bereich, art, xkoord, ykoord, sortierung, disponr, zeichen, kennzeichen, eart, dienstelementnr, dienstelementart, bemerkung, zusatzfeld1, zusatzfeld2, zusatzfeld3, datumfeld1, datumfeld2, datumfeld3, zustiege_soll, zustiege_ist, ausstiege_soll, ausstiege_ist, reftable, refnr, hinweis, typ, einsatznr, haltnr, bezeichnung, sv_tournummer, sv_fahrtnummer, sv_abrechnungsstatus, geprueft, einsatznr_ist, disponr_ist, tag, von_kalk, bis_kalk, strasse, plz, ort, ortsteil, region, land, meter_soll, meter_ist, meter_kalk, sekunden_soll, sekunden_ist, sekunden_kalk, fahrzeugprofil, anzahl_fahrer, kosten, leerfahrt, wochenende, feiertag, dienstnr, umlaufnr, sv_teilnehmernr, sv_typ, sv_abrechenbar, sv_streckenpreis, freigabe, umlauf.
+
+  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

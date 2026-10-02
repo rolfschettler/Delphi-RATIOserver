@@ -1,0 +1,40 @@
+info:
+  name: POST /fuhrpark/updatefahrzeug – Fahrzeug ändern
+  type: http
+  seq: 35
+
+http:
+  method: POST
+  url: "{{baseURL}}/fuhrpark/updatefahrzeug"
+  body:
+    type: json
+    data: |-
+      {
+        "kennzeichen": "B-RX 123",
+        "bezeichnung": "Setra S 431 DT",
+        "standort": "Berlin",
+        "status": "aktiv"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz der Tabelle FAHRZEUG anhand des Primärschlüssels `kennzeichen` (Aufruf: `DoUpdate('FAHRZEUG', ALLOWED, 'kennzeichen')`).
+
+  **Erlaubte Felder (ALLOWED, ohne kennzeichen):** bezeichnung, hersteller, typ, fahrzeugart, baujahr, leistung, hubraum, fahrgestellnr, motornr, briefnr, scheinnr, standort, angeschaft, abgeschaft, status, treibstoff, sitzplatz, achsen, text, bild, sitznummern, sitzgesperrt, personen, gesperrt, zusatzfeld1, zusatzfeld2, kmsatz, sortierung, reihen, betrieb, profil, zuschlag1, zuschlag2, zuschlagarten, pin, telematikdevice, xkoord, ykoord, standort_aktuell, sv_fahrzeugprofil, din_norm, hinweise, km, lift, rueckfahrkamera, stammfahrer1, stammfahrer2, telematik_gelesen_am
+
+  **Body:** `{ "kennzeichen": "<wert>", "<feld>": <wert>, ... }`
+
+  **Hinweis:** Es gibt keinen `insertFahrzeug`-Endpunkt – Fahrzeuge werden ausschließlich per Update gepflegt bzw. anderweitig angelegt.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

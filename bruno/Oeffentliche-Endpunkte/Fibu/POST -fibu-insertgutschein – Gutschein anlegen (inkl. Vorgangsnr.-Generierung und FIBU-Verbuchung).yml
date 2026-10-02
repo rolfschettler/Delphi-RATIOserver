@@ -1,0 +1,39 @@
+info:
+  name: POST /fibu/insertgutschein – Gutschein anlegen (inkl. Vorgangsnr.-Generierung und FIBU-Verbuchung)
+  type: http
+  seq: 31
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/insertgutschein"
+  body:
+    type: json
+    data: |-
+      {
+        "bearbeiter": "SUPERVISOR",
+        "erfasst": "2026-08-31",
+        "betrag": 50.00,
+        "kennziffer": "GS-STD",
+        "gutscheinkonto": "1590",
+        "kurzbemerkung": "Gutschein Neuanlage",
+        "nrkreis": 0
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Eigenimplementierung, KEIN generisches `DoInsert`. Das Feld `vorgang` wird NIEMALS aus dem Body uebernommen, sondern immer serverseitig erzeugt (Praefix "GS" + Nummer): ist im Body `nrkreis` > 0 gesetzt, wird die laufende Nummer ueber den zugehoerigen Generator `GS_NRKREIS<nrkreis>` ermittelt (existiert fuer den angegebenen Nummernkreis kein Generator, bricht der Insert mit der Exception "Generator nicht vorhanden." ab und die Transaktion wird zurueckgerollt -- es gibt KEINEN Fallback auf `GS_NRKREIS1`); andernfalls ueber den Standardgenerator `GUTSCHEIN_VORGANG_GEN`. Die Primaernummer `nr` wird intern wie bei getgutscheinkey per `GEN_ID(GUTSCHEIN_NR_GEN,1)` ermittelt (kein RETURNING, da von InterBase nicht unterstuetzt). Insert und `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` laufen in einer gemeinsamen Transaktion; bei Fehler Rollback.
+
+  **Erlaubte Felder (ALLOWED, ohne nr und ohne vorgang):** bearbeiter, geaendert_am, geaendert_von, erfasst, faellig, kennziffer, gutscheinkonto, kurzbemerkung, bemerkung, betrag, gueltig_bis, erledigt, storniert, storniert_am, stornogrund, fuerkunde, zusatzfeld1, zusatzfeld2, zusatzfeld3, fibukto, kulanz, kostelle1, kostelle2, code, motivnr, fibu_archiv_am, nrkreis, entstehung, zahlungsart. Alle sind optional (fehlende Felder werden beim Insert ausgelassen).
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK", "nr": <neue_nr>, "vorgang": "<generierte_vorgangsnr>" }`

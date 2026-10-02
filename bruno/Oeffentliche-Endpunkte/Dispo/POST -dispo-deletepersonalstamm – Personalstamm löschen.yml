@@ -1,0 +1,33 @@
+info:
+  name: POST /dispo/deletepersonalstamm – Personalstamm löschen
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseURL}}/dispo/deletepersonalstamm"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 55
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus der Tabelle PERSONALSTAMM. Implementierung: `DoDelete('PERSONALSTAMM', 'nr')`.
+
+  **Body:** `{"nr": <Personal-Nr>}`
+
+  **Antwort:** `{"status":"OK"}`
+
+  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.

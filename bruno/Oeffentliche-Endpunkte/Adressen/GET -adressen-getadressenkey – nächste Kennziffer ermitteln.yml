@@ -1,0 +1,33 @@
+info:
+  name: GET /adressen/getadressenkey – nächste Kennziffer ermitteln
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{baseURL}}/adressen/getadressenkey"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Kein generischer CRUD-Endpunkt: führt die feste Abfrage `SELECT * FROM ADRESSEN_NEXTKENNZIFFER` aus und liefert damit die nächste freie Kennziffer für einen neuen ADRESSEN-Datensatz. Body wird nicht ausgewertet.
+
+  **Tabelle:** ADRESSEN (View/Prozedur ADRESSEN_NEXTKENNZIFFER)
+
+  **Key-Feld:** `kennziffer`
+
+  **Body:** keiner
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"header":{...},"data":[{...}]}` – Feldname(n) entsprechend der Definition von ADRESSEN_NEXTKENNZIFFER in der Datenbank.

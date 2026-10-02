@@ -1,0 +1,41 @@
+info:
+  name: POST /dokumente/insertvorlagen – Dokumentvorlage anlegen
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{baseURL}}/dokumente/insertvorlagen"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 11,
+        "name": "Reisebestätigung Standard",
+        "art": "Bestätigung",
+        "bereich": "Anmiet",
+        "doktyp": "D",
+        "standard": "J",
+        "text1": "Sehr geehrte Damen und Herren,"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen VORLAGEN-Datensatz an (generisches `DoInsert('VORLAGEN', ALLOWED)`).
+
+  **Besonderheit:** Anders als bei den meisten anderen insert-Endpunkten enthält ALLOWED hier auch `nr` – der Schlüssel kann/muss also selbst im Body mitgegeben werden (z.B. Wert aus `getvorlagenkey`), er wird nicht automatisch generiert.
+
+  **Erlaubte Felder (ALLOWED):** nr, haupttext, art, standard, name, text1, text2, drucker, druckerwahl, folgeformular, datum, angepasst, bereich, doktyp, versteckt, dokkategorie, geaendertam, bearbeiter, pwd, archiv, dms_key, wiedervorlage, gueltigbis, reftable, refnr, datumfeld1, datumfeld2, zusatzfeld1, zusatzfeld2, anmietnr, senderemail, empfaengeremail, dateiname, mandant.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **Antwort:** `{"status":"OK"}`

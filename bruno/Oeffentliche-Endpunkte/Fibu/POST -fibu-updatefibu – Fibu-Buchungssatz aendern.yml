@@ -1,0 +1,37 @@
+info:
+  name: POST /fibu/updatefibu – Fibu-Buchungssatz aendern
+  type: http
+  seq: 34
+
+http:
+  method: POST
+  url: "{{baseURL}}/fibu/updatefibu"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 1001,
+        "gebucht": "J",
+        "betrag": 120.00
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aendert einen Datensatz der Tabelle FIBU ueber `DoUpdate('FIBU', ALLOWED, 'nr')`.
+
+  **Erlaubte Felder (ALLOWED, ohne nr):** betrag, soll, haben, belegfeld1, belegfeld2, belegdatum, kostelle1, kostelle2, skonto, text, gebucht, art, rechnungnr, stschl, ustbetrag, steuerkonto, stkontotyp, stsatz, stapel, opos, journalnr, erfasstdurch, vorlaufnr, archiv, text2, freigabe, uebertragung, fwbetrag, waehrung, kurs, zugeordnetzu, erfasst_am, laufnummer, belegart, journalisierungsnr, stand, fortlaufnr_provorgang, pkguid, leistungsdatum, iban, swift, kontoinhaber, mandant.
+
+  **Body:** `{ "nr": <wert>, <zu aendernde Felder> }` — Primaerschluessel `nr` ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **Antwort:** `{ "status": "OK" }`

@@ -1,0 +1,33 @@
+info:
+  name: GET /createtoken – von extern gesperrt
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseURL}}/createtoken?user=RTEST&role=%7B%22rollen%22%3A%22supervisor%22%7D"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        // Gegen localhost ist 200 korrekt, von extern muss 403 kommen.
+        const lokal = /\/\/(localhost|127\.0\.0\.1|\[::1\])/i.test(String(bru.getCollectionVar("baseURL")));
+        test("/createtoken von extern gesperrt (403), lokal erlaubt", () =>
+            expect(res.getStatus()).to.equal(lokal ? 200 : 403));
+
+settings:
+  encodeUrl: false
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  /createtoken stellt OHNE Pruefung einen gueltigen Token mit beliebiger Rolle
+  aus (hier rollen=supervisor) und ist deshalb localhost-only.
+  Zum echten Test baseURL auf http://<server-ip>/ibapi setzen und von einem
+  anderen Rechner ausfuehren.
