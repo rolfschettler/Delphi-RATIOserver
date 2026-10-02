@@ -190,7 +190,7 @@ begin
       close;
       // Umlautsicherer, case-insensitiver Vergleich -- Erlaeuterung des
       // Musters bei CaseInsCondition in webUtils.
-      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,rollen,pwd2 from registrierung' +
+      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,rollen,pwd2,userkonfig from registrierung' +
                   ' where ' + CaseInsCondition('username', 'username');
       ParamByName('username_asc').AsString   := UpperCaseAscii(username);
       ParamByName('username_asclo').AsString := UpperCaseAscii(ToLowerUni(username));
@@ -235,6 +235,7 @@ begin
         sl.add('rollen=' + ResolveRoleBlueprints(query.fields[i].AsString))
       else if not SameText(query.fields[i].FieldName, 'pwd2') then
         sl.add(lowercase(query.fields[i].FieldName) + '=' + trim(query.fields[i].AsString));
+
     result:=true;
   except
     on e: Exception do

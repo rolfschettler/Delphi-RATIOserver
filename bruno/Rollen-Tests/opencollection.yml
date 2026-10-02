@@ -21,13 +21,13 @@ request:
     - name: jwttoken
       value: ""
     - name: user_eingeschraenkt
-      value: ""
+      value: hw
     - name: user_supervisor
       value: ""
     - name: erlaubt_endpunkt
       value: /adressen/getkategorien
     - name: verboten_endpunkt
-      value: /touristik/demo
+      value: /dispo/demo
 
 docs:
   content: |-
