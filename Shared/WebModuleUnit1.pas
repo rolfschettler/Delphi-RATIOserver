@@ -289,6 +289,16 @@ end;
 
 procedure TWebModule1.WebModule1HandbuchActionAction(Sender: TObject; Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 begin
+  // Localhost-Prüfung
+  if not IsLocalRequest(Request) then
+  begin
+    Response.StatusCode := 403;
+    Response.ContentType := 'application/json; charset=utf-8';
+    Response.Content := CreateJsonResponse('error', 'Zugriff nur vom lokalen Server erlaubt.');
+    Handled := True;
+    exit;
+  end;
+
     response.content:=HandbuchPageProducer.HTMLDoc.text
 end;
 
@@ -322,6 +332,16 @@ var
   Entry: TDocEntry;
   sb: TStringBuilder;
 begin
+  // Localhost-Prüfung
+  if not IsLocalRequest(Request) then
+  begin
+    Response.StatusCode := 403;
+    Response.ContentType := 'application/json; charset=utf-8';
+    Response.Content := CreateJsonResponse('error', 'Zugriff nur vom lokalen Server erlaubt.');
+    Handled := True;
+    exit;
+  end;
+
   Docs := LoadMarkdownDocs();
   sb := TStringBuilder.Create;
 
