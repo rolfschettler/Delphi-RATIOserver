@@ -28,6 +28,7 @@ type
     procedure getdokument();
     procedure getGeneratorValue();
     procedure getFirmenstamm();
+    procedure getPublicEndpoints();
 
   end;
 
@@ -35,7 +36,7 @@ function CreateDataModulAddOn(Request: TWebRequest; Response: TWebResponse): TOb
 
 implementation
 
-uses plugin, webUtils, PHPSupport, KI_Support, System.StrUtils, System.NetEncoding;
+uses plugin, webUtils, PHPSupport, KI_Support, router, System.StrUtils, System.NetEncoding;
 
 function CreateDataModulAddOn(Request: TWebRequest; Response: TWebResponse): TObject;
 begin
@@ -898,6 +899,16 @@ begin
   finally
     Q.Free;
   end;
+end;
+
+// Route: /getpublicendpoints  |  Auth: true  |  LocalOnly: true
+procedure TDataModulAddOn.getPublicEndpoints;
+// Listet alle oeffentlichen Endpunkte (LocalOnly=false) inkl. /login,
+// gruppiert und sortiert nach Prefix; flache Routen am Ende unter "prefix": "".
+begin
+  if CurrentRouter = nil then
+    raise Exception.Create('getpublicendpoints: Router nicht verfuegbar');
+  SendJson(CurrentRouter.ListPublicRoutesJson);
 end;
 
 end.

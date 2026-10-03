@@ -4,7 +4,7 @@ interface
 
 uses
 
-  StrUtils, System.SysUtils,System.Classes, Web.HTTPApp;
+  StrUtils, System.SysUtils,System.Classes, System.JSON, Web.HTTPApp;
 
 type
   // Factory erzeugt die Instanz und erhält Request + Response
@@ -38,7 +38,14 @@ type
     procedure Clear;
     function ListRoutes: string;
     function ListRoutes2: string;
+    function ListPublicRoutesJson: TJSONObject;
   end;
+
+threadvar
+  // Router des WebModuls, das den aktuellen Request bearbeitet. Wird in
+  // TWebModule1.DefActionHandler vor dem Handler-Aufruf gesetzt, damit
+  // Controller (z.B. /getpublicendpoints) die Routentabelle lesen koennen.
+  CurrentRouter: TRouter;
 
 implementation
 
@@ -204,6 +211,89 @@ function IsFlatPath(const APath: string): boolean;
 begin
   // Flach = kein Gruppen-Term, z.B. /adddemo statt /adressen/xyz
   Result := APath.TrimLeft(['/']).IndexOf('/') < 0;
+end;
+
+function GetRoutePrefix(const APath: string): string;
+begin
+  // '/adressen/getadressen' -> 'adressen', flache Pfade ('/adddemo') -> ''
+  if IsFlatPath(APath) then
+    Exit('');
+  Result := APath.TrimLeft(['/']);
+  Result := Result.Substring(0, Result.IndexOf('/'));
+end;
+
+function TRouter.ListPublicRoutesJson: TJSONObject;
+var
+  I: Integer;
+  SortedRoutes: TRouteEntryArray;
+  LoginEntry: TRouteEntry;
+  Prefix, LastPrefix: string;
+  Groups, Endpoints: TJSONArray;
+  Group, Endpoint: TJSONObject;
+begin
+  // Alle oeffentlichen Routen (LocalOnly=false), sortiert nach Prefix und Pfad.
+  // Flache Routen ohne Prefix stehen am Ende unter "prefix": "".
+  SortedRoutes := [];
+  for I := Low(FRoutes) to High(FRoutes) do
+    if not FRoutes[I].LocalOnly then
+      SortedRoutes := SortedRoutes + [FRoutes[I]];
+
+  // /login wird nicht ueber den Router, sondern als WebAction bedient
+  LoginEntry := Default(TRouteEntry);
+  LoginEntry.Path := '/login';
+  LoginEntry.AuthRequired := false;
+  SortedRoutes := SortedRoutes + [LoginEntry];
+
+  TArray.Sort<TRouteEntry>(SortedRoutes, TComparer<TRouteEntry>.Construct(
+    function(const Left, Right: TRouteEntry): Integer
+    var
+      LP, RP: string;
+    begin
+      LP := GetRoutePrefix(Left.Path);
+      RP := GetRoutePrefix(Right.Path);
+      if (LP = '') <> (RP = '') then
+      begin
+        if LP = '' then
+          Exit(1)
+        else
+          Exit(-1);
+      end;
+      Result := CompareText(LP, RP);
+      if Result = 0 then
+        Result := CompareText(Left.Path, Right.Path);
+    end));
+
+  Result := TJSONObject.Create;
+  try
+    Groups := TJSONArray.Create;
+    Result.AddPair('count', TJSONNumber.Create(Length(SortedRoutes)));
+    Result.AddPair('prefixes', Groups);
+
+    Group := nil;
+    Endpoints := nil;
+    LastPrefix := '';
+    for I := Low(SortedRoutes) to High(SortedRoutes) do
+    begin
+      Prefix := GetRoutePrefix(SortedRoutes[I].Path);
+      if (Group = nil) or not SameText(Prefix, LastPrefix) then
+      begin
+        Group := TJSONObject.Create;
+        Groups.AddElement(Group);
+        Group.AddPair('prefix', Prefix);
+        Endpoints := TJSONArray.Create;
+        Group.AddPair('endpoints', Endpoints);
+        LastPrefix := Prefix;
+      end;
+
+      Endpoint := TJSONObject.Create;
+      Endpoints.AddElement(Endpoint);
+      Endpoint.AddPair('path', SortedRoutes[I].Path);
+      Endpoint.AddPair('auth', TJSONBool.Create(SortedRoutes[I].AuthRequired));
+    end;
+  except
+    Result.Free;
+    raise;
+  end;
 end;
 
 function TRouter.ListRoutes2: string;

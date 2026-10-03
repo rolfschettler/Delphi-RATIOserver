@@ -1,4 +1,4 @@
-unit DataModulRegistrierungClass;
+﻿unit DataModulRegistrierungClass;
 
 interface
 
@@ -59,10 +59,10 @@ end;
 procedure TDataModulRegistrierung.getRegistrierung;
 // Body: { "fields": ["nr","kennziffer",...] | "*", "orderby": "nr" }
 const
-  ALLOWED: array[0..12] of string = (
+  ALLOWED: array[0..14] of string = (
     'nr','kennziffer','username','userkonfig',
     'erstellt','geaendert','gesperrt','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email'
   );
 begin
   DoSelect('REGISTRIERUNG', ALLOWED);
@@ -73,14 +73,14 @@ procedure TDataModulRegistrierung.getRegistrierungFiltered;
 // Body: { "fields": [...] | "*", "nr": 1, "kennziffer": 42, "username": "...", ..., "orderby": "nr" }
 // Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
 const
-  ALLOWED: array[0..12] of string = (
+  ALLOWED: array[0..14] of string = (
     'nr','kennziffer','username','userkonfig',
     'erstellt','geaendert','gesperrt','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
   // userkonfig (Blob) ist bewusst nicht filterbar.
-  CONDITIONS: array[0..11] of string = (
+  CONDITIONS: array[0..12] of string = (
     'nr = :nr',
     'kennziffer = :kennziffer',
     'username = :username',
@@ -92,12 +92,13 @@ const
     'pushid = :pushid',
     'letzter_login = :letzter_login',
     'hauptregistrierung = :hauptregistrierung',
-    'typ = :typ'
+    'typ = :typ',
+    'email = :email'
   );
-  FILTER_PARAMS: array[0..11] of string = (
+  FILTER_PARAMS: array[0..12] of string = (
     'nr','kennziffer','username',
     'erstellt','geaendert','gesperrt','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email'
   );
 begin
   DoSelectFilteredDynamic('REGISTRIERUNG', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -107,10 +108,10 @@ end;
 procedure TDataModulRegistrierung.getRegistrierungById;
 // Body: { "nr": 42, "fields": [...] | "*" }
 const
-  ALLOWED: array[0..12] of string = (
+  ALLOWED: array[0..14] of string = (
     'nr','kennziffer','username','userkonfig',
     'erstellt','geaendert','gesperrt','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email'
   );
 begin
   DoSelectOne('REGISTRIERUNG', ALLOWED, 'nr');
@@ -130,10 +131,10 @@ end;
 procedure TDataModulRegistrierung.insertRegistrierung;
 // Body: { "kennziffer": 42, "username": "...", ... }
 const
-  ALLOWED: array[0..14] of string = (
+  ALLOWED: array[0..15] of string = (
     'kennziffer','pwd','username','userkonfig','userkonfig',
     'erstellt','geaendert','gesperrt','pwd2','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email'
   );
 var
   Username, Typ: string;
@@ -200,8 +201,8 @@ procedure TDataModulRegistrierung.insertRegistrierungLocal;
 //   REGISTRIERUNG.kennziffer bleibt NULL, die Antwort liefert
 //   "kennziffer": null und "adresse": "keine".
 const
-  ALLOWED: array[0..3] of string = (
-    'username','pwd2','typ','userkonfig');
+  ALLOWED: array[0..4] of string = (
+    'username','pwd2','typ','userkonfig','email');
   ADR_ALLOWED: array[0..7] of string = (
     'anrede','name1','name2','strasse','plz','ort','telefon1','email');
 var
@@ -572,10 +573,10 @@ end;
 procedure TDataModulRegistrierung.updateRegistrierung;
 // Body: { "nr": 42, "username": "...", ... }
 const
-  ALLOWED: array[0..13] of string = (
+  ALLOWED: array[0..15] of string = (
     'kennziffer','pwd','username','userkonfig',
     'erstellt','geaendert','gesperrt','pwd2','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email','rollen'
   );
 begin
   DoUpdate('REGISTRIERUNG', ALLOWED, 'nr');

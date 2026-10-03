@@ -508,6 +508,7 @@ begin
   FRouter.AddRoute('/getdokument', CreateDataModulAddOn, TDataModulAddOn(nil).getdokument);
   FRouter.AddRoute('/getgeneratorvalue', CreateDataModulAddOn, TDataModulAddOn(nil).getGeneratorValue);
   FRouter.AddRoute('/getfirmenstamm', CreateDataModulAddOn, TDataModulAddOn(nil).getFirmenstamm);
+  FRouter.AddRoute('/getpublicendpoints', CreateDataModulAddOn, TDataModulAddOn(nil).getPublicEndpoints, true, true); //Auth=true,LocalOnly=true
 
   //PUBLIC API: Diese Api können auch von außerhalb des localhost aufgerufen werden
 
@@ -968,12 +969,14 @@ begin
   if FRouter.FindRoute(PathInfo, Factory, MethodCode) then
   begin
     Obj := Factory(Request, Response); // DataModule erzeugen
+    CurrentRouter := FRouter; // fuer Handler, die die Routentabelle lesen
     try
       // Handler dynamisch binden
       TMethod(H).Code := MethodCode;
       TMethod(H).Data := Obj;
       H(); // Parameterloser Aufruf
     finally
+      CurrentRouter := nil;
       Obj.Free;
     end;
     Handled := True;

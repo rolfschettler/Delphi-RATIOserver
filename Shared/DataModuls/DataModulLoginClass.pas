@@ -152,6 +152,39 @@ var
     Result := (Length(Parts) = 3) and TryStrToInt(Parts[1], ACost);
   end;
 
+  // Schreibt Datum und Uhrzeit der erfolgreichen Anmeldung nach
+  // REGISTRIERUNG.LETZTER_LOGIN. Eigene Query, damit die Felder der
+  // Login-Query unangetastet bleiben. Ein Fehler hier darf die Anmeldung
+  // nicht scheitern lassen -- er wird bewusst geschluckt.
+  procedure UpdateLetzterLogin(ANr: Integer);
+  var
+    Q: TFDQuery;
+    OwnTx: boolean;
+  begin
+    OwnTx := false;
+    Q := TFDQuery.Create(nil);
+    try
+      try
+        Q.Connection := Connection;
+        Q.SQL.Text := 'UPDATE REGISTRIERUNG SET LETZTER_LOGIN = :letzter_login WHERE NR = :nr';
+        Q.ParamByName('letzter_login').AsDateTime := Now;
+        Q.ParamByName('nr').AsInteger := ANr;
+        // Nur eine eigene Transaktion aufmachen, wenn keine laeuft.
+        OwnTx := not Connection.InTransaction;
+        if OwnTx then
+          Connection.StartTransaction;
+        Q.ExecSQL;
+        if OwnTx then
+          Connection.Commit;
+      except
+        if OwnTx and Connection.InTransaction then
+          Connection.Rollback;
+      end;
+    finally
+      Q.Free;
+    end;
+  end;
+
 begin
   username := '';
   password := '';
@@ -235,6 +268,8 @@ begin
         sl.add('rollen=' + ResolveRoleBlueprints(query.fields[i].AsString))
       else if not SameText(query.fields[i].FieldName, 'pwd2') then
         sl.add(lowercase(query.fields[i].FieldName) + '=' + trim(query.fields[i].AsString));
+
+    UpdateLetzterLogin(query.FieldByName('nr').AsInteger);
 
     result:=true;
   except

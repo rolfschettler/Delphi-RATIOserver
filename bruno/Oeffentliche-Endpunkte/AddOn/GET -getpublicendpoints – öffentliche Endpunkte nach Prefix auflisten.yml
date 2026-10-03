@@ -1,0 +1,69 @@
+info:
+  name: GET /getpublicendpoints – öffentliche Endpunkte nach Prefix auflisten
+  type: http
+  seq: 13
+
+http:
+  method: GET
+  url: "{{baseURL}}/getpublicendpoints"
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let body;
+        try {
+          body = res.getBody();
+          if (typeof body === "string") body = JSON.parse(body);
+        } catch (e) {
+          body = null;
+        }
+
+        test("Status 200", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("Antwort enthält count und prefixes", function () {
+          expect(body).to.be.an("object");
+          expect(body.count).to.be.a("number");
+          expect(body.prefixes).to.be.an("array");
+        });
+
+        test("Prefixe sortiert, flache Routen am Ende", function () {
+          const names = body.prefixes.map(p => p.prefix);
+          const named = names.filter(n => n !== "");
+          const sorted = [...named].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+          expect(named).to.deep.equal(sorted);
+          const flatIdx = names.indexOf("");
+          if (flatIdx >= 0) expect(flatIdx).to.equal(names.length - 1);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet alle öffentlichen Endpunkte (Routen mit `LocalOnly=false`) des Servers, gruppiert und sortiert nach Prefix (erster Pfadteil, z.B. `adressen` bei `/adressen/getadressen`). Innerhalb eines Prefix ist nach Pfad sortiert. Flache Routen ohne Prefix (z.B. `/getfirmenstamm`, `/login`) stehen am Ende unter `"prefix": ""`. `/login` wird zusätzlich aufgeführt, obwohl es nicht über den Router läuft.
+
+  **Auth:** erforderlich (Bearer Token).
+
+  **LocalOnly:** true – nur vom Server selbst erreichbar, sonst 403.
+
+  **Body/Parameter:** keine.
+
+  **Antwort:**
+  ```json
+  {
+    "count": 123,
+    "prefixes": [
+      { "prefix": "adressen", "endpoints": [ { "path": "/adressen/getadressen", "auth": true } ] },
+      { "prefix": "", "endpoints": [ { "path": "/login", "auth": false } ] }
+    ]
+  }
+  ```
