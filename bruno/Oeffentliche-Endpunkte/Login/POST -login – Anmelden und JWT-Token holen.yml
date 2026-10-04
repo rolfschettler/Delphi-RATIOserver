@@ -54,6 +54,6 @@ docs: |-
 
   **Auswertung (HasRouteAccess in Shared/webUtils.pas):** Jede Route mit Auth=true und LocalOnly=false wird gegen role.rollen geprüft. Zugriff, wenn rollen leer ist (= keine Einschränkung), 'Supervisor' enthält, eine für die Route hinterlegte Rolle enthält oder den Endpunkt nennt — genau ('/adressen/getadressen') oder per Wildcard ('/adressen/*'). Sonst HTTP 403 "Keine Berechtigung für diesen Endpunkt.". Rollenänderungen wirken erst nach erneutem Login (neues Token).
 
-  Bei falschen Anmeldedaten: HTTP 401 mit Fehlermeldung 'Benutzername oder Passwort sind falsch'.
+  Bei falschen Anmeldedaten: HTTP 401 mit Fehlermeldung 'Benutzername oder Passwort sind falsch' .
 
   Gültigkeit des Tokens: 900 Minuten (15 Std.), sofern nicht über die Server-Konfiguration [security] minutes_valid abweichend gesetzt.
