@@ -200,6 +200,11 @@ procedure TDataModulRegistrierung.insertRegistrierungLocal;
 // typ=mitarbeiter und typ=fahrer legen KEINE Adresse an und verknuepfen keine:
 //   REGISTRIERUNG.kennziffer bleibt NULL, die Antwort liefert
 //   "kennziffer": null und "adresse": "keine".
+//
+// Sperre: typ=mitarbeiter und typ=fahrer werden mit gesperrt='JA' angelegt
+//   und muessen erst freigeschaltet werden (Login lehnt 'JA' ab). Der Wert
+//   wird fest gesetzt und nie aus dem Body uebernommen. typ=kunde bleibt
+//   offen (gesperrt NULL).
 const
   ALLOWED: array[0..4] of string = (
     'username','pwd2','typ','userkonfig','email');
@@ -348,7 +353,7 @@ begin
           AdresseNeu := False;
         end
         else
-          raise Exception.Create('Diese Kennziffer existiert nicht f�r diesen Namen.');
+          raise Exception.Create('Diese Kennziffer existiert nicht für diesen Namen.');
 
         Q.Close;
       end;
@@ -389,10 +394,20 @@ begin
       // Rollen-Blaupause passend zum typ zuweisen: kunde -> @KUNDE usw.
       Cols := Cols + ',rollen';
       Vals := Vals + ',:rollen';
+      // mitarbeiter und fahrer starten gesperrt -- freigeschaltet wird in der
+      // Registrierungsverwaltung. gesperrt steht bewusst NICHT in ALLOWED:
+      // der Wert kommt nie aus dem Request.
+      if not IstKunde then
+      begin
+        Cols := Cols + ',gesperrt';
+        Vals := Vals + ',:gesperrt';
+      end;
 
       Q.SQL.Text := 'INSERT INTO REGISTRIERUNG (' + Cols + ') VALUES (' + Vals + ')';
       Q.ParamByName('nr').AsInteger := RegNr;
       Q.ParamByName('rollen').AsString := '@' + UpperCase(Typ);
+      if not IstKunde then
+        Q.ParamByName('gesperrt').AsString := 'JA';
       if Kennziffer > 0 then
         Q.ParamByName('kennziffer').AsInteger := Kennziffer;
       for i := Low(ALLOWED) to High(ALLOWED) do
