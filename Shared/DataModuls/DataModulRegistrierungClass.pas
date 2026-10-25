@@ -62,10 +62,11 @@ end;
 procedure TDataModulRegistrierung.getRegistrierung;
 // Body: { "fields": ["nr","kennziffer",...] | "*", "orderby": "nr" }
 const
-  ALLOWED: array[0..14] of string = (
+  ALLOWED: array[0..16] of string = (
     'nr','kennziffer','username','userkonfig',
     'erstellt','geaendert','gesperrt','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email',
+    'personalzeichen','usersloginname'
   );
 begin
   DoSelect('REGISTRIERUNG', ALLOWED);
@@ -76,14 +77,15 @@ procedure TDataModulRegistrierung.getRegistrierungFiltered;
 // Body: { "fields": [...] | "*", "nr": 1, "kennziffer": 42, "username": "...", ..., "orderby": "nr" }
 // Alle Filter-Parameter sind optional - nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
 const
-  ALLOWED: array[0..14] of string = (
+  ALLOWED: array[0..16] of string = (
     'nr','kennziffer','username','userkonfig',
     'erstellt','geaendert','gesperrt','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email',
+    'personalzeichen','usersloginname'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
   // userkonfig (Blob) ist bewusst nicht filterbar.
-  CONDITIONS: array[0..12] of string = (
+  CONDITIONS: array[0..14] of string = (
     'nr = :nr',
     'kennziffer = :kennziffer',
     'username = :username',
@@ -96,12 +98,15 @@ const
     'letzter_login = :letzter_login',
     'hauptregistrierung = :hauptregistrierung',
     'typ = :typ',
-    'email = :email'
+    'email = :email',
+    'personalzeichen = :personalzeichen',
+    'usersloginname = :usersloginname'
   );
-  FILTER_PARAMS: array[0..12] of string = (
+  FILTER_PARAMS: array[0..14] of string = (
     'nr','kennziffer','username',
     'erstellt','geaendert','gesperrt','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email',
+    'personalzeichen','usersloginname'
   );
 begin
   DoSelectFilteredDynamic('REGISTRIERUNG', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -111,10 +116,11 @@ end;
 procedure TDataModulRegistrierung.getRegistrierungById;
 // Body: { "nr": 42, "fields": [...] | "*" }
 const
-  ALLOWED: array[0..14] of string = (
+  ALLOWED: array[0..16] of string = (
     'nr','kennziffer','username','userkonfig',
     'erstellt','geaendert','gesperrt','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','rollen','email',
+    'personalzeichen','usersloginname'
   );
 begin
   DoSelectOne('REGISTRIERUNG', ALLOWED, 'nr');
@@ -134,10 +140,11 @@ end;
 procedure TDataModulRegistrierung.insertRegistrierung;
 // Body: { "kennziffer": 42, "username": "...", ... }
 const
-  ALLOWED: array[0..15] of string = (
-    'kennziffer','pwd','username','userkonfig','userkonfig',
+  ALLOWED: array[0..16] of string = (
+    'kennziffer','pwd','username','userkonfig',
     'erstellt','geaendert','gesperrt','pwd2','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email',
+    'personalzeichen','usersloginname'
   );
 var
   Username, Typ: string;
@@ -174,7 +181,12 @@ procedure TDataModulRegistrierung.insertRegistrierungLocal;
 // Body: { "username": "...", "pwd2": "...", "typ": "kunde|mitarbeiter|fahrer",
 //         "anrede": "Herr", "name1": "Mustermann", "name2": "Max",
 //         "strasse": "...", "plz": "...", "ort": "...", "telefon1": "...",
-//         "email": "...", "kennziffer": 12345 }
+//         "email": "...", "kennziffer": 12345, "usersloginname": "..." }
+//
+// usersloginname -- Verknuepfung zum USERS-Satz (typ=mitarbeiter). Ein
+//   USERS-Loginname darf nur EINEN Portalzugang haben: ist er bereits in
+//   REGISTRIERUNG.usersloginname eingetragen, wird mit HTTP 409 abgelehnt
+//   (Vergleich case-insensitiv). Gespeichert wird immer in Grossschreibung.
 //
 // Gueltige Typen sind ausschliesslich kunde, mitarbeiter und fahrer
 // (Vergleich case-insensitiv); jeder andere sowie ein fehlender typ wird
@@ -209,8 +221,8 @@ procedure TDataModulRegistrierung.insertRegistrierungLocal;
 //   wird fest gesetzt und nie aus dem Body uebernommen. typ=kunde bleibt
 //   offen (gesperrt NULL).
 const
-  ALLOWED: array[0..4] of string = (
-    'username','pwd2','typ','userkonfig','email');
+  ALLOWED: array[0..5] of string = (
+    'username','pwd2','typ','userkonfig','email','usersloginname');
   ADR_ALLOWED: array[0..7] of string = (
     'anrede','name1','name2','strasse','plz','ort','telefon1','email');
 var
@@ -222,6 +234,7 @@ var
   Anrede:       string;
   Name1, Name2: string;
   Username:     string;
+  UsersLogin:   string;
   SuchKennziffer: Integer;
   Kennziffer:   Integer;
   RegNr:        Integer;
@@ -325,6 +338,31 @@ begin
     end;
   end;
 
+  // Ein USERS-Loginname bekommt hoechstens einen Portalzugang. Gespeichert
+  // wird er immer in Grossschreibung (ToUpperUni -- laesst Umlaute nicht klein).
+  UsersLogin := ToUpperUni(Trim(getParamFromBody('usersloginname')));
+  if UsersLogin <> '' then
+  begin
+    Q := TFDQuery.Create(nil);
+    try
+      Q.Connection := Connection;
+      Q.SQL.Text := 'SELECT nr FROM REGISTRIERUNG WHERE ' + CaseInsCondition('usersloginname', 'usersloginname');
+      SetCaseInsParams(Q, 'usersloginname', UsersLogin);
+      Q.Open;
+      if not Q.IsEmpty then
+      begin
+        Res := TJSONObject.Create;
+        Res.AddPair('status', 'error');
+        Res.AddPair('message', 'Für diesen Ratio-Loginnamen ist bereits ein Portalzugang angelegt.');
+        Res.AddPair('nr', TJSONNumber.Create(Q.FieldByName('nr').AsInteger));
+        SendJson(Res, 409);
+        Exit;
+      end;
+    finally
+      Q.Free;
+    end;
+  end;
+
   SuchKennziffer := StrToIntDef(getParamFromBody('kennziffer', '0'), 0);
   Kennziffer     := 0;
   // Nur typ=kunde bekommt ueberhaupt eine Adresse; bei mitarbeiter und fahrer
@@ -419,6 +457,9 @@ begin
       // Fahrer-Login immer in Grossschreibung speichern (siehe oben)
       if IstFahrer and isParamFromBody('username') then
         Q.ParamByName('username').AsString := Username;
+      // usersloginname immer in Grossschreibung speichern (siehe oben)
+      if isParamFromBody('usersloginname') then
+        Q.ParamByName('usersloginname').AsString := UsersLogin;
       Q.ExecSQL;
 
       // 5. Adresse nur anlegen, wenn keine gefunden wurde; gruppe ist immer 1
@@ -591,10 +632,11 @@ end;
 procedure TDataModulRegistrierung.updateRegistrierung;
 // Body: { "nr": 42, "username": "...", ... }
 const
-  ALLOWED: array[0..15] of string = (
+  ALLOWED: array[0..17] of string = (
     'kennziffer','pwd','username','userkonfig',
     'erstellt','geaendert','gesperrt','pwd2','versuche',
-    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email','rollen'
+    'zeitsperre','pushid','letzter_login','hauptregistrierung','typ','email','rollen',
+    'personalzeichen','usersloginname'
   );
 begin
   DoUpdate('REGISTRIERUNG', ALLOWED, 'nr');
