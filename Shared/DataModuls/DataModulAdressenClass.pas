@@ -42,6 +42,9 @@ type
     procedure getT_Konfiguration;
     procedure getT_KonfigurationFiltered;
     procedure getT_KonfigurationById;
+    procedure getAdrtochter;
+    procedure getAdrtochterFiltered;
+    procedure getAdrtochterById;
   end;
 
 function CreateDataModulAdressen(Request: TWebRequest; Response: TWebResponse): TObject;
@@ -179,10 +182,10 @@ const
     'kennziffer','gruppe','anrede','titel','name1','name2',
     'strasse','plz','ort','telefon1','email','matchcode','lvorgang'
   );
-  CONDITIONS: array[0..4] of string = (
-    'gruppe = :gruppe','name1 = :name1','name2 = :name2','strasse = :strasse','ort = :ort'
+  CONDITIONS: array[0..5] of string = (
+    'gruppe = :gruppe','name1 = :name1','name2 = :name2','strasse = :strasse','ort = :ort','email = :email'
   );
-  FILTER_PARAMS: array[0..4] of string = ('gruppe','name1','name2','strasse','ort');
+  FILTER_PARAMS: array[0..5] of string = ('gruppe','name1','name2','strasse','ort','email');
 begin
   DoSelectFilteredDynamic('ADRESSEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
@@ -605,6 +608,51 @@ const
   );
 begin
   DoSelectOne('T_KONFIGURATION', ALLOWED, 'nr');
+end;
+
+// Route: /adressen/getadrtochter  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getAdrtochter;
+// Body: { "fields": ["nr","hauptadresse",...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','hauptadresse','kennziffer','bemerkung'
+  );
+begin
+  DoSelect('ADRTOCHTER', ALLOWED);
+end;
+
+// Route: /adressen/getadrtochterfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getAdrtochterFiltered;
+// Body: { "fields": [...] | "*", "nr": 1, "hauptadresse": 1, "kennziffer": 1,
+//         "bemerkung": "...", "orderby": "nr" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','hauptadresse','kennziffer','bemerkung'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..3] of string = (
+    'nr = :nr',
+    'hauptadresse = :hauptadresse',
+    'kennziffer = :kennziffer',
+    'bemerkung = :bemerkung'
+  );
+  FILTER_PARAMS: array[0..3] of string = (
+    'nr','hauptadresse','kennziffer','bemerkung'
+  );
+begin
+  DoSelectFilteredDynamic('ADRTOCHTER', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /adressen/getadrtochterbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulAdressen.getAdrtochterById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','hauptadresse','kennziffer','bemerkung'
+  );
+begin
+  DoSelectOne('ADRTOCHTER', ALLOWED, 'nr');
 end;
 
 end.

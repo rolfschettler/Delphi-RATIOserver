@@ -1,0 +1,45 @@
+info:
+  name: GET /registrierung/getusersfiltered – Users gefiltert
+  type: http
+  seq: 10
+
+http:
+  method: GET
+  url: "{{baseURL}}/registrierung/getusersfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "gruppe": "...",
+        "orderby": "loginname"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus USERS gefiltert auf (generisches `DoSelectFilteredDynamic`).
+
+  **Tabelle:** USERS
+
+  **Erlaubte Felder (ALLOWED):** loginname, username, rechte, gruppe, zugruppe, agenturcode, kennziffer, filiale, abteilung, gesperrt, pushid, mandant. Nicht lesbar: `passwort`.
+
+  **Filterparameter (alle optional, AND-verknüpft, je `feld = :feld`):** loginname, username, gruppe, zugruppe, agenturcode, kennziffer, filiale, abteilung, gesperrt, pushid, mandant – nur im Body vorhandene (nicht-null) Parameter erzeugen eine WHERE-Bedingung; ohne Filter werden alle Datensätze geliefert.
+
+  **Nicht filterbar:** `passwort` (Sicherheit: kein Lesen/Erraten von Passwörtern über den Filter) und `rechte` (Blob-Feld, nur über `fields` lesbar).
+
+  **Body:** `{ "fields": [...] | "*", "loginname": "...", "username": "...", "gruppe": "...", "zugruppe": "...", "agenturcode": "...", "kennziffer": 1, "filiale": "...", "abteilung": "...", "gesperrt": "...", "pushid": "...", "mandant": "..." }` – zusätzlich `orderby` (ALLOWED-Feld), `limit`, `offset`. Der Body muss ein gültiges JSON-Objekt sein (mindestens `{}`), sonst Fehler. Der Beispielwert für `gruppe` ist ein Platzhalter.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

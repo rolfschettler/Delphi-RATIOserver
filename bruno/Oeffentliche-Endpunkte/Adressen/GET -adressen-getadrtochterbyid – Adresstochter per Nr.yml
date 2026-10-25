@@ -1,0 +1,42 @@
+info:
+  name: GET /adressen/getadrtochterbyid – Adresstochter per Nr
+  type: http
+  seq: 31
+
+http:
+  method: GET
+  url: "{{baseURL}}/adressen/getadrtochterbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 1,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus ADRTOCHTER anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+
+  **Tabelle:** ADRTOCHTER
+
+  **Erlaubte Felder (ALLOWED):** nr, hauptadresse, kennziffer, bemerkung
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.

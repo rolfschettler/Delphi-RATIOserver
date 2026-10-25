@@ -1,0 +1,42 @@
+info:
+  name: GET /registrierung/getusersbyid – User per loginname
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{baseURL}}/registrierung/getusersbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "loginname": "ADMIN",
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus USERS anhand des Primärschlüssels `loginname` (generisches `DoSelectOne`).
+
+  **Tabelle:** USERS
+
+  **Erlaubte Felder (ALLOWED):** loginname, username, rechte, gruppe, zugruppe, agenturcode, kennziffer, filiale, abteilung, gesperrt, pushid, mandant. Nicht lesbar: `passwort`.
+
+  **Key-Feld:** `loginname` (CHAR(20), Zeichenkette)
+
+  **Body:** `{ "loginname": "<wert>", "fields": [...] | "*" }` – loginname ist Pflicht. Der Beispielwert `ADMIN` ist nur ein Platzhalter.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.

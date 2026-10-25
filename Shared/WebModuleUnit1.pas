@@ -549,6 +549,10 @@ begin
   FRouter.AddRoute('/adressen/gett_konfigurationfiltered', CreateDataModulAdressen, TDataModulAdressen(nil).getT_KonfigurationFiltered);
   FRouter.AddRoute('/adressen/gett_konfigurationbyid',     CreateDataModulAdressen, TDataModulAdressen(nil).getT_KonfigurationById);
 
+  FRouter.AddRoute('/adressen/getadrtochter',         CreateDataModulAdressen, TDataModulAdressen(nil).getAdrtochter);
+  FRouter.AddRoute('/adressen/getadrtochterfiltered', CreateDataModulAdressen, TDataModulAdressen(nil).getAdrtochterFiltered);
+  FRouter.AddRoute('/adressen/getadrtochterbyid',     CreateDataModulAdressen, TDataModulAdressen(nil).getAdrtochterById);
+
   //PUBLIC
 
   // Token-autorisiert: der Gast ruft ohne Login direkt aus dem Browser auf.
@@ -689,6 +693,10 @@ begin
   FRouter.AddRoute('/users/getuserlocal',                     CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getUserLocal, false, true); //Auth=false,LocalOnly=true
   FRouter.AddRoute('/registrierung/updateregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).updateRegistrierung);
   FRouter.AddRoute('/registrierung/deleteregistrierung',      CreateDataModulRegistrierung, TDataModulRegistrierung(nil).deleteRegistrierung);
+
+  FRouter.AddRoute('/registrierung/getusers',                 CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getUsers);
+  FRouter.AddRoute('/registrierung/getusersfiltered',         CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getUsersFiltered);
+  FRouter.AddRoute('/registrierung/getusersbyid',             CreateDataModulRegistrierung, TDataModulRegistrierung(nil).getUsersById);
 
   //DISPO
   FRouter.AddRoute('/dispo/demo', CreateDataModulDispo, TDataModulDispo(nil).Demo);

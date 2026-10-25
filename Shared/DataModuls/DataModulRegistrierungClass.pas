@@ -25,6 +25,9 @@ type
     procedure getUserLocal;
     procedure updateRegistrierung;
     procedure deleteRegistrierung;
+    procedure getUsers;
+    procedure getUsersFiltered;
+    procedure getUsersById;
   end;
 
 
@@ -602,6 +605,67 @@ procedure TDataModulRegistrierung.deleteRegistrierung;
 // Body: { "nr": 42 }
 begin
   DoDelete('REGISTRIERUNG', 'nr');
+end;
+
+// Route: /registrierung/getusers  |  Auth: true  |  LocalOnly: false
+procedure TDataModulRegistrierung.getUsers;
+// Body: { "fields": ["loginname","username",...] | "*", "orderby": "loginname" }
+// passwort bewusst nicht in ALLOWED (nicht lesbar).
+const
+  ALLOWED: array[0..11] of string = (
+    'loginname','username','rechte','gruppe','zugruppe','agenturcode',
+    'kennziffer','filiale','abteilung','gesperrt','pushid','mandant'
+  );
+begin
+  DoSelect('USERS', ALLOWED);
+end;
+
+// Route: /registrierung/getusersfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulRegistrierung.getUsersFiltered;
+// Body: { "fields": [...] | "*", "loginname": "...", "username": "...", "gruppe": "...",
+//         "zugruppe": "...", "agenturcode": "...", "kennziffer": 1, "filiale": "...",
+//         "abteilung": "...", "gesperrt": "...", "pushid": "...", "mandant": "...",
+//         "orderby": "loginname" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+// passwort bewusst weder lesbar noch filterbar; rechte (Blob) nur lesbar, nicht filterbar.
+const
+  ALLOWED: array[0..11] of string = (
+    'loginname','username','rechte','gruppe','zugruppe','agenturcode',
+    'kennziffer','filiale','abteilung','gesperrt','pushid','mandant'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..10] of string = (
+    'loginname = :loginname',
+    'username = :username',
+    'gruppe = :gruppe',
+    'zugruppe = :zugruppe',
+    'agenturcode = :agenturcode',
+    'kennziffer = :kennziffer',
+    'filiale = :filiale',
+    'abteilung = :abteilung',
+    'gesperrt = :gesperrt',
+    'pushid = :pushid',
+    'mandant = :mandant'
+  );
+  FILTER_PARAMS: array[0..10] of string = (
+    'loginname','username','gruppe','zugruppe','agenturcode',
+    'kennziffer','filiale','abteilung','gesperrt','pushid','mandant'
+  );
+begin
+  DoSelectFilteredDynamic('USERS', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /registrierung/getusersbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulRegistrierung.getUsersById;
+// Body: { "loginname": "...", "fields": [...] | "*" }
+// passwort bewusst nicht in ALLOWED (nicht lesbar).
+const
+  ALLOWED: array[0..11] of string = (
+    'loginname','username','rechte','gruppe','zugruppe','agenturcode',
+    'kennziffer','filiale','abteilung','gesperrt','pushid','mandant'
+  );
+begin
+  DoSelectOne('USERS', ALLOWED, 'loginname');
 end;
 
 end.

@@ -238,10 +238,10 @@ const
     'sprache','aktion','bank','externe_nummer','rechnungsart','stornotermin',
     'vk_waehrung','mandant'
   );
-  CONDITIONS: array[0..0] of string = (
-    'agenturnr = :agenturnr'
+  CONDITIONS: array[0..3] of string = (
+    'agenturnr = :agenturnr','ansprechpartner = :ansprechpartner','buchender = :buchender','vorgangsnr = :vorgangsnr'
   );
-  FILTER_PARAMS: array[0..0] of string = ('agenturnr');
+  FILTER_PARAMS: array[0..3] of string = ('agenturnr','ansprechpartner','buchender','vorgangsnr');
 begin
   DoSelectFilteredDynamic('T_VORGANG', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
