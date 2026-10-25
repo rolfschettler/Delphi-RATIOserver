@@ -23,7 +23,7 @@ request:
     - name: user_eingeschraenkt
       value: hw
     - name: user_supervisor
-      value: ""
+      value: SUPERVISOR
     - name: erlaubt_endpunkt
       value: /adressen/getkategorien
     - name: verboten_endpunkt

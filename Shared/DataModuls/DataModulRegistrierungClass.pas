@@ -181,12 +181,19 @@ procedure TDataModulRegistrierung.insertRegistrierungLocal;
 // Body: { "username": "...", "pwd2": "...", "typ": "kunde|mitarbeiter|fahrer",
 //         "anrede": "Herr", "name1": "Mustermann", "name2": "Max",
 //         "strasse": "...", "plz": "...", "ort": "...", "telefon1": "...",
-//         "email": "...", "kennziffer": 12345, "usersloginname": "..." }
+//         "email": "...", "kennziffer": 12345, "usersloginname": "...",
+//         "personalzeichen": "..." }
 //
 // usersloginname -- Verknuepfung zum USERS-Satz (typ=mitarbeiter). Ein
 //   USERS-Loginname darf nur EINEN Portalzugang haben: ist er bereits in
 //   REGISTRIERUNG.usersloginname eingetragen, wird mit HTTP 409 abgelehnt
 //   (Vergleich case-insensitiv). Gespeichert wird immer in Grossschreibung.
+//
+// personalzeichen -- Verknuepfung zum PERSONALSTAMM-Satz (typ=fahrer). Wie
+//   usersloginname: hoechstens EIN Portalzugang je Kurzzeichen (HTTP 409),
+//   Vergleich case-insensitiv, gespeichert in Grossschreibung. Nur bei
+//   typ=fahrer zulaessig; Altbestand-Fahrer (personalzeichen NULL,
+//   username = Kuerzel) gelten ebenfalls als belegt.
 //
 // Gueltige Typen sind ausschliesslich kunde, mitarbeiter und fahrer
 // (Vergleich case-insensitiv); jeder andere sowie ein fehlender typ wird
@@ -201,12 +208,13 @@ procedure TDataModulRegistrierung.insertRegistrierungLocal;
 //   bleibt unveraendert; ohne Treffer wird eine neue Adresse angelegt.
 //
 // typ=fahrer -- Abgleich mit dem PERSONALSTAMM:
-//   username, name1 (Vorname) und name2 (Nachname) sind Pflichtfelder.
-//   username wird vor der Pruefung auf Grossschreibung gesetzt und muss
-//   zusammen mit name1/name2 einem Satz in PERSONALSTAMM entsprechen
-//   (username = PERSONALSTAMM.zeichen, name1 = name1, name2 = name2).
-//   Ohne Treffer: 'Benutzer ist nicht im Personalstamm vorhanden.'
-//   Der Login wird in Grossschreibung in REGISTRIERUNG gespeichert.
+//   personalzeichen, name1 (Vorname), name2 (Nachname) und username sind
+//   Pflichtfelder. personalzeichen wird vor der Pruefung auf Grossschreibung
+//   gesetzt und muss zusammen mit name1/name2 einem Satz in PERSONALSTAMM
+//   entsprechen (personalzeichen = PERSONALSTAMM.zeichen, name1 = name1,
+//   name2 = name2). Ohne Treffer: 'Benutzer ist nicht im Personalstamm vorhanden.'
+//   username ist frei gewaehlt und wird unveraendert gespeichert (seit
+//   2026-10-25; Altbestand hat personalzeichen NULL und username = Kuerzel).
 //
 // Rollen: REGISTRIERUNG.rollen wird automatisch auf die Blaupause des typs
 //   gesetzt (kunde -> @KUNDE, fahrer -> @FAHRER, mitarbeiter -> @MITARBEITER).
@@ -221,8 +229,9 @@ procedure TDataModulRegistrierung.insertRegistrierungLocal;
 //   wird fest gesetzt und nie aus dem Body uebernommen. typ=kunde bleibt
 //   offen (gesperrt NULL).
 const
-  ALLOWED: array[0..5] of string = (
-    'username','pwd2','typ','userkonfig','email','usersloginname');
+  ALLOWED: array[0..6] of string = (
+    'username','pwd2','typ','userkonfig','email','usersloginname',
+    'personalzeichen');
   ADR_ALLOWED: array[0..7] of string = (
     'anrede','name1','name2','strasse','plz','ort','telefon1','email');
 var
@@ -235,6 +244,7 @@ var
   Name1, Name2: string;
   Username:     string;
   UsersLogin:   string;
+  PersZeichen:  string;
   SuchKennziffer: Integer;
   Kennziffer:   Integer;
   RegNr:        Integer;
@@ -276,19 +286,30 @@ begin
   if Username.StartsWith('@') then
     raise Exception.Create('Der Benutzername darf nicht mit @ beginnen.');
 
-  // typ=fahrer: username immer in Grossschreibung -- so steht das Zeichen auch
-  // im PERSONALSTAMM und so wird der Login gespeichert.
+  // Kurzzeichen des Personalstamms immer in Grossschreibung -- so steht es im
+  // PERSONALSTAMM und so wird es in REGISTRIERUNG gespeichert.
+  // ToUpperUni statt UpperCase: letzteres laesst Umlaute klein.
+  PersZeichen := ToUpperUni(Trim(getParamFromBody('personalzeichen')));
+
+  // personalzeichen nur bei typ=fahrer -- nur dort wird es gegen den
+  // PERSONALSTAMM geprueft; sonst koennte jeder ein fremdes Kurzzeichen belegen.
+  if (PersZeichen <> '') and not IstFahrer then
+    raise Exception.Create('Das Feld personalzeichen ist nur bei typ=fahrer zulaessig.');
+  // REGISTRIERUNG.personalzeichen ist CHAR(15) -- vorab pruefen statt
+  // InterBase-Fehler "string truncation" durchzureichen.
+  if Length(PersZeichen) > 15 then
+    raise Exception.Create('Das Feld personalzeichen darf hoechstens 15 Zeichen lang sein.');
+
+  // typ=fahrer: Identitaetsnachweis ueber den PERSONALSTAMM. Der Benutzername
+  // ist frei gewaehlt und bleibt unveraendert.
   if IstFahrer then
   begin
-    // ToUpperUni statt UpperCase: letzteres laesst Umlaute klein.
-    Username := ToUpperUni(Username);
+    if (PersZeichen = '') or (Name1 = '') or (Name2 = '') or (Username = '') then
+      raise Exception.Create('Die Felder personalzeichen, name1, name2 und username sind bei typ=fahrer Pflichtfelder.');
 
-    if (Username = '') or (Name1 = '') or (Name2 = '') then
-      raise Exception.Create('Die Felder username, name1 und name2 sind bei typ=fahrer Pflichtfelder.');
-
-    // Abgleich mit dem PERSONALSTAMM: username = zeichen, name1 = Vorname,
-    // name2 = Nachname. Alle drei umlautsicher vergleichen -- siehe
-    // CaseInsCondition in webUtils.
+    // Abgleich mit dem PERSONALSTAMM: personalzeichen = zeichen,
+    // name1 = Vorname, name2 = Nachname. Alle drei umlautsicher vergleichen --
+    // siehe CaseInsCondition in webUtils.
     Q := TFDQuery.Create(nil);
     try
       Q.Connection := Connection;
@@ -296,7 +317,7 @@ begin
                     ' WHERE ' + CaseInsCondition('zeichen', 'zeichen') +
                     '   AND ' + CaseInsCondition('name1', 'name1') +
                     '   AND ' + CaseInsCondition('name2', 'name2');
-      SetCaseInsParams(Q, 'zeichen', Username);
+      SetCaseInsParams(Q, 'zeichen', PersZeichen);
       SetCaseInsParams(Q, 'name1', Name1);
       SetCaseInsParams(Q, 'name2', Name2);
       Q.Open;
@@ -323,13 +344,15 @@ begin
       if not Q.IsEmpty then
       begin
         Res := TJSONObject.Create;
-        Res.AddPair('status', 'error');
-        if IstFahrer then
-          Res.AddPair('message', 'Fahrer ist bereits registriert')
-        else
+        try
+          Res.AddPair('status', 'error');
           Res.AddPair('message', 'Der Benutzername ist bereits registriert.');
-        Res.AddPair('username', Username);
-        Res.AddPair('nr', TJSONNumber.Create(Q.FieldByName('nr').AsInteger));
+          Res.AddPair('username', Username);
+          Res.AddPair('nr', TJSONNumber.Create(Q.FieldByName('nr').AsInteger));
+        except
+          Res.Free;
+          raise;
+        end;
         SendJson(Res, 409);
         Exit;
       end;
@@ -341,6 +364,9 @@ begin
   // Ein USERS-Loginname bekommt hoechstens einen Portalzugang. Gespeichert
   // wird er immer in Grossschreibung (ToUpperUni -- laesst Umlaute nicht klein).
   UsersLogin := ToUpperUni(Trim(getParamFromBody('usersloginname')));
+  // REGISTRIERUNG.usersloginname ist CHAR(20) -- siehe personalzeichen oben.
+  if Length(UsersLogin) > 20 then
+    raise Exception.Create('Das Feld usersloginname darf hoechstens 20 Zeichen lang sein.');
   if UsersLogin <> '' then
   begin
     Q := TFDQuery.Create(nil);
@@ -352,9 +378,47 @@ begin
       if not Q.IsEmpty then
       begin
         Res := TJSONObject.Create;
-        Res.AddPair('status', 'error');
-        Res.AddPair('message', 'Für diesen Ratio-Loginnamen ist bereits ein Portalzugang angelegt.');
-        Res.AddPair('nr', TJSONNumber.Create(Q.FieldByName('nr').AsInteger));
+        try
+          Res.AddPair('status', 'error');
+          Res.AddPair('message', 'Für diesen Ratio-Loginnamen ist bereits ein Portalzugang angelegt.');
+          Res.AddPair('nr', TJSONNumber.Create(Q.FieldByName('nr').AsInteger));
+        except
+          Res.Free;
+          raise;
+        end;
+        SendJson(Res, 409);
+        Exit;
+      end;
+    finally
+      Q.Free;
+    end;
+  end;
+
+  // Ein Kurzzeichen des Personalstamms bekommt hoechstens einen Portalzugang.
+  // Altbestand-Fahrer haben personalzeichen NULL und das Kuerzel als username
+  // -- die zaehlen ebenfalls als belegt.
+  if PersZeichen <> '' then
+  begin
+    Q := TFDQuery.Create(nil);
+    try
+      Q.Connection := Connection;
+      Q.SQL.Text := 'SELECT nr FROM REGISTRIERUNG WHERE ' + CaseInsCondition('personalzeichen', 'personalzeichen') +
+                    ' OR (personalzeichen IS NULL AND UPPER(typ) = ''FAHRER'' AND ' +
+                    CaseInsCondition('username', 'altzeichen') + ')';
+      SetCaseInsParams(Q, 'personalzeichen', PersZeichen);
+      SetCaseInsParams(Q, 'altzeichen', PersZeichen);
+      Q.Open;
+      if not Q.IsEmpty then
+      begin
+        Res := TJSONObject.Create;
+        try
+          Res.AddPair('status', 'error');
+          Res.AddPair('message', 'Für dieses Kurzzeichen des Personalstamms ist bereits ein Portalzugang angelegt.');
+          Res.AddPair('nr', TJSONNumber.Create(Q.FieldByName('nr').AsInteger));
+        except
+          Res.Free;
+          raise;
+        end;
         SendJson(Res, 409);
         Exit;
       end;
@@ -454,12 +518,20 @@ begin
       for i := Low(ALLOWED) to High(ALLOWED) do
         if isParamFromBody(ALLOWED[i]) then
           Q.ParamByName(ALLOWED[i]).Value := getParamFromBody(ALLOWED[i]);
-      // Fahrer-Login immer in Grossschreibung speichern (siehe oben)
-      if IstFahrer and isParamFromBody('username') then
-        Q.ParamByName('username').AsString := Username;
-      // usersloginname immer in Grossschreibung speichern (siehe oben)
+      // usersloginname und personalzeichen immer in Grossschreibung
+      // speichern (siehe oben)
+      // leere Werte als NULL speichern -- NULL heisst "nicht verknuepft",
+      // beim personalzeichen kennzeichnet NULL zudem den Altbestand
       if isParamFromBody('usersloginname') then
-        Q.ParamByName('usersloginname').AsString := UsersLogin;
+        if UsersLogin <> '' then
+          Q.ParamByName('usersloginname').AsString := UsersLogin
+        else
+          Q.ParamByName('usersloginname').Clear;
+      if isParamFromBody('personalzeichen') then
+        if PersZeichen <> '' then
+          Q.ParamByName('personalzeichen').AsString := PersZeichen
+        else
+          Q.ParamByName('personalzeichen').Clear;
       Q.ExecSQL;
 
       // 5. Adresse nur anlegen, wenn keine gefunden wurde; gruppe ist immer 1

@@ -213,6 +213,7 @@ end;
 // Route: /dispo/geteinsatzfiltered  |  Auth: true  |  LocalOnly: false
 procedure TDataModulDispo.getEinsatzFiltered;
 // Body: { "fields": [...] | "*", "von": "2024-01-01 00:00:00", "bis": "2024-12-31 23:59:59", "orderby": "von" }
+//       optional "fahrer1", "fahrer2", "fahrer3": Gleichheitsfilter auf die jeweilige Spalte
 var
   timemodeVal : TJSONValue;
   timemode    : string;
@@ -243,7 +244,12 @@ const
     'fis_geaendert_fahrer3','fis_gelesen','fis_gelesen_fahrer2','fis_gelesen_fahrer3',
     'geaendert','geaendertvon','zielort'
   );
-  FILTER_PARAMS: array[0..1] of string = ('von', 'bis');
+  // Optionale Fahrerfilter: nur die im Body gesetzten landen im SQL --
+  // DoSelectFiltered verlangt zu jedem Filterparameter einen :Platzhalter.
+  FAHRER_PARAMS: array[0..2] of string = ('fahrer1','fahrer2','fahrer3');
+var
+  FilterParams: TArray<string>;
+  i:            Integer;
 begin
   // 1. Erst aus QueryString versuchen
   timemode := Request.QueryFields.Values['timemode'];
@@ -279,8 +285,16 @@ begin
   else
     Filter := 'von >= :von AND von <= :bis';
 
+  FilterParams := ['von', 'bis'];
+  for i := Low(FAHRER_PARAMS) to High(FAHRER_PARAMS) do
+    if isParamFromBody(FAHRER_PARAMS[i]) then
+    begin
+      Filter := Filter + ' AND ' + FAHRER_PARAMS[i] + ' = :' + FAHRER_PARAMS[i];
+      FilterParams := FilterParams + [FAHRER_PARAMS[i]];
+    end;
+
   // 4. Query ausführen
-  DoSelectFiltered('EINSATZ', ALLOWED, Filter, FILTER_PARAMS);
+  DoSelectFiltered('EINSATZ', ALLOWED, Filter, FilterParams);
 end;
 
 procedure TDataModulDispo.getfahrergruppen;

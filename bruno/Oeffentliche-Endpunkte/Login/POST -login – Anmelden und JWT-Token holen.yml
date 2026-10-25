@@ -5,19 +5,12 @@ info:
 
 http:
   method: POST
-  url: "{{baseURL}}/login?user=SUPERVISOR&password={{process.env.PW_SUPERVISOR}}"
-  params:
-    - name: user
-      value: SUPERVISOR
-      type: query
-    - name: password
-      value: "{{process.env.PW_SUPERVISOR}}"
-      type: query
+  url: "{{baseURL}}/login"
   body:
     type: json
     data: |-
       {
-        "user": "SUPERVISOR",
+        "user": "Peter Birner",
         "password": "{{process.env.PW_SUPERVISOR}}"
       }
   auth: inherit

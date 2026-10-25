@@ -223,7 +223,7 @@ begin
       close;
       // Umlautsicherer, case-insensitiver Vergleich -- Erlaeuterung des
       // Musters bei CaseInsCondition in webUtils.
-      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,rollen,pwd2,userkonfig from registrierung' +
+      sql.text := 'select nr,kennziffer,username as loginname,username,gesperrt,typ,hauptregistrierung,rollen,pwd2,userkonfig,personalzeichen,usersloginname from registrierung' +
                   ' where ' + CaseInsCondition('username', 'username');
       ParamByName('username_asc').AsString   := UpperCaseAscii(username);
       ParamByName('username_asclo').AsString := UpperCaseAscii(ToLowerUni(username));
