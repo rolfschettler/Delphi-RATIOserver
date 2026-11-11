@@ -166,8 +166,8 @@ end;
 procedure TDataModulAdressen.getAdressen;
 // Body: { "fields": ["kennziffer","name1",...] | "*", "orderby": "name1" }
 const
-  ALLOWED: array[0..12] of string = (
-    'kennziffer','gruppe','anrede','titel','name1','name2',
+  ALLOWED: array[0..14] of string = (
+    'kennziffer','gruppe','anrede','titel','name1','name2','name3','namenszusatz',
     'strasse','plz','ort','telefon1','email','matchcode','lvorgang'
   );
 begin
@@ -178,14 +178,14 @@ end;
 procedure TDataModulAdressen.getAdressenFiltered;
 // Body: { "fields": [...] | "*", "gruppe": "K", "orderby": "name1" }
 const
-  ALLOWED: array[0..12] of string = (
-    'kennziffer','gruppe','anrede','titel','name1','name2',
+  ALLOWED: array[0..14] of string = (
+    'kennziffer','gruppe','anrede','titel','name1','name2','name3','namenszusatz',
     'strasse','plz','ort','telefon1','email','matchcode','lvorgang'
   );
-  CONDITIONS: array[0..5] of string = (
-    'gruppe = :gruppe','name1 = :name1','name2 = :name2','strasse = :strasse','ort = :ort','email = :email'
+  CONDITIONS: array[0..7] of string = (
+    'gruppe = :gruppe','name1 = :name1','name2 = :name2','name3 = :name3','namenszusatz = :namenszusatz','strasse = :strasse','ort = :ort','email = :email'
   );
-  FILTER_PARAMS: array[0..5] of string = ('gruppe','name1','name2','strasse','ort','email');
+  FILTER_PARAMS: array[0..7] of string = ('gruppe','name1','name2','name3','namenszusatz','strasse','ort','email');
 begin
   DoSelectFilteredDynamic('ADRESSEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
@@ -208,8 +208,8 @@ end;
 procedure TDataModulAdressen.getAdresseById;
 // Body: { "kennziffer": 42, "fields": [...] | "*" }
 const
-  ALLOWED: array[0..10] of string = (
-    'kennziffer','gruppe','anrede','titel','name1','name2',
+  ALLOWED: array[0..12] of string = (
+    'kennziffer','gruppe','anrede','titel','name1','name2','name3','namenszusatz',
     'strasse','plz','ort','telefon1','email'
   );
 begin

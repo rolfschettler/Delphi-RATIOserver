@@ -1,0 +1,39 @@
+info:
+  name: POST /fahrtenplanung/deletet_zustiege – Zustieg löschen
+  type: http
+  seq: 56
+
+http:
+  method: POST
+  url: "{{baseURL}}/fahrtenplanung/deletet_zustiege"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus T_ZUSTIEGE anhand des Primärschlüssels `nr` (generisches `DoDelete`).
+
+  **Tabelle:** T_ZUSTIEGE
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert> }` – nr ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

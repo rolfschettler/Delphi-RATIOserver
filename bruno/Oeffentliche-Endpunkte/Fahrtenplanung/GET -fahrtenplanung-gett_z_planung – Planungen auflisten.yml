@@ -1,0 +1,40 @@
+info:
+  name: GET /fahrtenplanung/gett_z_planung – Planungen auflisten
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseURL}}/fahrtenplanung/gett_z_planung"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet alle Datensätze aus T_Z_PLANUNG auf (generisches `DoSelect`).
+
+  **Tabelle:** T_Z_PLANUNG
+
+  **Erlaubte Felder (ALLOWED):** nr, bezeichnung, datum, planung, art, text, erstellt, erstellt_von, geandert, geandert_von, status, gesperrt, zusatzfeld1, zusatzfeld2
+
+  **Body:** `{ "fields": [...] | "*", "orderby": "<feld>" }` – zusätzlich `limit`, `offset`. Der Body muss ein gültiges JSON-Objekt sein (mindestens `{}`).
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...},...]}`

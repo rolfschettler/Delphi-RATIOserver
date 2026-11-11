@@ -723,14 +723,14 @@ const
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
   CONDITIONS: array[0..8] of string = (
     'nr = :nr',
-    'von = :von',
-    'bis = :bis',
+    'von <= :bis',
+    'bis >= :von',
     'bezeichnung = :bezeichnung',
     'farbe = :farbe',
     'art = :art',
     'code = :code',
-    'gueltig_bis = :gueltig_bis',
-    'gueltig_von = :gueltig_von'
+    'gueltig_bis >= :gueltig_bis',
+    'gueltig_von <= :gueltig_von'
   );
   FILTER_PARAMS: array[0..8] of string = (
     'nr','von','bis','bezeichnung','farbe',
@@ -739,6 +739,8 @@ const
 begin
   DoSelectFilteredDynamic('ZEITRAUM', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
+
+
 
 // Route: /dispo/getzeitraumbyid  |  Auth: true  |  LocalOnly: false
 procedure TDataModulDispo.getZeitraumById;

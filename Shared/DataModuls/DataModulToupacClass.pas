@@ -83,6 +83,13 @@ type
      procedure insertT_Termine;
      procedure updateT_Termine;
      procedure deleteT_Termine;
+     procedure getT_Reisedetail;
+     procedure getT_ReisedetailFiltered;
+     procedure getT_ReisedetailById;
+     procedure getT_ReisedetailKey;
+     procedure insertT_Reisedetail;
+     procedure updateT_Reisedetail;
+     procedure deleteT_Reisedetail;
   end;
 
 
@@ -1460,6 +1467,87 @@ procedure TDataModulToupac.deleteT_Termine;
 // Body: { "nr": 42 }
 begin
   DoDelete('T_TERMINE', 'nr');
+end;
+
+// Route: /toupac/gett_reisedetail  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_Reisedetail;
+// Body: { "fields": ["nr","reisenr",...] | "*", "orderby": "nr" }
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','reisenr','sprache','bezeichnung'
+  );
+begin
+  DoSelect('T_REISEDETAIL', ALLOWED);
+end;
+
+// Route: /toupac/gett_reisedetailfiltered  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_ReisedetailFiltered;
+// Body: { "fields": [...] | "*", "reisenr": 42, "sprache": "DEU", "orderby": "nr" }
+// Alle Filter-Parameter sind optional – nur im Body vorhandene Parameter werden als WHERE-Bedingung eingesetzt.
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','reisenr','sprache','bezeichnung'
+  );
+  // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  CONDITIONS: array[0..3] of string = (
+    'nr = :nr',
+    'reisenr = :reisenr',
+    'sprache = :sprache',
+    'bezeichnung = :bezeichnung'
+  );
+  FILTER_PARAMS: array[0..3] of string = ('nr', 'reisenr', 'sprache', 'bezeichnung');
+begin
+  DoSelectFilteredDynamic('T_REISEDETAIL', ALLOWED, CONDITIONS, FILTER_PARAMS);
+end;
+
+// Route: /toupac/gett_reisedetailbyid  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_ReisedetailById;
+// Body: { "nr": 42, "fields": [...] | "*" }
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','reisenr','sprache','bezeichnung'
+  );
+begin
+  DoSelectOne('T_REISEDETAIL', ALLOWED, 'nr');
+end;
+
+// Route: /toupac/gett_reisedetailkey  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.getT_ReisedetailKey;
+begin
+  Query.SQL.Text := 'SELECT GEN_ID(T_REISEDETAIL_NR_GEN,1) AS nr FROM RDB$DATABASE';
+  Query.Open;
+  Response.ContentType := 'application/json';
+  Response.StatusCode  := 200;
+  Response.Content     := SerializeQuery(Query);
+end;
+
+// Route: /toupac/insertt_reisedetail  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.insertT_Reisedetail;
+// Body: { "nr": 42, "reisenr": 42, "sprache": "DEU", "bezeichnung": "..." }
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','reisenr','sprache','bezeichnung'
+  );
+begin
+  DoInsert('T_REISEDETAIL', ALLOWED);
+end;
+
+// Route: /toupac/updatet_reisedetail  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.updateT_Reisedetail;
+// Body: { "nr": 42, "bezeichnung": "...", ... }
+const
+  ALLOWED: array[0..3] of string = (
+    'nr','reisenr','sprache','bezeichnung'
+  );
+begin
+  DoUpdate('T_REISEDETAIL', ALLOWED, 'nr');
+end;
+
+// Route: /toupac/deletet_reisedetail  |  Auth: true  |  LocalOnly: false
+procedure TDataModulToupac.deleteT_Reisedetail;
+// Body: { "nr": 42 }
+begin
+  DoDelete('T_REISEDETAIL', 'nr');
 end;
 
 end.

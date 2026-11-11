@@ -1,0 +1,43 @@
+info:
+  name: GET /fahrtenplanung/gett_z_reisefiltered – Reisen gefiltert
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{baseURL}}/fahrtenplanung/gett_z_reisefiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "zplanungsnr": 42,
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Listet Datensätze aus T_Z_REISE gefiltert auf (generisches `DoSelectFilteredDynamic`).
+
+  **Tabelle:** T_Z_REISE
+
+  **Erlaubte Felder (ALLOWED):** nr, zplanungsnr, tzubringernr
+
+  **Filterparameter (alle optional, AND-verknüpft, je `feld = :feld`):** nr, zplanungsnr, tzubringernr – nur im Body vorhandene (nicht-null) Parameter erzeugen eine WHERE-Bedingung; ohne Filter werden alle Datensätze geliefert.
+
+  **Body:** `{ "fields": [...] | "*", "zplanungsnr": <wert>, "tzubringernr": <wert>, ... }` – zusätzlich `orderby` (ALLOWED-Feld), `limit`, `offset`. Der Body muss ein gültiges JSON-Objekt sein (mindestens `{}`), sonst Fehler.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.

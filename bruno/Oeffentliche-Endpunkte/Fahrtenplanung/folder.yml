@@ -1,0 +1,11 @@
+info:
+  name: Fahrtenplanung
+  type: folder
+  seq: 17
+
+request:
+  auth: inherit
+
+docs:
+  content: "Controller für die Fahrtenplanung: CRUD auf die Tabelle T_Z_PLANUNG (Planungsdatensätze mit Bezeichnung, Datum, Planung, Art, Status, Sperrkennzeichen und Zusatzfeldern; Primärschlüssel nr, Vergabe über den Generator T_Z_PLANUNG_NR_GEN) sowie auf die Tabelle T_Z_REISE (Felder nr, zplanungsnr, tzubringernr; Primärschlüssel nr, Generator T_Z_REISE_NR_GEN) und auf die Tabelle T_Z_FAHRZEUG (u.a. zplanungsnr, Bezeichnung, Typ, Kennzeichen, Zielhalt/-uhrzeit, Status und Blob-Feld info; Primärschlüssel nr, Generator T_Z_FAHRZEUG_NR_GEN) sowie auf die Tabelle T_Z_WEG (Felder nr, zubringerfahrzeugnr, haltnr, wegefolge, uhrzeit; Primärschlüssel nr, Generator T_Z_WEG_NR_GEN) und auf die Tabelle T_Z_EINTEILUNG (Felder nr, zwegenr, tzustiegenr, einteilungsfolge, uhrzeit_ha; Primärschlüssel nr, Generator T_Z_EINTEILUNG_NR_GEN) sowie auf die Tabelle T_KNOTEN (Felder nr, zubringer, reisenr, datum, land, ort, region, zielknoten, reihenfolge, art, geraet, zielknotenhaltnr, knotenladen, internet, sortierung; Primärschlüssel nr, Generator T_KNOTEN_NR_GEN) und auf die Tabelle T_KNOTENHALT (Felder nr, knoten, halt, datum, zeit, zuschlag, internet, sortierung, inhouse, maximumpers, exportierbar; Primärschlüssel nr, Generator T_KNOTENHALT_NR_GEN) sowie auf die Tabelle T_ZUSTIEGE (Felder nr, knotenhaltnr, teilnehmernr, art, richtung, platznummer; Primärschlüssel nr, Generator T_ZUSTIEGE_NR_GEN) und auf die Tabelle T_HALTESTELLE (Felder nr, land, plz, ort, strasse, gesperrt, xkoord, ykoord, code, zuschlag, bezeichnung, hausabholung, sortierung, externenr1, externenr2, internet, exportierbar; Primärschlüssel nr, Generator T_HALTESTELLE_NR_GEN). Alle Endpunkte erfordern Authentifizierung via Bearer Token (JWT) und sind nicht auf lokale Aufrufe beschränkt (Auth=true, LocalOnly=false)."
+  type: text/markdown

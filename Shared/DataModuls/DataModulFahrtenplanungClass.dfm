@@ -1,0 +1,2 @@
+inherited DataModulFahrtenplanung: TDataModulFahrtenplanung
+end

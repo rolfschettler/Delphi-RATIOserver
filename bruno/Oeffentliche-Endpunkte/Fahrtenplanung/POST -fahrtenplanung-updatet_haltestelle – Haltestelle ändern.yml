@@ -1,0 +1,43 @@
+info:
+  name: POST /fahrtenplanung/updatet_haltestelle – Haltestelle ändern
+  type: http
+  seq: 62
+
+http:
+  method: POST
+  url: "{{baseURL}}/fahrtenplanung/updatet_haltestelle"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "bezeichnung": "Musterstadt Hbf",
+        "gesperrt": "N"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen Datensatz in T_HALTESTELLE anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+
+  **Tabelle:** T_HALTESTELLE
+
+  **Erlaubte Felder (ALLOWED):** land, plz, ort, strasse, gesperrt, xkoord, ykoord, code, zuschlag, bezeichnung, hausabholung, sortierung, externenr1, externenr2, internet, exportierbar – nur übergebene Felder werden geändert.
+
+  **Key-Feld:** `nr` (Pflicht, wird selbst nicht geändert)
+
+  **Body:** `{ "nr": <wert>, "bezeichnung": "...", "gesperrt": "...", ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

@@ -98,7 +98,8 @@ DataModulPublicClass,
 DataModulDokumenteClass,
 DataModulFibuClass,
 DataModulRegistrierungClass,
-DataModulStoredProceduresClass;
+DataModulStoredProceduresClass,
+DataModulFahrtenplanungClass;
 
 
 {$R *.dfm}
@@ -823,6 +824,13 @@ begin
   FRouter.AddRoute('/toupac/insertt_termine',      CreateDataModulToupac, TDataModulToupac(nil).insertT_Termine);
   FRouter.AddRoute('/toupac/updatet_termine',      CreateDataModulToupac, TDataModulToupac(nil).updateT_Termine);
   FRouter.AddRoute('/toupac/deletet_termine',      CreateDataModulToupac, TDataModulToupac(nil).deleteT_Termine);
+  FRouter.AddRoute('/toupac/gett_reisedetail',         CreateDataModulToupac, TDataModulToupac(nil).getT_Reisedetail);
+  FRouter.AddRoute('/toupac/gett_reisedetailfiltered', CreateDataModulToupac, TDataModulToupac(nil).getT_ReisedetailFiltered);
+  FRouter.AddRoute('/toupac/gett_reisedetailbyid',     CreateDataModulToupac, TDataModulToupac(nil).getT_ReisedetailById);
+  FRouter.AddRoute('/toupac/gett_reisedetailkey',      CreateDataModulToupac, TDataModulToupac(nil).getT_ReisedetailKey);
+  FRouter.AddRoute('/toupac/insertt_reisedetail',      CreateDataModulToupac, TDataModulToupac(nil).insertT_Reisedetail);
+  FRouter.AddRoute('/toupac/updatet_reisedetail',      CreateDataModulToupac, TDataModulToupac(nil).updateT_Reisedetail);
+  FRouter.AddRoute('/toupac/deletet_reisedetail',      CreateDataModulToupac, TDataModulToupac(nil).deleteT_Reisedetail);
 
 
 
@@ -858,6 +866,71 @@ begin
   //STOREDPROCEDURES
   FRouter.AddRoute('/storedprocedures/demo',         CreateDataModulStoredProcedures, TDataModulStoredProcedures(nil).Demo);
   FRouter.AddRoute('/storedprocedures/sp_zahlungen', CreateDataModulStoredProcedures, TDataModulStoredProcedures(nil).SP_Zahlungen);
+
+  //FAHRTENPLANUNG
+  FRouter.AddRoute('/fahrtenplanung/gett_z_planung',         CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_Planung);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_planungfiltered', CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_PlanungFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_planungbyid',     CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_PlanungById);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_planungkey',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_PlanungKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_z_planung',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Z_Planung);
+  FRouter.AddRoute('/fahrtenplanung/updatet_z_planung',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Z_Planung);
+  FRouter.AddRoute('/fahrtenplanung/deletet_z_planung',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Z_Planung);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_reise',           CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_Reise);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_reisefiltered',   CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_ReiseFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_reisebyid',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_ReiseById);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_reisekey',        CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_ReiseKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_z_reise',        CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Z_Reise);
+  FRouter.AddRoute('/fahrtenplanung/updatet_z_reise',        CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Z_Reise);
+  FRouter.AddRoute('/fahrtenplanung/deletet_z_reise',        CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Z_Reise);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_fahrzeug',         CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_Fahrzeug);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_fahrzeugfiltered', CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_FahrzeugFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_fahrzeugbyid',     CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_FahrzeugById);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_fahrzeugkey',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_FahrzeugKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_z_fahrzeug',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Z_Fahrzeug);
+  FRouter.AddRoute('/fahrtenplanung/updatet_z_fahrzeug',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Z_Fahrzeug);
+  FRouter.AddRoute('/fahrtenplanung/deletet_z_fahrzeug',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Z_Fahrzeug);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_weg',              CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_Weg);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_wegfiltered',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_WegFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_wegbyid',          CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_WegById);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_wegkey',           CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_WegKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_z_weg',           CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Z_Weg);
+  FRouter.AddRoute('/fahrtenplanung/updatet_z_weg',           CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Z_Weg);
+  FRouter.AddRoute('/fahrtenplanung/deletet_z_weg',           CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Z_Weg);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_einteilung',         CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_Einteilung);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_einteilungfiltered', CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_EinteilungFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_einteilungbyid',     CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_EinteilungById);
+  FRouter.AddRoute('/fahrtenplanung/gett_z_einteilungkey',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_EinteilungKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_z_einteilung',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Z_Einteilung);
+  FRouter.AddRoute('/fahrtenplanung/updatet_z_einteilung',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Z_Einteilung);
+  FRouter.AddRoute('/fahrtenplanung/deletet_z_einteilung',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Z_Einteilung);
+  FRouter.AddRoute('/fahrtenplanung/gett_knoten',               CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Knoten);
+  FRouter.AddRoute('/fahrtenplanung/gett_knotenfiltered',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_KnotenFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_knotenbyid',           CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_KnotenById);
+  FRouter.AddRoute('/fahrtenplanung/gett_knotenkey',            CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_KnotenKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_knoten',            CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Knoten);
+  FRouter.AddRoute('/fahrtenplanung/updatet_knoten',            CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Knoten);
+  FRouter.AddRoute('/fahrtenplanung/deletet_knoten',            CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Knoten);
+  FRouter.AddRoute('/fahrtenplanung/gett_knotenhalt',           CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Knotenhalt);
+  FRouter.AddRoute('/fahrtenplanung/gett_knotenhaltfiltered',   CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_KnotenhaltFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_knotenhaltbyid',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_KnotenhaltById);
+  FRouter.AddRoute('/fahrtenplanung/gett_knotenhaltkey',        CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_KnotenhaltKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_knotenhalt',        CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Knotenhalt);
+  FRouter.AddRoute('/fahrtenplanung/updatet_knotenhalt',        CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Knotenhalt);
+  FRouter.AddRoute('/fahrtenplanung/deletet_knotenhalt',        CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Knotenhalt);
+  FRouter.AddRoute('/fahrtenplanung/gett_zustiege',             CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Zustiege);
+  FRouter.AddRoute('/fahrtenplanung/gett_zustiegefiltered',     CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_ZustiegeFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_zustiegebyid',         CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_ZustiegeById);
+  FRouter.AddRoute('/fahrtenplanung/gett_zustiegekey',          CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_ZustiegeKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_zustiege',          CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Zustiege);
+  FRouter.AddRoute('/fahrtenplanung/updatet_zustiege',          CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Zustiege);
+  FRouter.AddRoute('/fahrtenplanung/deletet_zustiege',          CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Zustiege);
+  FRouter.AddRoute('/fahrtenplanung/gett_haltestelle',          CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Haltestelle);
+  FRouter.AddRoute('/fahrtenplanung/gett_haltestellefiltered',  CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_HaltestelleFiltered);
+  FRouter.AddRoute('/fahrtenplanung/gett_haltestellebyid',      CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_HaltestelleById);
+  FRouter.AddRoute('/fahrtenplanung/gett_haltestellekey',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_HaltestelleKey);
+  FRouter.AddRoute('/fahrtenplanung/insertt_haltestelle',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Haltestelle);
+  FRouter.AddRoute('/fahrtenplanung/updatet_haltestelle',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Haltestelle);
+  FRouter.AddRoute('/fahrtenplanung/deletet_haltestelle',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Haltestelle);
 
 end;
 

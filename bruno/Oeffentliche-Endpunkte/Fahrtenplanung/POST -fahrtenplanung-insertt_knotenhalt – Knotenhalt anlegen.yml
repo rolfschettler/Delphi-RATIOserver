@@ -1,0 +1,51 @@
+info:
+  name: POST /fahrtenplanung/insertt_knotenhalt – Knotenhalt anlegen
+  type: http
+  seq: 47
+
+http:
+  method: POST
+  url: "{{baseURL}}/fahrtenplanung/insertt_knotenhalt"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "knoten": 1,
+        "halt": 2,
+        "datum": "2026-11-03",
+        "zeit": "07:30",
+        "zuschlag": 0,
+        "internet": "J",
+        "sortierung": 1,
+        "inhouse": "N",
+        "maximumpers": 50,
+        "exportierbar": "J"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Legt einen neuen Datensatz in der Tabelle T_KNOTENHALT an (generisches `DoInsert`).
+
+  **Tabelle:** T_KNOTENHALT
+
+  **Erlaubte Felder (ALLOWED):** nr, knoten, halt, datum, zeit, zuschlag, internet, sortierung, inhouse, maximumpers, exportierbar – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+
+  **Hinweis:** `nr` ist Primärschlüssel und NOT NULL – vorher über `/fahrtenplanung/gett_knotenhaltkey` den nächsten Wert holen und im Body mitsenden. Feldlängen (CHAR): zeit 5, internet 4, inhouse 4, exportierbar 4. Die Beispielwerte im Body sind Platzhalter.
+
+  **Body:** `{ "nr": <wert>, "knoten": <wert>, "halt": <wert>, "datum": "...", "zeit": "hh:mm", ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`
