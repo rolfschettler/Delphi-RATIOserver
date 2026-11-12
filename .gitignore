@@ -30,3 +30,4 @@ cgi-config/config.ini
 .idea/
 *.rsm
 harr*.bat
+backup.bat

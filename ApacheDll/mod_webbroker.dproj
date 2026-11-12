@@ -230,6 +230,10 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>DataModulFragebogen</Form>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
+        <DCCReference Include="..\Shared\DataModuls\DataModulFahrtenplanungClass.pas">
+            <Form>DataModulFahrtenplanung</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
         <DCCReference Include="..\Shared\uBCrypt.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

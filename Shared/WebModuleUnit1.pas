@@ -99,11 +99,8 @@ DataModulDokumenteClass,
 DataModulFibuClass,
 DataModulRegistrierungClass,
 DataModulStoredProceduresClass,
-<<<<<<< HEAD
-DataModulFragebogenClass;
-=======
+DataModulFragebogenClass,
 DataModulFahrtenplanungClass;
->>>>>>> origin/feature/harry
 
 
 {$R *.dfm}
@@ -878,7 +875,6 @@ begin
   FRouter.AddRoute('/storedprocedures/demo',         CreateDataModulStoredProcedures, TDataModulStoredProcedures(nil).Demo);
   FRouter.AddRoute('/storedprocedures/sp_zahlungen', CreateDataModulStoredProcedures, TDataModulStoredProcedures(nil).SP_Zahlungen);
 
-<<<<<<< HEAD
   //FRAGEBOGEN
   FRouter.AddRoute('/fragebogen/demo', CreateDataModulFragebogen, TDataModulFragebogen(nil).Demo);
 
@@ -893,7 +889,7 @@ begin
   FRouter.AddRoute('/fragebogen/insertproperty',         CreateDataModulFragebogen, TDataModulFragebogen(nil).insertProperty);
   FRouter.AddRoute('/fragebogen/updateproperty',         CreateDataModulFragebogen, TDataModulFragebogen(nil).updateProperty);
   FRouter.AddRoute('/fragebogen/deleteproperty',         CreateDataModulFragebogen, TDataModulFragebogen(nil).deleteProperty);
-=======
+
   //FAHRTENPLANUNG
   FRouter.AddRoute('/fahrtenplanung/gett_z_planung',         CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_Planung);
   FRouter.AddRoute('/fahrtenplanung/gett_z_planungfiltered', CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).getT_Z_PlanungFiltered);
@@ -958,7 +954,6 @@ begin
   FRouter.AddRoute('/fahrtenplanung/insertt_haltestelle',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).insertT_Haltestelle);
   FRouter.AddRoute('/fahrtenplanung/updatet_haltestelle',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).updateT_Haltestelle);
   FRouter.AddRoute('/fahrtenplanung/deletet_haltestelle',       CreateDataModulFahrtenplanung, TDataModulFahrtenplanung(nil).deleteT_Haltestelle);
->>>>>>> origin/feature/harry
 
 end;
 
