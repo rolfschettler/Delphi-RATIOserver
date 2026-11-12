@@ -202,10 +202,52 @@ const
     'steuermarge2','fahrer2','beguenstigt','zusatz1','zusatz2',
     'km_stand_zustieg_1_kunde','km_stand_ausstieg_l_kunde'
   );
-  CONDITIONS: array[0..0] of string = (
-    'kennzeichen = :kennzeichen'
+  // Alle Tabellenspalten sind optional filterbar.
+  CONDITIONS: array[0..34] of string = (
+    'kennzeichen = :kennzeichen',
+    'nr = :nr',
+    'kz = :kz',
+    'von = :von',
+    'bis = :bis',
+    'strecke = :strecke',
+    'auftragsgeber = :auftragsgeber',
+    'kminland = :kminland',
+    'kmausland = :kmausland',
+    'kmleer = :kmleer',
+    'kmanfang = :kmanfang',
+    'kmende = :kmende',
+    'kmgesamt = :kmgesamt',
+    'personen = :personen',
+    'fahrer = :fahrer',
+    'umsatz = :umsatz',
+    'rvlin = :rvlin',
+    'rvlaus = :rvlaus',
+    'eleistung = :eleistung',
+    'text = :text',
+    'steuerfahr = :steuerfahr',
+    'steuermarge = :steuermarge',
+    'freiemarge = :freiemarge',
+    'freieumsatz = :freieumsatz',
+    'ratiobusfahrtnr = :ratiobusfahrtnr',
+    'steuer = :steuer',
+    'sonstigervl = :sonstigervl',
+    'sonstrvlpz = :sonstrvlpz',
+    'steuermarge2 = :steuermarge2',
+    'fahrer2 = :fahrer2',
+    'beguenstigt = :beguenstigt',
+    'zusatz1 = :zusatz1',
+    'zusatz2 = :zusatz2',
+    'km_stand_zustieg_1_kunde = :km_stand_zustieg_1_kunde',
+    'km_stand_ausstieg_l_kunde = :km_stand_ausstieg_l_kunde'
   );
-  FILTER_PARAMS: array[0..0] of string = ('kennzeichen');
+  FILTER_PARAMS: array[0..34] of string = (
+    'kennzeichen','nr','kz','von','bis','strecke',
+    'auftragsgeber','kminland','kmausland','kmleer','kmanfang','kmende',
+    'kmgesamt','personen','fahrer','umsatz','rvlin','rvlaus',
+    'eleistung','text','steuerfahr','steuermarge','freiemarge','freieumsatz',
+    'ratiobusfahrtnr','steuer','sonstigervl','sonstrvlpz','steuermarge2','fahrer2',
+    'beguenstigt','zusatz1','zusatz2','km_stand_zustieg_1_kunde','km_stand_ausstieg_l_kunde'
+  );
 begin
   DoSelectFilteredDynamic('FAHRTENBUCH', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
@@ -302,7 +344,8 @@ const
     'zyklischertermin','wiedervorlage','notizen'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
-  CONDITIONS: array[0..13] of string = (
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder beschreibung, notizen.
+  CONDITIONS: array[0..24] of string = (
     'nr = :nr',
     'kennzeichen = :kennzeichen',
     'bezeichnung = :bezeichnung',
@@ -312,16 +355,29 @@ const
     'datum = :datum',
     'meldungam = :meldungam',
     'meldungvon = :meldungvon',
-    'beschreibung = :beschreibung',
     'dringlichkeit = :dringlichkeit',
     'zyklischertermin = :zyklischertermin',
     'wiedervorlage = :wiedervorlage',
-    'notizen = :notizen'
+    'beteiligtes_fahrzeug_verursacher = :beteiligtes_fahrzeug_verursacher',
+    'linie_umlauf = :linie_umlauf',
+    'unfallnummer_polizei = :unfallnummer_polizei',
+    'unfallort = :unfallort',
+    'verunglueckte_person_verhalten = :verunglueckte_person_verhalten',
+    'zusatzfeld1 = :zusatzfeld1',
+    'zusatzfeld2 = :zusatzfeld2',
+    'zusatzfeld3 = :zusatzfeld3',
+    'zusatzfeld4 = :zusatzfeld4',
+    'zusatzfeld5 = :zusatzfeld5',
+    'zusatzfeld6 = :zusatzfeld6',
+    'zusatzfeld7 = :zusatzfeld7',
+    'zusatzfeld8 = :zusatzfeld8'
   );
-  FILTER_PARAMS: array[0..13] of string = (
+  FILTER_PARAMS: array[0..24] of string = (
     'nr','kennzeichen','bezeichnung','vorgangsart','unfall','erledigt',
-    'datum','meldungam','meldungvon','beschreibung','dringlichkeit',
-    'zyklischertermin','wiedervorlage','notizen'
+    'datum','meldungam','meldungvon','dringlichkeit','zyklischertermin',
+    'wiedervorlage','beteiligtes_fahrzeug_verursacher','linie_umlauf','unfallnummer_polizei','unfallort',
+    'verunglueckte_person_verhalten','zusatzfeld1','zusatzfeld2','zusatzfeld3','zusatzfeld4','zusatzfeld5',
+    'zusatzfeld6','zusatzfeld7','zusatzfeld8'
   );
 begin
   DoSelectFilteredDynamic('REPVORGANG', ALLOWED, CONDITIONS, FILTER_PARAMS);

@@ -116,7 +116,8 @@ const
     'datumfeld1','datumfeld2','zusatzfeld1','zusatzfeld2','anmietnr',
     'senderemail','empfaengeremail','dateiname','mandant'
   );
-  CONDITIONS: array[0..10] of string = (
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder haupttext; Passwort-Felder pwd.
+  CONDITIONS: array[0..31] of string = (
     'art = :art',
     'name = :name',
     'bereich = :bereich',
@@ -127,10 +128,36 @@ const
     'reftable = :reftable',
     'refnr = :refnr',
     'mandant = :mandant',
-    'text2 = :text2'
+    'text2 = :text2',
+    'nr = :nr',
+    'standard = :standard',
+    'text1 = :text1',
+    'drucker = :drucker',
+    'druckerwahl = :druckerwahl',
+    'folgeformular = :folgeformular',
+    'datum = :datum',
+    'angepasst = :angepasst',
+    'geaendertam = :geaendertam',
+    'bearbeiter = :bearbeiter',
+    'dms_key = :dms_key',
+    'wiedervorlage = :wiedervorlage',
+    'gueltigbis = :gueltigbis',
+    'datumfeld1 = :datumfeld1',
+    'datumfeld2 = :datumfeld2',
+    'zusatzfeld1 = :zusatzfeld1',
+    'zusatzfeld2 = :zusatzfeld2',
+    'anmietnr = :anmietnr',
+    'senderemail = :senderemail',
+    'empfaengeremail = :empfaengeremail',
+    'dateiname = :dateiname'
   );
-  FILTER_PARAMS: array[0..10] of string = (
-    'art','name','bereich','doktyp','dokkategorie','archiv','versteckt','reftable','refnr','mandant','text2'
+  FILTER_PARAMS: array[0..31] of string = (
+    'art','name','bereich','doktyp','dokkategorie','archiv',
+    'versteckt','reftable','refnr','mandant','text2','nr',
+    'standard','text1','drucker','druckerwahl','folgeformular','datum',
+    'angepasst','geaendertam','bearbeiter','dms_key','wiedervorlage','gueltigbis',
+    'datumfeld1','datumfeld2','zusatzfeld1','zusatzfeld2','anmietnr','senderemail',
+    'empfaengeremail','dateiname'
   );
 begin
   DoSelectFilteredDynamic('VORLAGEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -299,7 +326,8 @@ const
     'nutzungsrecht_bis','urheber','erfasst_am','versteckt','bildformat',
     'textformat','bereich'
   );
-  CONDITIONS: array[0..7] of string = (
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder bild, text.
+  CONDITIONS: array[0..19] of string = (
     'reftable = :reftable',
     'refnr = :refnr',
     'kategorie = :kategorie',
@@ -307,10 +335,25 @@ const
     'internet = :internet',
     'app = :app',
     'versteckt = :versteckt',
-    'bereich = :bereich'
+    'bereich = :bereich',
+    'nr = :nr',
+    'bildindex = :bildindex',
+    'bildmodifed = :bildmodifed',
+    'textmodified = :textmodified',
+    'lastlock = :lastlock',
+    'copr = :copr',
+    'externe_id = :externe_id',
+    'nutzungsrecht_bis = :nutzungsrecht_bis',
+    'urheber = :urheber',
+    'erfasst_am = :erfasst_am',
+    'bildformat = :bildformat',
+    'textformat = :textformat'
   );
-  FILTER_PARAMS: array[0..7] of string = (
-    'reftable','refnr','kategorie','sprache','internet','app','versteckt','bereich'
+  FILTER_PARAMS: array[0..19] of string = (
+    'reftable','refnr','kategorie','sprache','internet','app',
+    'versteckt','bereich','nr','bildindex','bildmodifed','textmodified',
+    'lastlock','copr','externe_id','nutzungsrecht_bis','urheber','erfasst_am',
+    'bildformat','textformat'
   );
 begin
   DoSelectFilteredDynamic('T_BILDTEXT', ALLOWED, CONDITIONS, FILTER_PARAMS);

@@ -195,7 +195,8 @@ const
     'kmgesamt','zusatzfeld1','zusatzfeld2','kommentar'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
-  CONDITIONS: array[0..27] of string = (
+  // Alle Tabellenspalten sind optional filterbar.
+  CONDITIONS: array[0..31] of string = (
     'nr = :nr',
     'monteurzeichen = :monteurzeichen',
     'lohnart = :lohnart',
@@ -223,14 +224,19 @@ const
     'kmgesamt = :kmgesamt',
     'zusatzfeld1 = :zusatzfeld1',
     'zusatzfeld2 = :zusatzfeld2',
-    'kommentar = :kommentar'
+    'kommentar = :kommentar',
+    'abgerechnet_am = :abgerechnet_am',
+    'cbearbeiter = :cbearbeiter',
+    'geprueft_am = :geprueft_am',
+    'provsatz = :provsatz'
   );
-  FILTER_PARAMS: array[0..27] of string = (
-    'nr','monteurzeichen','lohnart','datum','einheit','satz','gesamtbetrag',
-    'auftragnr','kostenstelle','positionsnr','extauftragnr','extpos',
+  FILTER_PARAMS: array[0..31] of string = (
+    'nr','monteurzeichen','lohnart','datum','einheit','satz',
+    'gesamtbetrag','auftragnr','kostenstelle','positionsnr','extauftragnr','extpos',
     'positiosnr','zuschlag','herkunft','faktor','bezeichnung','fahrzeug',
     'kostenstelle1','kostenstelle2','vonzeit','biszeit','kmanfang','kmende',
-    'kmgesamt','zusatzfeld1','zusatzfeld2','kommentar'
+    'kmgesamt','zusatzfeld1','zusatzfeld2','kommentar','abgerechnet_am','cbearbeiter',
+    'geprueft_am','provsatz'
   );
 begin
   DoSelectFilteredDynamic('BRUTTOLOHN', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -328,6 +334,7 @@ const
     'fibu_archiv_am','nrkreis','entstehung','zahlungsart'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder bemerkung.
   CONDITIONS: array[0..30] of string = (
     'nr = :nr',
     'vorgang = :vorgang',
@@ -339,7 +346,6 @@ const
     'kennziffer = :kennziffer',
     'gutscheinkonto = :gutscheinkonto',
     'kurzbemerkung = :kurzbemerkung',
-    'bemerkung = :bemerkung',
     'betrag = :betrag',
     'gueltig_bis = :gueltig_bis',
     'erledigt = :erledigt',
@@ -359,15 +365,16 @@ const
     'fibu_archiv_am = :fibu_archiv_am',
     'nrkreis = :nrkreis',
     'entstehung = :entstehung',
-    'zahlungsart = :zahlungsart'
+    'zahlungsart = :zahlungsart',
+    'mandant = :mandant'
   );
   FILTER_PARAMS: array[0..30] of string = (
     'nr','vorgang','bearbeiter','geaendert_am','geaendert_von','erfasst',
-    'faellig','kennziffer','gutscheinkonto','kurzbemerkung','bemerkung',
-    'betrag','gueltig_bis','erledigt','storniert','storniert_am',
-    'stornogrund','fuerkunde','zusatzfeld1','zusatzfeld2','zusatzfeld3',
-    'fibukto','kulanz','kostelle1','kostelle2','code','motivnr',
-    'fibu_archiv_am','nrkreis','entstehung','zahlungsart'
+    'faellig','kennziffer','gutscheinkonto','kurzbemerkung','betrag',
+    'gueltig_bis','erledigt','storniert','storniert_am','stornogrund','fuerkunde',
+    'zusatzfeld1','zusatzfeld2','zusatzfeld3','fibukto','kulanz','kostelle1',
+    'kostelle2','code','motivnr','fibu_archiv_am','nrkreis','entstehung',
+    'zahlungsart','mandant'
   );
 begin
   DoSelectFilteredDynamic('GUTSCHEIN', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -656,7 +663,8 @@ const
     'anmietnr','anmiet_uebertragung','fibu_uebertragung'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
-  CONDITIONS: array[0..21] of string = (
+  // Das Blob-Feld bemerkung ist nicht filterbar.
+  CONDITIONS: array[0..20] of string = (
     'nr = :nr',
     'belegnr = :belegnr',
     'bdatum = :bdatum',
@@ -674,16 +682,15 @@ const
     'art = :art',
     'leistung = :leistung',
     'zusatzfeld1 = :zusatzfeld1',
-    'bemerkung = :bemerkung',
     'wechselkurs = :wechselkurs',
     'anmietnr = :anmietnr',
     'anmiet_uebertragung = :anmiet_uebertragung',
     'fibu_uebertragung = :fibu_uebertragung'
   );
-  FILTER_PARAMS: array[0..21] of string = (
+  FILTER_PARAMS: array[0..20] of string = (
     'nr','belegnr','bdatum','expedient','waehrung','betrag','referenznr',
     'bereich','kostelle1','kostelle2','gesperrt','konto','gegenkonto',
-    'belegart','art','leistung','zusatzfeld1','bemerkung','wechselkurs',
+    'belegart','art','leistung','zusatzfeld1','wechselkurs',
     'anmietnr','anmiet_uebertragung','fibu_uebertragung'
   );
 begin

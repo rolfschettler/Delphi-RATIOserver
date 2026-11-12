@@ -245,10 +245,104 @@ const
     'sprache','aktion','bank','externe_nummer','rechnungsart','stornotermin',
     'vk_waehrung','mandant'
   );
-  CONDITIONS: array[0..3] of string = (
-    'agenturnr = :agenturnr','ansprechpartner = :ansprechpartner','buchender = :buchender','vorgangsnr = :vorgangsnr'
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder bemerkung, unterschrift.
+  CONDITIONS: array[0..78] of string = (
+    'agenturnr = :agenturnr',
+    'ansprechpartner = :ansprechpartner',
+    'buchender = :buchender',
+    'vorgangsnr = :vorgangsnr',
+    'nr = :nr',
+    'erstellt = :erstellt',
+    'geaendert = :geaendert',
+    'personen = :personen',
+    'datum_von = :datum_von',
+    'datum_bis = :datum_bis',
+    'endpreis = :endpreis',
+    'status = :status',
+    'agenturcode = :agenturcode',
+    'katalogreisenr = :katalogreisenr',
+    'reisebezeichnung = :reisebezeichnung',
+    'optionsdatum = :optionsdatum',
+    'expedient = :expedient',
+    'fibukontokunde = :fibukontokunde',
+    'fibukontoagentur = :fibukontoagentur',
+    'sachkontoreise = :sachkontoreise',
+    'buchungsdatum = :buchungsdatum',
+    'faelligam = :faelligam',
+    'veranstalter = :veranstalter',
+    'sammelrechnung = :sammelrechnung',
+    'nrkreis = :nrkreis',
+    'rechnungsnr = :rechnungsnr',
+    'stand = :stand',
+    'direktinkasso = :direktinkasso',
+    'anzahlung = :anzahlung',
+    'anzfaelligam = :anzfaelligam',
+    'erstelltvon = :erstelltvon',
+    'geaendertvon = :geaendertvon',
+    'entstehung = :entstehung',
+    'bereich = :bereich',
+    'zusatzinfo = :zusatzinfo',
+    'reisegruppe = :reisegruppe',
+    'zahlungsart = :zahlungsart',
+    'ausreise = :ausreise',
+    'kontaktentstehung = :kontaktentstehung',
+    'reiseart = :reiseart',
+    'ziel = :ziel',
+    'filiale = :filiale',
+    'zugeordnetzu = :zugeordnetzu',
+    'abteilung = :abteilung',
+    'hauptkategorie = :hauptkategorie',
+    'vgedruckt = :vgedruckt',
+    'bgedruckt = :bgedruckt',
+    'auftrag_erteilt_am = :auftrag_erteilt_am',
+    'auftrag_erteilt_von = :auftrag_erteilt_von',
+    'stornogrund = :stornogrund',
+    'lastmaxstatus = :lastmaxstatus',
+    'sammelrechnungnr = :sammelrechnungnr',
+    'originalreisedatum = :originalreisedatum',
+    'terminnr = :terminnr',
+    'terminnr_rueck = :terminnr_rueck',
+    'knotenhin = :knotenhin',
+    'knotenrueck = :knotenrueck',
+    'statusinfo = :statusinfo',
+    'vorgangsstatus = :vorgangsstatus',
+    'vertretung = :vertretung',
+    'lastgeaendert = :lastgeaendert',
+    'fibu_archiv_am = :fibu_archiv_am',
+    'stornodatum = :stornodatum',
+    'aufteilung = :aufteilung',
+    'abrechnungsart = :abrechnungsart',
+    'hotelkategorie = :hotelkategorie',
+    'versandart = :versandart',
+    'untertitel = :untertitel',
+    'app = :app',
+    'festbuchung_am = :festbuchung_am',
+    'schnittstelle_sendtime = :schnittstelle_sendtime',
+    'sprache = :sprache',
+    'aktion = :aktion',
+    'bank = :bank',
+    'externe_nummer = :externe_nummer',
+    'rechnungsart = :rechnungsart',
+    'stornotermin = :stornotermin',
+    'vk_waehrung = :vk_waehrung',
+    'mandant = :mandant'
   );
-  FILTER_PARAMS: array[0..3] of string = ('agenturnr','ansprechpartner','buchender','vorgangsnr');
+  FILTER_PARAMS: array[0..78] of string = (
+    'agenturnr','ansprechpartner','buchender','vorgangsnr','nr','erstellt',
+    'geaendert','personen','datum_von','datum_bis','endpreis','status',
+    'agenturcode','katalogreisenr','reisebezeichnung','optionsdatum','expedient','fibukontokunde',
+    'fibukontoagentur','sachkontoreise','buchungsdatum','faelligam','veranstalter','sammelrechnung',
+    'nrkreis','rechnungsnr','stand','direktinkasso','anzahlung','anzfaelligam',
+    'erstelltvon','geaendertvon','entstehung','bereich','zusatzinfo','reisegruppe',
+    'zahlungsart','ausreise','kontaktentstehung','reiseart','ziel','filiale',
+    'zugeordnetzu','abteilung','hauptkategorie','vgedruckt','bgedruckt','auftrag_erteilt_am',
+    'auftrag_erteilt_von','stornogrund','lastmaxstatus','sammelrechnungnr','originalreisedatum','terminnr',
+    'terminnr_rueck','knotenhin','knotenrueck','statusinfo','vorgangsstatus','vertretung',
+    'lastgeaendert','fibu_archiv_am','stornodatum','aufteilung','abrechnungsart','hotelkategorie',
+    'versandart','untertitel','app','festbuchung_am','schnittstelle_sendtime','sprache',
+    'aktion','bank','externe_nummer','rechnungsart','stornotermin','vk_waehrung',
+    'mandant'
+  );
 begin
   DoSelectFilteredDynamic('T_VORGANG', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
@@ -369,10 +463,31 @@ const
     'erledigt','angelegt_am','geaendert_am','erstelltvon','geaendertvon',
     'zusatzinfo','fahrtenplan','reftable','refnr'
   );
-  CONDITIONS: array[0..0] of string = (
-    'einsatznr = :einsatznr'
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder fahrzeugprofil, fahrerprofil, zusatzinfo, fahrtenplan.
+  CONDITIONS: array[0..16] of string = (
+    'einsatznr = :einsatznr',
+    'nr = :nr',
+    'fahrtnr = :fahrtnr',
+    'fahrtabrechnungsnr = :fahrtabrechnungsnr',
+    'fahrtenbuchnr = :fahrtenbuchnr',
+    'auftragsart = :auftragsart',
+    'personenzahl = :personenzahl',
+    'status = :status',
+    'filiale = :filiale',
+    'gedruckt = :gedruckt',
+    'erledigt = :erledigt',
+    'angelegt_am = :angelegt_am',
+    'geaendert_am = :geaendert_am',
+    'erstelltvon = :erstelltvon',
+    'geaendertvon = :geaendertvon',
+    'reftable = :reftable',
+    'refnr = :refnr'
   );
-  FILTER_PARAMS: array[0..0] of string = ('einsatznr');
+  FILTER_PARAMS: array[0..16] of string = (
+    'einsatznr','nr','fahrtnr','fahrtabrechnungsnr','fahrtenbuchnr','auftragsart',
+    'personenzahl','status','filiale','gedruckt','erledigt','angelegt_am',
+    'geaendert_am','erstelltvon','geaendertvon','reftable','refnr'
+  );
 begin
   DoSelectFilteredDynamic('F_FAHRTAUFTRAG', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
@@ -604,7 +719,8 @@ const
     'mindestnaechte','bezeichnung'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
-  CONDITIONS: array[0..11] of string = (
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder bemerkung.
+  CONDITIONS: array[0..99] of string = (
     'nr = :nr',
     'masterpos = :masterpos',
     'vorgangnr = :vorgangnr',
@@ -616,12 +732,114 @@ const
     'packagenr = :packagenr',
     'katalogreisenr = :katalogreisenr',
     'status = :status',
-    'leistungsstatus = :leistungsstatus'
+    'leistungsstatus = :leistungsstatus',
+    'erstellt = :erstellt',
+    'geaendert = :geaendert',
+    'menge = :menge',
+    'personen = :personen',
+    'leistungscode = :leistungscode',
+    'kontingentcode = :kontingentcode',
+    'kostelle1 = :kostelle1',
+    'kostelle2 = :kostelle2',
+    'datum_von = :datum_von',
+    'datum_bis = :datum_bis',
+    'provklasse = :provklasse',
+    'prov = :prov',
+    'prov_betrag = :prov_betrag',
+    'provust = :provust',
+    'ustpflichtig = :ustpflichtig',
+    'sachkonto = :sachkonto',
+    'maxcapacity = :maxcapacity',
+    'mincapacity = :mincapacity',
+    'capacity = :capacity',
+    'rabatterlaubt = :rabatterlaubt',
+    'stornierbar = :stornierbar',
+    'typ = :typ',
+    'zahlbarsofort = :zahlbarsofort',
+    'geraet = :geraet',
+    'leistungsgeber = :leistungsgeber',
+    'belegt_nr = :belegt_nr',
+    'einzelpreis = :einzelpreis',
+    'gesamtpreis = :gesamtpreis',
+    'endpreis = :endpreis',
+    'optionstage = :optionstage',
+    'regel_mitltyp = :regel_mitltyp',
+    'direktinkasso = :direktinkasso',
+    'ltbezeichnung = :ltbezeichnung',
+    'reisebezeichnung = :reisebezeichnung',
+    'alter_von = :alter_von',
+    'alter_bis = :alter_bis',
+    'erm = :erm',
+    'ermdatum = :ermdatum',
+    'provisionskonto = :provisionskonto',
+    'stornostaffel = :stornostaffel',
+    'sachkontostorno = :sachkontostorno',
+    'zeitvon = :zeitvon',
+    'zeitbis = :zeitbis',
+    'params = :params',
+    'preisschema = :preisschema',
+    'leistungsgruppe = :leistungsgruppe',
+    'inklusiv = :inklusiv',
+    'preisoption = :preisoption',
+    'marge = :marge',
+    'ltraegerkennziffer = :ltraegerkennziffer',
+    'personenpreis = :personenpreis',
+    'preisberechnet = :preisberechnet',
+    'kurs = :kurs',
+    'sortierung = :sortierung',
+    'rundungsoption = :rundungsoption',
+    'ek_tats = :ek_tats',
+    'ek_kalk = :ek_kalk',
+    'freiplatz_lt = :freiplatz_lt',
+    'freiplatz_kunde = :freiplatz_kunde',
+    'termin = :termin',
+    'referenz1 = :referenz1',
+    'referenz2 = :referenz2',
+    'waehrung = :waehrung',
+    'ek_kalk1 = :ek_kalk1',
+    'ek_kalk2 = :ek_kalk2',
+    'ek_kalk3 = :ek_kalk3',
+    'ek_kalk4 = :ek_kalk4',
+    'bezeichnung2 = :bezeichnung2',
+    'optionsdatum = :optionsdatum',
+    'rabatt = :rabatt',
+    'externenr1 = :externenr1',
+    'externenr2 = :externenr2',
+    'buchungsdatum = :buchungsdatum',
+    'stornodatum = :stornodatum',
+    'referenz3 = :referenz3',
+    'referenz4 = :referenz4',
+    'gruppe = :gruppe',
+    'internet = :internet',
+    'onlinebuchung = :onlinebuchung',
+    'app = :app',
+    'vk_preis_fremdwaehrung = :vk_preis_fremdwaehrung',
+    'kurs_vk_fremdwaehrung = :kurs_vk_fremdwaehrung',
+    'waehrung_ek = :waehrung_ek',
+    'lcode = :lcode',
+    'menge_alt = :menge_alt',
+    'auskatalogreise = :auskatalogreise',
+    'mindestnaechte = :mindestnaechte',
+    'bezeichnung = :bezeichnung'
   );
-  FILTER_PARAMS: array[0..11] of string = (
-    'nr', 'masterpos', 'vorgangnr', 'postyp', 'agenturnr', 'leistungnr',
-    'ltraeger', 'teilnehmernr', 'packagenr', 'katalogreisenr', 'status',
-    'leistungsstatus'
+  FILTER_PARAMS: array[0..99] of string = (
+    'nr','masterpos','vorgangnr','postyp','agenturnr','leistungnr',
+    'ltraeger','teilnehmernr','packagenr','katalogreisenr','status','leistungsstatus',
+    'erstellt','geaendert','menge','personen','leistungscode','kontingentcode',
+    'kostelle1','kostelle2','datum_von','datum_bis','provklasse','prov',
+    'prov_betrag','provust','ustpflichtig','sachkonto','maxcapacity','mincapacity',
+    'capacity','rabatterlaubt','stornierbar','typ','zahlbarsofort','geraet',
+    'leistungsgeber','belegt_nr','einzelpreis','gesamtpreis','endpreis','optionstage',
+    'regel_mitltyp','direktinkasso','ltbezeichnung','reisebezeichnung','alter_von','alter_bis',
+    'erm','ermdatum','provisionskonto','stornostaffel','sachkontostorno','zeitvon',
+    'zeitbis','params','preisschema','leistungsgruppe','inklusiv','preisoption',
+    'marge','ltraegerkennziffer','personenpreis','preisberechnet','kurs','sortierung',
+    'rundungsoption','ek_tats','ek_kalk','freiplatz_lt','freiplatz_kunde','termin',
+    'referenz1','referenz2','waehrung','ek_kalk1','ek_kalk2','ek_kalk3',
+    'ek_kalk4','bezeichnung2','optionsdatum','rabatt','externenr1','externenr2',
+    'buchungsdatum','stornodatum','referenz3','referenz4','gruppe','internet',
+    'onlinebuchung','app','vk_preis_fremdwaehrung','kurs_vk_fremdwaehrung','waehrung_ek','lcode',
+    'menge_alt','auskatalogreise','mindestnaechte','bezeichnung'
   );
 begin
   DoSelectFilteredDynamic('T_POSITIONEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -676,16 +894,26 @@ const
     'datum1','datum2','datum3','datum4','wtag'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
-  CONDITIONS: array[0..5] of string = (
+  // Alle Tabellenspalten sind optional filterbar.
+  CONDITIONS: array[0..12] of string = (
     'nr = :nr',
     'reftable = :reftable',
     'refnr = :refnr',
     'art = :art',
     'bezeichnung = :bezeichnung',
-    'wtag = :wtag'
+    'wtag = :wtag',
+    'gueltigvon = :gueltigvon',
+    'gueltigbis = :gueltigbis',
+    'daten = :daten',
+    'datum1 = :datum1',
+    'datum2 = :datum2',
+    'datum3 = :datum3',
+    'datum4 = :datum4'
   );
-  FILTER_PARAMS: array[0..5] of string = (
-    'nr', 'reftable', 'refnr', 'art', 'bezeichnung', 'wtag'
+  FILTER_PARAMS: array[0..12] of string = (
+    'nr','reftable','refnr','art','bezeichnung','wtag',
+    'gueltigvon','gueltigbis','daten','datum1','datum2','datum3',
+    'datum4'
   );
 begin
   DoSelectFilteredDynamic('T_TICKETDATEN', ALLOWED, CONDITIONS, FILTER_PARAMS);

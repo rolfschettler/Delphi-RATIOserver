@@ -173,10 +173,78 @@ const
     'telefon1','telefon2','telefon3','xkoord','ykoord',
     'heimatort','pass_name1','pass_name2','zusatzdaten'
   );
-  CONDITIONS: array[0..0] of string = (
-    'vorgangnr = :vorgangnr'
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder zusatzdaten.
+  CONDITIONS: array[0..56] of string = (
+    'vorgangnr = :vorgangnr',
+    'nr = :nr',
+    'anrede = :anrede',
+    'name = :name',
+    'kennziffer = :kennziffer',
+    'geburtstag = :geburtstag',
+    'jahre = :jahre',
+    'shuttle = :shuttle',
+    'info1 = :info1',
+    'info2 = :info2',
+    'ref1 = :ref1',
+    'ref2 = :ref2',
+    'gruppe = :gruppe',
+    'sitzfest = :sitzfest',
+    'hininfo = :hininfo',
+    'rueckinfo = :rueckinfo',
+    'ausstiegrueck = :ausstiegrueck',
+    'profil = :profil',
+    'status = :status',
+    'reservierungsnr = :reservierungsnr',
+    'kabinengruppe = :kabinengruppe',
+    'infofaehre = :infofaehre',
+    'zustieghin = :zustieghin',
+    'ausstieghin = :ausstieghin',
+    'zustiegrueck = :zustiegrueck',
+    'ausstieg_rueck = :ausstieg_rueck',
+    'sitzhin = :sitzhin',
+    'sitzrueck = :sitzrueck',
+    'leistungen = :leistungen',
+    'passnummer = :passnummer',
+    'ausgestellt_in = :ausgestellt_in',
+    'ausgestellt_am = :ausgestellt_am',
+    'gueltig_bis = :gueltig_bis',
+    'passinfo = :passinfo',
+    'passid = :passid',
+    'nation = :nation',
+    'geburtsort = :geburtsort',
+    'name1 = :name1',
+    'name2 = :name2',
+    'name3 = :name3',
+    'namenszusatz = :namenszusatz',
+    'titel = :titel',
+    'email = :email',
+    'land = :land',
+    'ort = :ort',
+    'ortsteil = :ortsteil',
+    'plz = :plz',
+    'region = :region',
+    'strasse = :strasse',
+    'telefon1 = :telefon1',
+    'telefon2 = :telefon2',
+    'telefon3 = :telefon3',
+    'xkoord = :xkoord',
+    'ykoord = :ykoord',
+    'heimatort = :heimatort',
+    'pass_name1 = :pass_name1',
+    'pass_name2 = :pass_name2'
   );
-  FILTER_PARAMS: array[0..0] of string = ('vorgangnr');
+  FILTER_PARAMS: array[0..56] of string = (
+    'vorgangnr','nr','anrede','name','kennziffer','geburtstag',
+    'jahre','shuttle','info1','info2','ref1','ref2',
+    'gruppe','sitzfest','hininfo','rueckinfo','ausstiegrueck','profil',
+    'status','reservierungsnr','kabinengruppe','infofaehre','zustieghin','ausstieghin',
+    'zustiegrueck','ausstieg_rueck','sitzhin','sitzrueck','leistungen','passnummer',
+    'ausgestellt_in','ausgestellt_am','gueltig_bis','passinfo','passid','nation',
+    'geburtsort','name1','name2','name3','namenszusatz','titel',
+    'email','land','ort','ortsteil','plz','region',
+    'strasse','telefon1','telefon2','telefon3','xkoord','ykoord',
+    'heimatort','pass_name1','pass_name2'
+  );
 begin
   DoSelectFilteredDynamic('T_TEILNEHMER', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
