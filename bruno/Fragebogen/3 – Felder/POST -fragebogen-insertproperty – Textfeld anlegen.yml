@@ -1,0 +1,65 @@
+info:
+  name: POST /fragebogen/insertproperty – Textfeld anlegen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/insertproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "kartei_id": {{kartei_id}},
+        "label": "Bemerkung",
+        "proptyp": "txt",
+        "options": "wird ignoriert",
+        "bereich": "Allgemein",
+        "sortierung": 10
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("status OK", () => expect(rumpf && rumpf.status).to.equal("OK"));
+        test("id geliefert", () => expect(rumpf && rumpf.id).to.be.a("number").and.above(0));
+
+        if (rumpf && rumpf.id) {
+            bru.setVar("prop_txt_id", rumpf.id);
+            console.log("prop_txt_id = " + rumpf.id);
+        } else {
+            console.warn(JSON.stringify(res.getBody()));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  **Body:** {"kartei_id": 3, "label": "...", "proptyp": "SEL", "options": "a,b,c" | null, "bereich": "..." | null, "sortierung": 10}
+  - kartei_id: Pflicht, Kartei muss existieren (sonst 404)
+  - label: Pflicht, max. 255 Zeichen
+  - bereich: optional, max. 60 Zeichen; leer -> NULL
+  - sortierung: optional, ganze Zahl (Standard 0)
+  proptyp: TXT, NUM, DAT, CHK, RDO, SEL, MUL (Groß-/Kleinschreibung egal).
+  RDO/SEL/MUL brauchen "options" (kommagetrennt); bei allen anderen Typen werden
+  options ignoriert und als NULL gespeichert.
+
+  SYSTEM wird immer 0 gesetzt. Die ID kommt aus FORM_PAT_PROPERTY_ID_GEN.
+
+  Hier: TXT mit options -> options werden als NULL gespeichert (in Ordner 3/7 geprüft).
+
+  **Antwort:** 200 {"status":"OK","id":<neue ID>} – wird als prop_txt_id gespeichert.

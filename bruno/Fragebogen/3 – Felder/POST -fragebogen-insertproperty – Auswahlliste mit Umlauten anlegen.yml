@@ -1,0 +1,56 @@
+info:
+  name: POST /fragebogen/insertproperty – Auswahlliste mit Umlauten anlegen
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/insertproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "kartei_id": {{kartei_id}},
+        "label": "Lieblingsfarbe",
+        "proptyp": "SEL",
+        "options": "rot,grün,blau,weiß",
+        "bereich": "",
+        "sortierung": 20
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("status OK", () => expect(rumpf && rumpf.status).to.equal("OK"));
+        test("id geliefert", () => expect(rumpf && rumpf.id).to.be.a("number").and.above(0));
+
+        if (rumpf && rumpf.id) {
+            bru.setVar("prop_sel_id", rumpf.id);
+            console.log("prop_sel_id = " + rumpf.id);
+        } else {
+            console.warn(JSON.stringify(res.getBody()));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  Auswahlliste (SEL) mit Umlauten in den Optionen. OPTIONS ist ein Text-BLOB und
+  wird per AsWideMemo geschrieben; ob die Umlaute korrekt ankommen, prüft 3/7.
+  Leerer bereich -> NULL.
+
+  **Antwort:** 200 {"status":"OK","id":<neue ID>} – wird als prop_sel_id gespeichert.

@@ -1,0 +1,41 @@
+info:
+  name: POST /fragebogen/updateproperty – leere Beschriftung abgelehnt
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/updateproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{prop_txt_id}},
+        "label": ""
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 400", () => expect(res.getStatus()).to.equal(400));
+        test("status ERROR", () => expect(rumpf && rumpf.status).to.equal("ERROR"));
+        test("Meldung enthält \"Pflichtfeld\"", () => expect(rumpf && rumpf.message).to.include("Pflichtfeld"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  label mitgeschickt, aber leer -> 400 "Beschriftung ist ein Pflichtfeld.".

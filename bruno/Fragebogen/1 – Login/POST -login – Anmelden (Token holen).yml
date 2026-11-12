@@ -1,0 +1,51 @@
+info:
+  name: POST /login – Anmelden (Token holen)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/login"
+  body:
+    type: json
+    data: |-
+      {
+        "user": "SUPERVISOR",
+        "password": "{{process.env.PW_SUPERVISOR}}"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        // Defensiv: eine abgelehnte Anmeldung ist 401 ohne Token.
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("Token geliefert", () => expect(rumpf && rumpf.token).to.be.a("string").and.not.empty);
+
+        if (rumpf && rumpf.token) {
+            bru.setVar("jwttoken", rumpf.token);
+            console.log("Token gespeichert.");
+        } else {
+            console.warn("Kein Token in der Antwort: " + JSON.stringify(res.getBody()));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** nicht erforderlich (stellt das Token erst aus); {{jwttoken}} wird trotzdem mitgeschickt.
+
+  Meldet login_user an (Passwort aus .env: PW_LOGIN) und legt den Token per
+  bru.setVar in {{jwttoken}} ab (Laufzeit-Variable, landet nicht in opencollection.yml).
+
+  **Antwort:** 200 {"token":"<JWT>"}, bei falschen Daten 401.

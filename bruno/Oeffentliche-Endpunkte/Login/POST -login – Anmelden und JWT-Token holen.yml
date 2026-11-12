@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "user": "Peter Birner",
+        "user": "SUPERVISOR",
         "password": "{{process.env.PW_SUPERVISOR}}"
       }
   auth: inherit

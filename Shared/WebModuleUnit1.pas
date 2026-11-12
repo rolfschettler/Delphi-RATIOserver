@@ -98,7 +98,8 @@ DataModulPublicClass,
 DataModulDokumenteClass,
 DataModulFibuClass,
 DataModulRegistrierungClass,
-DataModulStoredProceduresClass;
+DataModulStoredProceduresClass,
+DataModulFragebogenClass;
 
 
 {$R *.dfm}
@@ -567,6 +568,13 @@ begin
   // durch, weil ValidatePublicToken beides vergleicht.
   FRouter.AddRoute('/public/setpasswort',        CreateDataModulPublic, TDataModulPublic(nil).setPasswortByToken,false,false);     //Auth=false,LocalOnly=false
 
+  // Fragebogen per Einladungs-Token ausfüllen. PURPOSE='formular',
+  // REFERENCE_TYPE='FORM_KARTEI_HISTORY' - eine Adress- oder Passwort-
+  // Einladung kommt hier nicht durch.
+  FRouter.AddRoute('/public/getformular',            CreateDataModulPublic, TDataModulPublic(nil).getFormularByToken,false,false);          //Auth=false,LocalOnly=false
+  FRouter.AddRoute('/public/saveformular',           CreateDataModulPublic, TDataModulPublic(nil).saveFormularByToken,false,false);         //Auth=false,LocalOnly=false
+  FRouter.AddRoute('/public/formular/abschliessen',  CreateDataModulPublic, TDataModulPublic(nil).formularAbschliessenByToken,false,false); //Auth=false,LocalOnly=false
+
 
   //TOURISTIK
   FRouter.AddRoute('/touristik/demo',             CreateDataModulTouristik, TDataModulTouristik(nil).Demo);
@@ -858,6 +866,21 @@ begin
   //STOREDPROCEDURES
   FRouter.AddRoute('/storedprocedures/demo',         CreateDataModulStoredProcedures, TDataModulStoredProcedures(nil).Demo);
   FRouter.AddRoute('/storedprocedures/sp_zahlungen', CreateDataModulStoredProcedures, TDataModulStoredProcedures(nil).SP_Zahlungen);
+
+  //FRAGEBOGEN
+  FRouter.AddRoute('/fragebogen/demo', CreateDataModulFragebogen, TDataModulFragebogen(nil).Demo);
+
+  // Kartei-Konfiguration (FORM_KARTEI, FORM_PAT_PROPERTY) für die interne
+  // Angular-Anwendung. Auth=true, LocalOnly=false (Standard).
+  FRouter.AddRoute('/fragebogen/getkartei',              CreateDataModulFragebogen, TDataModulFragebogen(nil).getKartei);
+  FRouter.AddRoute('/fragebogen/insertkartei',           CreateDataModulFragebogen, TDataModulFragebogen(nil).insertKartei);
+  FRouter.AddRoute('/fragebogen/updatekartei',           CreateDataModulFragebogen, TDataModulFragebogen(nil).updateKartei);
+  FRouter.AddRoute('/fragebogen/deletekartei',           CreateDataModulFragebogen, TDataModulFragebogen(nil).deleteKartei);
+  FRouter.AddRoute('/fragebogen/copykartei',             CreateDataModulFragebogen, TDataModulFragebogen(nil).copyKartei);
+  FRouter.AddRoute('/fragebogen/getpropertiesforkartei', CreateDataModulFragebogen, TDataModulFragebogen(nil).getPropertiesForKartei);
+  FRouter.AddRoute('/fragebogen/insertproperty',         CreateDataModulFragebogen, TDataModulFragebogen(nil).insertProperty);
+  FRouter.AddRoute('/fragebogen/updateproperty',         CreateDataModulFragebogen, TDataModulFragebogen(nil).updateProperty);
+  FRouter.AddRoute('/fragebogen/deleteproperty',         CreateDataModulFragebogen, TDataModulFragebogen(nil).deleteProperty);
 
 end;
 

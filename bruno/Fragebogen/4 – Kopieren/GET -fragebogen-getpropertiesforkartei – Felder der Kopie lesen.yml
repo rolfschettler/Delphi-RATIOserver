@@ -1,0 +1,49 @@
+info:
+  name: GET /fragebogen/getpropertiesforkartei – Felder der Kopie lesen
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/fragebogen/getpropertiesforkartei"
+  body:
+    type: json
+    data: |-
+      {
+        "kartei_id": {{kopie_id}}
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        const zeilen = (rumpf && Array.isArray(rumpf.data)) ? rumpf.data : [];
+        const wert = (z, k) => z ? (z[k] ?? z[k.toUpperCase()]) : undefined;
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("2 Felder kopiert", () => expect(zeilen.length).to.equal(2));
+        test("Felder gehören zur Kopie", () =>
+            zeilen.forEach(z => expect(Number(wert(z, "kartei_id"))).to.equal(Number(bru.getVar("kopie_id")))));
+        test("neue Feld-IDs", () =>
+            zeilen.forEach(z => expect(Number(wert(z, "id"))).to.not.be.oneOf([Number(bru.getVar("prop_txt_id")), Number(bru.getVar("prop_sel_id"))])));
+        test("Umlaute mitkopiert", () =>
+            expect(zeilen.map(z => wert(z, "options"))).to.include("rot,grün,blau,weiß"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  Felder der Kopie: gleiche Anzahl und Inhalte, neue IDs (Trigger
+  TI_FORM_PAT_PROPERTY), kartei_id = kopie_id.

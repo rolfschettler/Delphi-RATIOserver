@@ -1,0 +1,14 @@
+info:
+  name: 3 – Felder
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Felder (FORM_PAT_PROPERTY) der Kartei kartei_id anlegen, ändern, lesen.
+    Setzt prop_txt_id und prop_sel_id. Prüft die Validierung (Pflichtfelder,
+    Feldtypen, Optionen nötig) und die Speicherung von Umlauten im OPTIONS-Memo.
+  type: text/markdown

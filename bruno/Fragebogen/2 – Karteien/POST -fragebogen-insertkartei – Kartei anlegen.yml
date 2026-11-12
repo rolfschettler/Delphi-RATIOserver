@@ -1,0 +1,58 @@
+info:
+  name: POST /fragebogen/insertkartei – Kartei anlegen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/insertkartei"
+  body:
+    type: json
+    data: |-
+      {
+        "karteiname": "{{karteiname}}",
+        "beschreibung": "Angelegt von der Bruno-Collection Fragebogen"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        bru.setVar("karteiname", "BRUNO-TEST " + Date.now());
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("status OK", () => expect(rumpf && rumpf.status).to.equal("OK"));
+        test("id geliefert", () => expect(rumpf && rumpf.id).to.be.a("number").and.above(0));
+
+        if (rumpf && rumpf.id) {
+            bru.setVar("kartei_id", rumpf.id);
+            console.log("kartei_id = " + rumpf.id);
+        } else {
+            console.warn(JSON.stringify(res.getBody()));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  **Body:** {"karteiname": "...", "beschreibung": "..." | null}
+  - karteiname: Pflicht, max. 80 Zeichen
+  - beschreibung: optional, max. 255 Zeichen; leer -> NULL
+
+  Die ID kommt vorab aus dem Generator FORM_KARTEI_ID_GEN.
+
+  **Antwort:** 200 {"status":"OK","id":<neue ID>} – wird als kartei_id gespeichert.
+  **Fehler:** 400 bei fehlendem/zu langem Namen oder zu langer Beschreibung.

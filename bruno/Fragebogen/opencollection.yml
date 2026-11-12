@@ -1,0 +1,62 @@
+opencollection: 1.0.0
+
+info:
+  name: RATIOserver – Fragebogen
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: baseURL
+      value: http://localhost/ibapi
+    - name: jwttoken
+      value: ""
+    - name: login_user
+      value: SUPERVISOR
+    - name: phpURL
+      value: http://localhost/php
+
+docs:
+  content: |-
+    Endpunkte des Controllers DataModulFragebogenClass (/fragebogen/...):
+    Pflege der Karteien (FORM_KARTEI) und ihrer Felder (FORM_PAT_PROPERTY).
+    Alle Routen: Auth=true, LocalOnly=false, Rollenprüfung gegen REGISTRIERUNG.ROLLEN.
+
+    Als ABLAUF gedacht: Ordner 1 bis 5 der Reihe nach ausführen (Runner).
+    Die IDs der angelegten Datensätze werden als Laufzeit-Variablen
+    (bru.setVar) weitergereicht: kartei_id, kopie_id, prop_txt_id, prop_sel_id.
+    Ordner 5 löscht alles wieder, was der Lauf angelegt hat.
+
+    VARIABLEN (Collection):
+      baseURL     z.B. http://localhost/ibapi
+      jwttoken    Bearer-Token, wird vom Login gesetzt (Laufzeit-Variable, bleibt hier leer)
+      login_user  Benutzer mit Zugriff auf /fragebogen/* (oder Supervisor)
+
+    PASSWORT steht NICHT in dieser Datei, sondern in .env (neben
+    opencollection.yml, per .gitignore ausgeschlossen, Vorlage .env.example):
+      PW_LOGIN    Passwort von login_user
+
+    FEHLERFORMAT der Handler: HTTP 400/403/404 mit
+      {"status":"ERROR","message":"..."}
+
+    NICHT abgedeckt:
+      - Systemfelder (SYSTEM=1 -> 403 "Systemfeld - geschützt.") lassen sich
+        über die API nicht anlegen; zum Testen ein vorhandenes Systemfeld
+        manuell in updateproperty/deleteproperty eintragen.
+      - /fragebogen/demo (Vorlagen-Endpunkt aus dem Template).
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

@@ -1,0 +1,2 @@
+inherited DataModulFragebogen: TDataModulFragebogen
+end

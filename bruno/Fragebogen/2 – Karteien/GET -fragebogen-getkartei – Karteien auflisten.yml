@@ -1,0 +1,54 @@
+info:
+  name: GET /fragebogen/getkartei – Karteien auflisten
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{baseURL}}/fragebogen/getkartei"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "karteiname"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        const zeilen = (rumpf && Array.isArray(rumpf.data)) ? rumpf.data : [];
+        const meine = zeilen.find(z => Number(z.id ?? z.ID) === Number(bru.getVar("kartei_id")));
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("data ist ein Array", () => expect(rumpf && rumpf.data).to.be.an("array"));
+        test("angelegte Kartei enthalten", () => expect(meine).to.be.an("object"));
+        test("Beschreibung geändert", () =>
+            expect(meine && (meine.beschreibung ?? meine.BESCHREIBUNG)).to.equal("Geändert von der Bruno-Collection (äöüß)"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  Generisches DoSelect auf FORM_KARTEI. Das Backend erwartet auch bei GET einen JSON-Body.
+
+  **Body (optional):** {"fields": "*" | ["id","karteiname","beschreibung"], "orderby": "karteiname", "limit": 10, "offset": 0}
+  Erlaubte Felder: id, karteiname, beschreibung.
+
+  **Antwort:** ohne limit {"header":{...},"data":[...]};
+  mit limit > 0 {"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}.
+
+  Der Test prüft auch, dass die Umlaute aus updatekartei unverändert zurückkommen.

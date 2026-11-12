@@ -1,0 +1,41 @@
+info:
+  name: POST /fragebogen/updateproperty – unbekannte id 404
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/updateproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "id": 2147483647,
+        "sortierung": 1
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 404", () => expect(res.getStatus()).to.equal(404));
+        test("status ERROR", () => expect(rumpf && rumpf.status).to.equal("ERROR"));
+        test("Meldung enthält \"nicht gefunden\"", () => expect(rumpf && rumpf.message).to.include("nicht gefunden"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  Nicht vorhandenes Feld -> 404 "Feld nicht gefunden.".

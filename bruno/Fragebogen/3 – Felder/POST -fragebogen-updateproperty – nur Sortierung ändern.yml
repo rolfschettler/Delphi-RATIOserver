@@ -1,0 +1,49 @@
+info:
+  name: POST /fragebogen/updateproperty – nur Sortierung ändern
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/updateproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{prop_txt_id}},
+        "sortierung": 99
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("status OK", () => expect(rumpf && rumpf.status).to.equal("OK"));
+        if (res.getStatus() !== 200)
+            console.warn(JSON.stringify(res.getBody()));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  **Body:** {"id": 7, <beliebige Teilmenge von label, proptyp, options, bereich, sortierung>}
+  Nur die mitgeschickten Spalten werden geschrieben (Schnellbearbeitung).
+  Leerer bereich bzw. leere options -> NULL. Fehlende Werte werden für die
+  Prüfung aus dem Datensatz ergänzt (z.B. "Optionen nötig" bei Wechsel auf SEL).
+  system und kartei_id sind nicht änderbar.
+
+  **Antwort:** 200 {"status":"OK"}
+  **Fehler:** 400 Validierung / "Keine gültigen Felder übergeben.", 403 Systemfeld, 404 "Feld nicht gefunden.".

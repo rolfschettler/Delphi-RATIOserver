@@ -1,0 +1,22 @@
+info:
+  name: Einladung Fragebogen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{phpURL}}/einladung/formular"
+  body:
+    type: json
+    data: |
+      { "kartei_id": 7, "kennziffer": 10004 }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

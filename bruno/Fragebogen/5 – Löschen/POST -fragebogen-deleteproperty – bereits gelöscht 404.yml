@@ -1,0 +1,40 @@
+info:
+  name: POST /fragebogen/deleteproperty – bereits gelöscht 404
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/deleteproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{prop_txt_id}}
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 404", () => expect(res.getStatus()).to.equal(404));
+        test("status ERROR", () => expect(rumpf && rumpf.status).to.equal("ERROR"));
+        test("Meldung enthält \"nicht gefunden\"", () => expect(rumpf && rumpf.message).to.include("nicht gefunden"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  Dasselbe Feld noch einmal -> 404 "Feld nicht gefunden.".

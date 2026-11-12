@@ -1,0 +1,47 @@
+info:
+  name: POST /fragebogen/updatekartei – Beschreibung ändern
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/updatekartei"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{kartei_id}},
+        "beschreibung": "Geändert von der Bruno-Collection (äöüß)"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("status OK", () => expect(rumpf && rumpf.status).to.equal("OK"));
+        if (res.getStatus() !== 200)
+            console.warn(JSON.stringify(res.getBody()));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  **Body:** {"id": <kartei_id>, "karteiname": "...", "beschreibung": "..." | null}
+  Nur mitgeschickte Spalten werden geschrieben (generisches DoUpdate über
+  karteiname/beschreibung). Name, falls mitgeschickt: Pflicht, max. 80 Zeichen.
+
+  **Antwort:** 200 {"status":"OK"}
+  **Fehler:** 400 bei ungültiger id/Name, 404 "Kartei nicht gefunden.".

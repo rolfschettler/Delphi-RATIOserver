@@ -1,0 +1,13 @@
+info:
+  name: 2 – Karteien
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Kartei anlegen, ändern, auflisten. Setzt kartei_id.
+    Der Name enthält einen Zeitstempel, damit parallele/wiederholte Läufe sich nicht stören.
+  type: text/markdown

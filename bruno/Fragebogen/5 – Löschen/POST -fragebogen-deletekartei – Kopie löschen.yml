@@ -1,0 +1,45 @@
+info:
+  name: POST /fragebogen/deletekartei – Kopie löschen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/deletekartei"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{kopie_id}}
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("status OK", () => expect(rumpf && rumpf.status).to.equal("OK"));
+        if (res.getStatus() !== 200)
+            console.warn(JSON.stringify(res.getBody()));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  **Body:** {"id": 3} – Pflicht (generisches DoDelete auf FORM_KARTEI).
+  Felder (FORM_PAT_PROPERTY), ausgestellte Formulare (FORM_KARTEI_HISTORY) und
+  deren Werte (FORM_KARTEI_CONTENT) löscht die Datenbank per ON DELETE CASCADE mit.
+
+  **Antwort:** 200 {"status":"OK"} – auch wenn die id nicht existiert (DoDelete prüft das nicht).

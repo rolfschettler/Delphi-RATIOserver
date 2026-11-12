@@ -1,0 +1,41 @@
+info:
+  name: POST /fragebogen/insertkartei – leerer Name abgelehnt
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/insertkartei"
+  body:
+    type: json
+    data: |-
+      {
+        "karteiname": "   ",
+        "beschreibung": "darf nicht angelegt werden"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 400", () => expect(res.getStatus()).to.equal(400));
+        test("status ERROR", () => expect(rumpf && rumpf.status).to.equal("ERROR"));
+        test("Meldung enthält \"Pflichtfeld\"", () => expect(rumpf && rumpf.message).to.include("Pflichtfeld"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  Name nur aus Leerzeichen -> wird getrimmt -> 400 "Name ist ein Pflichtfeld.".

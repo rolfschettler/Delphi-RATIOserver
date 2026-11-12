@@ -1,0 +1,43 @@
+info:
+  name: POST /fragebogen/insertproperty – Auswahlliste ohne Optionen abgelehnt
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/insertproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "kartei_id": {{kartei_id}},
+        "label": "Ohne Optionen",
+        "proptyp": "MUL",
+        "options": " "
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 400", () => expect(res.getStatus()).to.equal(400));
+        test("status ERROR", () => expect(rumpf && rumpf.status).to.equal("ERROR"));
+        test("Meldung enthält \"Option\"", () => expect(rumpf && rumpf.message).to.include("Option"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  MUL ohne Optionen -> 400 "Für diese Art des Feldes ist mindestens eine Option nötig.".

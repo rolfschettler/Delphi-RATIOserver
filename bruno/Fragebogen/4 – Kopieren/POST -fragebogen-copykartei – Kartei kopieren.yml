@@ -1,0 +1,53 @@
+info:
+  name: POST /fragebogen/copykartei – Kartei kopieren
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/copykartei"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{kartei_id}}
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("status OK", () => expect(rumpf && rumpf.status).to.equal("OK"));
+        test("id geliefert", () => expect(rumpf && rumpf.id).to.be.a("number").and.above(0));
+
+        if (rumpf && rumpf.id) {
+            bru.setVar("kopie_id", rumpf.id);
+            console.log("kopie_id = " + rumpf.id);
+        } else {
+            console.warn(JSON.stringify(res.getBody()));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  **Body:** {"id": 3}
+
+  Kopiert Kartei und alle Felder in EINER Transaktion. Name bekommt den Zusatz
+  " (Kopie)" (auf 80 Zeichen gekürzt). Ausgefüllte Formulare werden nicht kopiert.
+
+  **Antwort:** 200 {"status":"OK","id":<ID der Kopie>} – wird als kopie_id gespeichert.
+  **Fehler:** 400 ungültige id, 404 "Kartei nicht gefunden.".

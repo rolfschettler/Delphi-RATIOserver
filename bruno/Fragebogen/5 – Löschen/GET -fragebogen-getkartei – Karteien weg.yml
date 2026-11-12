@@ -1,0 +1,42 @@
+info:
+  name: GET /fragebogen/getkartei – Karteien weg
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseURL}}/fragebogen/getkartei"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": ["id"]
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let rumpf = null;
+        try { rumpf = res.getBody(); if (typeof rumpf === "string") rumpf = JSON.parse(rumpf); } catch (e) {}
+
+        const ids = ((rumpf && Array.isArray(rumpf.data)) ? rumpf.data : []).map(z => Number(z.id ?? z.ID));
+
+        test("HTTP 200", () => expect(res.getStatus()).to.equal(200));
+        test("Kartei gelöscht", () => expect(ids).to.not.include(Number(bru.getVar("kartei_id"))));
+        test("Kopie gelöscht", () => expect(ids).to.not.include(Number(bru.getVar("kopie_id"))));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Auth:** erforderlich (Bearer {{jwttoken}}); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (sonst 403). **LocalOnly:** nein.
+
+  Beide Karteien des Laufs tauchen nicht mehr auf.

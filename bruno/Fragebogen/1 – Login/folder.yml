@@ -1,0 +1,12 @@
+info:
+  name: 1 – Login
+  type: folder
+  seq: 1
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Anmelden als login_user und Token in {{jwttoken}} ablegen.
+  type: text/markdown

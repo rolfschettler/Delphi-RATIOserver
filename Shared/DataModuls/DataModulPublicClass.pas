@@ -82,6 +82,13 @@ type
     // Genau EIN Endpunkt: die Seite muss nichts lesen, der Gast gibt sein
     // neues Passwort zweimal ein. REGISTRIERUNG wird nur geschrieben.
     procedure setPasswortByToken;
+
+    // Fragebogen per Einladungs-Token ausfüllen (PURPOSE='formular',
+    // REFERENCE_TYPE='FORM_KARTEI_HISTORY', REFERENCE_ID = die Instanz).
+    // Die Kartei-Definition pflegt DataModulFragebogenClass.
+    procedure getFormularByToken;
+    procedure saveFormularByToken;
+    procedure formularAbschliessenByToken;
   end;
 
 
@@ -650,6 +657,493 @@ begin
     raise;
   end;
   Query.Close;
+end;
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Fragebogen ausfüllen
+//
+//  Eine Einladung ist eine Zeile in FORM_KARTEI_HISTORY (die Instanz: welche
+//  Kartei, für wen, bis wann). Der Token trägt PURPOSE='formular',
+//  REFERENCE_TYPE='FORM_KARTEI_HISTORY' und als REFERENCE_ID die ID dieser
+//  Instanz - angelegt von PHP (EinladungController::formular).
+//
+//  Die Instanz kommt ausschließlich aus dem Token. Welche Felder zu ihr
+//  gehören, bestimmt die Kartei der Instanz; ein Feld einer anderen Kartei
+//  wird abgewiesen, bevor irgendetwas geschrieben wird.
+//
+//  Werte stehen in FORM_KARTEI_CONTENT.CONTENT (VARCHAR 255) als Text:
+//    TXT  Text                      NUM  Zahl mit Punkt als Dezimaltrenner
+//    DAT  YYYY-MM-DD                CHK  '1' / '0'
+//    RDO, SEL  genau eine Option    MUL  Optionen kommagetrennt, in der
+//                                        Reihenfolge der Optionsliste
+//  Optionen sind die kommagetrennten Einträge aus FORM_PAT_PROPERTY.OPTIONS,
+//  jeweils getrimmt, leere Einträge zählen nicht. Ein leerer Wert löscht den
+//  gespeicherten Wert.
+// ═══════════════════════════════════════════════════════════════════════════
+
+type
+  TFormularFeld = record
+    Proptyp: string;
+    Options: string;
+  end;
+
+// Optionsliste eines Feldes: getrimmt, ohne leere Einträge.
+function FormularOptionen(const AOptions: string): TArray<string>;
+var
+  Teil: string;
+begin
+  Result := [];
+  for Teil in AOptions.Split([',']) do
+    if Trim(Teil) <> '' then
+      Result := Result + [Trim(Teil)];
+end;
+
+function FormularIstOption(const AWert: string; const AOptionen: TArray<string>): Boolean;
+var
+  O: string;
+begin
+  Result := False;
+  for O in AOptionen do
+    if O = AWert then
+      Exit(True);
+end;
+
+// Prüft einen Wert gegen den Feldtyp und liefert ihn in der gespeicherten
+// Form zurück. AFehler ist ein Satz für den Gast.
+function FormularWertPruefen(const AFeld: TFormularFeld; const ARoh: string;
+  out ANorm, AFehler: string): Boolean;
+var
+  Wert, Teil, O:  string;
+  Optionen:       TArray<string>;
+  Gewaehlt:       TArray<string>;
+  Zahl:           Double;
+  J, M, T:        Integer;
+  Datum:          TDateTime;
+begin
+  Result  := False;
+  ANorm   := '';
+  AFehler := '';
+  Wert    := Trim(ARoh);
+
+  if Wert = '' then
+    Exit(True);                     // leer = Wert entfernen
+
+  if Length(Wert) > 255 then
+  begin
+    AFehler := 'Die Eingabe ist zu lang (höchstens 255 Zeichen).';
+    Exit;
+  end;
+
+  if AFeld.Proptyp = 'TXT' then
+    ANorm := Wert
+  else if AFeld.Proptyp = 'NUM' then
+  begin
+    Wert := StringReplace(Wert, ',', '.', [rfReplaceAll]);
+    if not TryStrToFloat(Wert, Zahl, TFormatSettings.Invariant) then
+    begin
+      AFehler := 'Bitte eine Zahl eingeben.';
+      Exit;
+    end;
+    ANorm := Wert;
+  end
+  else if AFeld.Proptyp = 'DAT' then
+  begin
+    if (Length(Wert) <> 10) or (Wert[5] <> '-') or (Wert[8] <> '-')
+       or not TryStrToInt(Copy(Wert, 1, 4), J)
+       or not TryStrToInt(Copy(Wert, 6, 2), M)
+       or not TryStrToInt(Copy(Wert, 9, 2), T)
+       or (J < 1) or (M < 1) or (T < 1)
+       or not TryEncodeDate(Word(J), Word(M), Word(T), Datum) then
+    begin
+      AFehler := 'Bitte ein gültiges Datum eingeben.';
+      Exit;
+    end;
+    ANorm := Wert;
+  end
+  else if AFeld.Proptyp = 'CHK' then
+  begin
+    if (Wert <> '1') and (Wert <> '0') then
+    begin
+      AFehler := 'Ungültiger Wert für ein Ankreuzfeld.';
+      Exit;
+    end;
+    ANorm := Wert;
+  end
+  else if (AFeld.Proptyp = 'RDO') or (AFeld.Proptyp = 'SEL') then
+  begin
+    if not FormularIstOption(Wert, FormularOptionen(AFeld.Options)) then
+    begin
+      AFehler := 'Bitte eine der angebotenen Möglichkeiten wählen.';
+      Exit;
+    end;
+    ANorm := Wert;
+  end
+  else if AFeld.Proptyp = 'MUL' then
+  begin
+    Optionen := FormularOptionen(AFeld.Options);
+    Gewaehlt := FormularOptionen(Wert);
+    for Teil in Gewaehlt do
+      if not FormularIstOption(Teil, Optionen) then
+      begin
+        AFehler := 'Bitte nur die angebotenen Möglichkeiten wählen.';
+        Exit;
+      end;
+    // In der Reihenfolge der Optionsliste und ohne Doppelte speichern
+    for O in Optionen do
+      if FormularIstOption(O, Gewaehlt) then
+      begin
+        if ANorm <> '' then
+          ANorm := ANorm + ',';
+        ANorm := ANorm + O;
+      end;
+  end
+  else
+  begin
+    AFehler := 'Unbekannte Art des Feldes.';
+    Exit;
+  end;
+
+  Result := True;
+end;
+
+// Route: /public/getformular  |  Auth: false  |  LocalOnly: false
+// Body:  { "token": "..." }   oder   ?token=...
+// Antwort: { "status": "OK", "data": { "karteiname", "beschreibung",
+//            "expires", "recipient_email",
+//            "empfaenger": { "anrede", "titel", "name1", "name2",
+//                            "strasse", "plz", "ort" } | null,
+//            "felder": [ { "property_id", "label", "proptyp", "options",
+//                          "bereich", "sortierung", "content" }, ... ] } }
+//
+// "empfaenger" gibt es nur, wenn die Instanz an eine Adresse ging
+// (REFTABLE='ADRESSEN'). Für jeden anderen Empfängertyp ist es null und die
+// Seite zeigt keine Empfängerdaten an - bewusst ohne Ermittlung über andere
+// Tabellen (Entscheidung vom 08.11.2026). Tabelle und Spalten stehen fest im
+// Code: REFTABLE wird nur verglichen, nie als Tabellenname verwendet.
+procedure TDataModulPublic.getFormularByToken;
+var
+  HistoryId, TokenId, KarteiId, PropId: Integer;
+  RefNr:                                 Integer;
+  Mail, RefTable:                        string;
+  Data, Feld, Ergebnis, Empfaenger:      TJSONObject;
+  Felder:                                TJSONArray;
+  Gesehen:                               TList<Integer>;
+
+  function TextOderNull(AField: TField): TJSONValue;
+  begin
+    if AField.IsNull then
+      Result := TJSONNull.Create
+    else
+      Result := TJSONString.Create(AField.AsString);
+  end;
+
+  // Getrimmt (CHAR-Spalten sind mit Leerzeichen aufgefüllt), leer = null
+  function GetrimmtOderNull(AField: TField): TJSONValue;
+  begin
+    if AField.IsNull or (Trim(AField.AsString) = '') then
+      Result := TJSONNull.Create
+    else
+      Result := TJSONString.Create(Trim(AField.AsString));
+  end;
+
+begin
+  if not ValidatePublicToken('FORM_KARTEI_HISTORY', 'formular', HistoryId, Mail, TokenId) then
+    Exit;
+
+  Data := TJSONObject.Create;
+  try
+    Query.Close;
+    Query.SQL.Text :=
+      'SELECT h.KARTEI_ID, h.EXPIRES, h.REFTABLE, h.REFNR, k.KARTEINAME, k.BESCHREIBUNG ' +
+      'FROM FORM_KARTEI_HISTORY h JOIN FORM_KARTEI k ON k.ID = h.KARTEI_ID ' +
+      'WHERE h.ID = :id';
+    Query.ParamByName('id').AsInteger := HistoryId;
+    Query.Open;
+    try
+      if Query.IsEmpty then
+      begin
+        SendPublicError('Formular nicht gefunden.', 404);
+        Exit;
+      end;
+      KarteiId := Query.FieldByName('KARTEI_ID').AsInteger;
+      Data.AddPair('karteiname',   Trim(Query.FieldByName('KARTEINAME').AsString));
+      Data.AddPair('beschreibung', TextOderNull(Query.FieldByName('BESCHREIBUNG')));
+      if Query.FieldByName('EXPIRES').IsNull then
+        Data.AddPair('expires', TJSONNull.Create)
+      else
+        Data.AddPair('expires', FormatDateTime('yyyy-mm-dd hh:nn:ss',
+                                               Query.FieldByName('EXPIRES').AsDateTime));
+      Data.AddPair('recipient_email', Mail);
+      RefTable := Trim(Query.FieldByName('REFTABLE').AsString);
+      RefNr    := Query.FieldByName('REFNR').AsInteger;
+    finally
+      Query.Close;
+    end;
+
+    // Empfängerdaten nur für Adressen - siehe Kommentar über der Prozedur
+    Empfaenger := nil;
+    if SameText(RefTable, 'ADRESSEN') and (RefNr > 0) then
+    begin
+      Query.SQL.Text :=
+        'SELECT ANREDE, TITEL, NAME1, NAME2, STRASSE, PLZ, ORT ' +
+        'FROM ADRESSEN WHERE KENNZIFFER = :kz';
+      Query.ParamByName('kz').AsInteger := RefNr;
+      Query.Open;
+      try
+        if not Query.IsEmpty then
+        begin
+          Empfaenger := TJSONObject.Create;
+          Empfaenger.AddPair('anrede',  GetrimmtOderNull(Query.FieldByName('ANREDE')));
+          Empfaenger.AddPair('titel',   GetrimmtOderNull(Query.FieldByName('TITEL')));
+          Empfaenger.AddPair('name1',   GetrimmtOderNull(Query.FieldByName('NAME1')));
+          Empfaenger.AddPair('name2',   GetrimmtOderNull(Query.FieldByName('NAME2')));
+          Empfaenger.AddPair('strasse', GetrimmtOderNull(Query.FieldByName('STRASSE')));
+          Empfaenger.AddPair('plz',     GetrimmtOderNull(Query.FieldByName('PLZ')));
+          Empfaenger.AddPair('ort',     GetrimmtOderNull(Query.FieldByName('ORT')));
+        end;
+      finally
+        Query.Close;
+      end;
+    end;
+    if Assigned(Empfaenger) then
+      Data.AddPair('empfaenger', Empfaenger)   // Ownership geht an Data über
+    else
+      Data.AddPair('empfaenger', TJSONNull.Create);
+
+    Felder  := TJSONArray.Create;
+    Data.AddPair('felder', Felder);   // Ownership geht an Data über
+
+    Query.SQL.Text :=
+      'SELECT p.ID, p.LABEL, p.PROPTYP, p.OPTIONS, p.BEREICH, p.SORTIERUNG, c.CONTENT ' +
+      'FROM FORM_PAT_PROPERTY p ' +
+      'LEFT JOIN FORM_KARTEI_CONTENT c ' +
+      '  ON c.KARTEI_PROPERTY_ID = p.ID AND c.KARTEI_HISTORY_ID = :hid ' +
+      'WHERE p.KARTEI_ID = :kid ' +
+      'ORDER BY p.SORTIERUNG, p.ID';
+    Query.ParamByName('hid').AsInteger := HistoryId;
+    Query.ParamByName('kid').AsInteger := KarteiId;
+    Query.Open;
+    Gesehen := TList<Integer>.Create;
+    try
+      while not Query.Eof do
+      begin
+        PropId := Query.FieldByName('ID').AsInteger;
+        // Ohne UNIQUE-Constraint auf (KARTEI_HISTORY_ID, KARTEI_PROPERTY_ID)
+        // könnte ein Feld doppelt kommen - dann gilt der erste Wert.
+        if not Gesehen.Contains(PropId) then
+        begin
+          Gesehen.Add(PropId);
+          Feld := TJSONObject.Create;
+          Feld.AddPair('property_id', TJSONNumber.Create(PropId));
+          Feld.AddPair('label',       Query.FieldByName('LABEL').AsString);
+          Feld.AddPair('proptyp',     Trim(Query.FieldByName('PROPTYP').AsString));
+          Feld.AddPair('options',     TextOderNull(Query.FieldByName('OPTIONS')));
+          Feld.AddPair('bereich',     TextOderNull(Query.FieldByName('BEREICH')));
+          if Query.FieldByName('SORTIERUNG').IsNull then
+            Feld.AddPair('sortierung', TJSONNull.Create)
+          else
+            Feld.AddPair('sortierung', TJSONNumber.Create(Query.FieldByName('SORTIERUNG').AsInteger));
+          Feld.AddPair('content',     TextOderNull(Query.FieldByName('CONTENT')));
+          Felder.AddElement(Feld);
+        end;
+        Query.Next;
+      end;
+    finally
+      Gesehen.Free;
+      Query.Close;
+    end;
+
+    Ergebnis := TJSONObject.Create;
+    Ergebnis.AddPair('status', 'OK');
+    Ergebnis.AddPair('data',   Data);   // Ownership geht an Ergebnis über
+    Data := nil;
+    SendJson(Ergebnis);
+  finally
+    Data.Free;   // nil nach Übergabe, sonst bei frühem Exit
+  end;
+end;
+
+// Route: /public/saveformular  |  Auth: false  |  LocalOnly: false
+// Body:  { "token": "...", "werte": { "<property_id>": "<wert>", ... } }
+//
+// Es werden nur die mitgeschickten Felder geschrieben, beliebig oft. Erst
+// wird ALLES geprüft, dann alles in einer Transaktion geschrieben - ein
+// einzelner ungültiger Wert verhindert das Speichern ganz, damit der Gast
+// nicht einen halb gespeicherten Stand bekommt.
+procedure TDataModulPublic.saveFormularByToken;
+var
+  HistoryId, TokenId, PropId: Integer;
+  Mail, Norm, Fehler:         string;
+  Body:                       TJSONObject;
+  WerteVal:                   TJSONValue;
+  Pair:                       TJSONPair;
+  Roh:                        string;
+  Definitionen:               TDictionary<Integer, TFormularFeld>;
+  Def:                        TFormularFeld;
+  Geprueft:                   TList<TPair<Integer, string>>;
+  Eintrag:                    TPair<Integer, string>;
+  Obj:                        TJSONObject;
+begin
+  if not ValidatePublicToken('FORM_KARTEI_HISTORY', 'formular', HistoryId, Mail, TokenId) then
+    Exit;
+
+  Body         := ParseJSONObject(Request.Content);
+  Definitionen := TDictionary<Integer, TFormularFeld>.Create;
+  Geprueft     := TList<TPair<Integer, string>>.Create;
+  try
+    WerteVal := nil;
+    if Assigned(Body) then
+      WerteVal := GetValueCaseInsensitive(Body, 'werte');
+    if not (WerteVal is TJSONObject) then
+    begin
+      SendPublicError('Keine Werte übergeben.', 400);
+      Exit;
+    end;
+
+    // Alle Felder der Kartei DIESER Instanz - die Instanz kommt aus dem Token
+    Query.Close;
+    Query.SQL.Text :=
+      'SELECT p.ID, p.PROPTYP, p.OPTIONS ' +
+      'FROM FORM_PAT_PROPERTY p ' +
+      'JOIN FORM_KARTEI_HISTORY h ON h.KARTEI_ID = p.KARTEI_ID ' +
+      'WHERE h.ID = :hid';
+    Query.ParamByName('hid').AsInteger := HistoryId;
+    Query.Open;
+    try
+      while not Query.Eof do
+      begin
+        Def.Proptyp := UpperCase(Trim(Query.FieldByName('PROPTYP').AsString));
+        Def.Options := Query.FieldByName('OPTIONS').AsString;
+        Definitionen.AddOrSetValue(Query.FieldByName('ID').AsInteger, Def);
+        Query.Next;
+      end;
+    finally
+      Query.Close;
+    end;
+
+    // 1) Alles prüfen, nichts schreiben
+    for Pair in TJSONObject(WerteVal) do
+    begin
+      PropId := StrToIntDef(Pair.JsonString.Value, 0);
+      if not Definitionen.TryGetValue(PropId, Def) then
+      begin
+        SendPublicError('Feld gehört nicht zu diesem Formular.', 400);
+        Exit;
+      end;
+
+      if Pair.JsonValue is TJSONNull then
+        Roh := ''
+      else if (Pair.JsonValue is TJSONString) or (Pair.JsonValue is TJSONNumber) then
+        Roh := Pair.JsonValue.Value
+      else
+      begin
+        SendPublicError('Ungültiger Wert übergeben.', 400);
+        Exit;
+      end;
+
+      if not FormularWertPruefen(Def, Roh, Norm, Fehler) then
+      begin
+        SendPublicError(Fehler, 400);
+        Exit;
+      end;
+      Geprueft.Add(TPair<Integer, string>.Create(PropId, Norm));
+    end;
+
+    // 2) Alles in einer Transaktion schreiben
+    Connection.StartTransaction;
+    try
+      for Eintrag in Geprueft do
+      begin
+        Query.Close;
+        if Eintrag.Value = '' then
+        begin
+          Query.SQL.Text :=
+            'DELETE FROM FORM_KARTEI_CONTENT ' +
+            'WHERE KARTEI_HISTORY_ID = :hid AND KARTEI_PROPERTY_ID = :pid';
+          Query.ParamByName('hid').AsInteger := HistoryId;
+          Query.ParamByName('pid').AsInteger := Eintrag.Key;
+          Query.ExecSQL;
+          Continue;
+        end;
+
+        Query.SQL.Text :=
+          'UPDATE FORM_KARTEI_CONTENT SET CONTENT = :content ' +
+          'WHERE KARTEI_HISTORY_ID = :hid AND KARTEI_PROPERTY_ID = :pid';
+        Query.ParamByName('content').AsString := Eintrag.Value;
+        Query.ParamByName('hid').AsInteger    := HistoryId;
+        Query.ParamByName('pid').AsInteger    := Eintrag.Key;
+        Query.ExecSQL;
+
+        if Query.RowsAffected = 0 then
+        begin
+          Query.Close;
+          Query.SQL.Text :=
+            'INSERT INTO FORM_KARTEI_CONTENT ' +
+            '  (KARTEI_HISTORY_ID, KARTEI_PROPERTY_ID, CONTENT) ' +
+            'VALUES (:hid, :pid, :content)';
+          Query.ParamByName('hid').AsInteger    := HistoryId;
+          Query.ParamByName('pid').AsInteger    := Eintrag.Key;
+          Query.ParamByName('content').AsString := Eintrag.Value;
+          Query.ExecSQL;
+        end;
+      end;
+      Connection.Commit;
+    except
+      if Connection.InTransaction then
+        Connection.Rollback;
+      raise;
+    end;
+    Query.Close;
+
+    Obj := TJSONObject.Create;
+    Obj.AddPair('status', 'OK');
+    SendJson(Obj);
+  finally
+    Geprueft.Free;
+    Definitionen.Free;
+    Body.Free;
+  end;
+end;
+
+// Route: /public/formular/abschliessen  |  Auth: false  |  LocalOnly: false
+// Body:  { "token": "..." }
+//
+// "Ich bin fertig": hält in FORM_KARTEI_HISTORY.RECEIVED fest, wann der Gast
+// das Formular zurückgegeben hat, und schließt den Token. Danach ist der Link
+// unbrauchbar. GEPRUEFT setzt später der Innendienst, nicht der Gast.
+procedure TDataModulPublic.formularAbschliessenByToken;
+var
+  HistoryId, TokenId: Integer;
+  Mail:               string;
+  Obj:                TJSONObject;
+begin
+  if not ValidatePublicToken('FORM_KARTEI_HISTORY', 'formular', HistoryId, Mail, TokenId) then
+    Exit;
+
+  Query.Close;
+  Query.SQL.Text :=
+    'UPDATE FORM_KARTEI_HISTORY SET RECEIVED = CURRENT_TIMESTAMP WHERE ID = :id';
+  Query.ParamByName('id').AsInteger := HistoryId;
+
+  Connection.StartTransaction;
+  try
+    Query.ExecSQL;
+    Connection.Commit;
+  except
+    if Connection.InTransaction then
+      Connection.Rollback;
+    raise;
+  end;
+  Query.Close;
+
+  // Getrennte Transaktion wie bei setPasswortByToken: scheitert sie, ist der
+  // Eingang trotzdem vermerkt, und der Link endet spätestens an EXPIRES_AT.
+  CloseToken(TokenId);
+
+  Obj := TJSONObject.Create;
+  Obj.AddPair('status', 'OK');
+  SendJson(Obj);
 end;
 
 end.
