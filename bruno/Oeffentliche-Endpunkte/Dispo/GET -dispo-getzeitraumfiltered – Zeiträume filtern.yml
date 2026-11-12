@@ -11,8 +11,9 @@ http:
     data: |-
       {
         "fields": "*",
-        "art": "U",
-        "orderby": "von"
+            "von": "2020-02-11",
+            "bis": "2023-02-11"    
+
       }
   auth:
     type: bearer

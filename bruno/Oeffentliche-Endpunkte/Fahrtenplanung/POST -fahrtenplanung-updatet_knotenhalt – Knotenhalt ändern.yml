@@ -1,0 +1,43 @@
+info:
+  name: POST /fahrtenplanung/updatet_knotenhalt – Knotenhalt ändern
+  type: http
+  seq: 48
+
+http:
+  method: POST
+  url: "{{baseURL}}/fahrtenplanung/updatet_knotenhalt"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "zeit": "07:35",
+        "sortierung": 2
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen Datensatz in T_KNOTENHALT anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+
+  **Tabelle:** T_KNOTENHALT
+
+  **Erlaubte Felder (ALLOWED):** knoten, halt, datum, zeit, zuschlag, internet, sortierung, inhouse, maximumpers, exportierbar – nur übergebene Felder werden geändert.
+
+  **Key-Feld:** `nr` (Pflicht, wird selbst nicht geändert)
+
+  **Body:** `{ "nr": <wert>, "zeit": "...", "sortierung": <wert>, ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

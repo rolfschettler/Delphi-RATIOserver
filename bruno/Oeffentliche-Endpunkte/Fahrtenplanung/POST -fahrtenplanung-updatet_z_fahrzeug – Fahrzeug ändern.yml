@@ -1,0 +1,43 @@
+info:
+  name: POST /fahrtenplanung/updatet_z_fahrzeug – Fahrzeug ändern
+  type: http
+  seq: 20
+
+http:
+  method: POST
+  url: "{{baseURL}}/fahrtenplanung/updatet_z_fahrzeug"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "status": "GEPLANT",
+        "kennzeichen": "AB-CD 456"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen Datensatz in T_Z_FAHRZEUG anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+
+  **Tabelle:** T_Z_FAHRZEUG
+
+  **Erlaubte Felder (ALLOWED):** zplanungsnr, bezeichnung, typ, kennzeichen, kennziffer, zielhaltnr, kmprofil, zieluhrzeit, refnr, status, zusatzinfo, info, erledigt, farbe, zusatzfeld1, zusatzfeld2 – nur übergebene Felder werden geändert.
+
+  **Key-Feld:** `nr` (Pflicht, wird selbst nicht geändert)
+
+  **Body:** `{ "nr": <wert>, "status": "...", ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

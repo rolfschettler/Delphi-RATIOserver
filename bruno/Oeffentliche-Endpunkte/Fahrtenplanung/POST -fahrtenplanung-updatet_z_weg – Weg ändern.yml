@@ -1,0 +1,43 @@
+info:
+  name: POST /fahrtenplanung/updatet_z_weg – Weg ändern
+  type: http
+  seq: 27
+
+http:
+  method: POST
+  url: "{{baseURL}}/fahrtenplanung/updatet_z_weg"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "wegefolge": 2,
+        "uhrzeit": "07:35"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Ändert einen Datensatz in T_Z_WEG anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+
+  **Tabelle:** T_Z_WEG
+
+  **Erlaubte Felder (ALLOWED):** zubringerfahrzeugnr, haltnr, wegefolge, uhrzeit – nur übergebene Felder werden geändert.
+
+  **Key-Feld:** `nr` (Pflicht, wird selbst nicht geändert)
+
+  **Body:** `{ "nr": <wert>, "wegefolge": <wert>, "uhrzeit": "...", ... }`
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

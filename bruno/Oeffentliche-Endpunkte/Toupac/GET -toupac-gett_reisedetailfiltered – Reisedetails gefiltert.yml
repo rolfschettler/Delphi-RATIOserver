@@ -1,0 +1,46 @@
+info:
+  name: GET /toupac/gett_reisedetailfiltered – Reisedetails gefiltert
+  type: http
+  seq: 70
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_reisedetailfiltered"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "reisenr": 42,
+        "sprache": "DEU",
+        "orderby": "nr"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert Datensaetze aus T_REISEDETAIL, optional gefiltert. Jeder im Body gesetzte (nicht-null) Filter-Parameter erzeugt eine AND-verknuepfte WHERE-Bedingung `feld = :feld`; ohne Filter werden alle Datensaetze geliefert. Ruft intern `DoSelectFilteredDynamic('T_REISEDETAIL', ALLOWED, CONDITIONS, FILTER_PARAMS)` auf.
+
+  **Tabelle:** T_REISEDETAIL
+
+  **Erlaubte Felder (ALLOWED):** nr, reisenr, sprache, bezeichnung
+
+  **Filter (FILTER_PARAMS, alle optional):** nr, reisenr, sprache, bezeichnung
+
+  **Besonderheit:** `sprache` (CHAR 3) und `bezeichnung` (CHAR 60) werden per Gleichheit (`=`) verglichen, kein LIKE.
+
+  **Body:** `{ "fields": [...] | "*", "<filterfeld>": <wert>, ..., "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` -- ein gueltiges JSON-Objekt im Body ist Pflicht (sonst Fehler "Kein gueltiges JSON im Request-Body").
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.

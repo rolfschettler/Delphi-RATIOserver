@@ -1,0 +1,42 @@
+info:
+  name: GET /toupac/gett_reisedetailbyid – Reisedetail per nr
+  type: http
+  seq: 71
+
+http:
+  method: GET
+  url: "{{baseURL}}/toupac/gett_reisedetailbyid"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "fields": "*"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Liefert genau einen Datensatz aus T_REISEDETAIL anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_REISEDETAIL', ALLOWED, 'nr')` auf.
+
+  **Tabelle:** T_REISEDETAIL
+
+  **Erlaubte Felder (ALLOWED):** nr, reisenr, sprache, bezeichnung
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).

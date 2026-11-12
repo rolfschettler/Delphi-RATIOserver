@@ -1,0 +1,42 @@
+info:
+  name: POST /toupac/updatet_reisedetail – Reisedetail aktualisieren
+  type: http
+  seq: 74
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/updatet_reisedetail"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42,
+        "bezeichnung": "Neue Bezeichnung"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Aktualisiert einen bestehenden Datensatz in T_REISEDETAIL anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_REISEDETAIL', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+
+  **Tabelle:** T_REISEDETAIL
+
+  **Erlaubte Felder (ALLOWED):** nr, reisenr, sprache, bezeichnung
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`

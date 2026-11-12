@@ -1,0 +1,39 @@
+info:
+  name: POST /fahrtenplanung/deletet_haltestelle – Haltestelle löschen
+  type: http
+  seq: 63
+
+http:
+  method: POST
+  url: "{{baseURL}}/fahrtenplanung/deletet_haltestelle"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus T_HALTESTELLE anhand des Primärschlüssels `nr` (generisches `DoDelete`).
+
+  **Tabelle:** T_HALTESTELLE
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert> }` – nr ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

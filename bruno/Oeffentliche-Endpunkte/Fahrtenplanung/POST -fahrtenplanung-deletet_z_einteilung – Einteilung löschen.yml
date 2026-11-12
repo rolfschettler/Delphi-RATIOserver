@@ -1,0 +1,39 @@
+info:
+  name: POST /fahrtenplanung/deletet_z_einteilung – Einteilung löschen
+  type: http
+  seq: 35
+
+http:
+  method: POST
+  url: "{{baseURL}}/fahrtenplanung/deletet_z_einteilung"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Löscht einen Datensatz aus T_Z_EINTEILUNG anhand des Primärschlüssels `nr` (generisches `DoDelete`).
+
+  **Tabelle:** T_Z_EINTEILUNG
+
+  **Key-Feld:** `nr`
+
+  **Body:** `{ "nr": <wert> }` – nr ist Pflicht.
+
+  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+
+  **LocalOnly:** nein (auch extern erreichbar)
+
+  **Antwort:** `{"status":"OK"}`

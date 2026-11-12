@@ -34,7 +34,11 @@ uses
   DataModulFibuClass in '..\Shared\DataModuls\DataModulFibuClass.pas' {DataModulFibu: TDataModule},
   DataModulRegistrierungClass in '..\Shared\DataModuls\DataModulRegistrierungClass.pas' {DataModulRegistrierung: TDataModule},
   DataModulStoredProceduresClass in '..\Shared\DataModuls\DataModulStoredProceduresClass.pas' {DataModulStoredProcedures: TDataModule},
+<<<<<<< HEAD
   DataModulFragebogenClass in '..\Shared\DataModuls\DataModulFragebogenClass.pas' {DataModulFragebogen: TDataModule},
+=======
+  DataModulFahrtenplanungClass in '..\Shared\DataModuls\DataModulFahrtenplanungClass.pas' {DataModulFahrtenplanung: TDataModule},
+>>>>>>> origin/feature/harry
   uBCrypt in '..\Shared\uBCrypt.pas';
 
 {$R *.res}

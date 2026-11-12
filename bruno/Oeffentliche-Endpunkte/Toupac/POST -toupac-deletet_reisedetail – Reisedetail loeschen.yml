@@ -1,0 +1,39 @@
+info:
+  name: POST /toupac/deletet_reisedetail – Reisedetail loeschen
+  type: http
+  seq: 75
+
+http:
+  method: POST
+  url: "{{baseURL}}/toupac/deletet_reisedetail"
+  body:
+    type: json
+    data: |-
+      {
+        "nr": 42
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Loescht einen Datensatz aus T_REISEDETAIL anhand des Primaerschluessels `nr`. Ruft intern `DoDelete('T_REISEDETAIL', 'nr')` auf.
+
+  **Tabelle:** T_REISEDETAIL
+
+  **Key-Feld:** `nr` (Pflicht im Body)
+
+  **Body:** `{ "nr": <wert> }`
+
+  **Auth:** erforderlich (Bearer Token)
+
+  **LocalOnly:** nein
+
+  **Antwort:** `{"status":"OK"}`
