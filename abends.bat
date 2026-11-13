@@ -13,6 +13,11 @@ git grep --cached -q -I -E "^(<<<<<<<|>>>>>>>) "
 if not errorlevel 1 goto :fehler_marker
 
 git commit -m "Tagesabschluss %date%"
+
+rem Rolfs Stand holen, falls er feature/harry schon aktualisiert hat - sonst wird der Push abgelehnt.
+git pull --no-edit origin feature/harry
+if errorlevel 1 goto :fehler_pull
+
 git push origin feature/harry
 if errorlevel 1 goto :fehler_push
 
@@ -43,6 +48,15 @@ echo ACHTUNG: In folgenden Dateien stehen Konfliktmarker:
 git grep --cached -l -I -E "^(<<<<<<<|>>>>>>>) "
 echo.
 echo Es wurde NICHTS committet und NICHTS gepusht. Bitte Rolf Bescheid geben.
+pause
+exit /b 1
+
+:fehler_pull
+echo.
+echo ACHTUNG: Commit ist lokal gespeichert, aber das Holen vom Server hat NICHT geklappt.
+echo Siehe Meldung oben. Ein eventuell begonnener Merge wird abgebrochen.
+git merge --abort 2>nul
+echo Es wurde NICHTS gepusht. Bitte Rolf Bescheid geben.
 pause
 exit /b 1
 
