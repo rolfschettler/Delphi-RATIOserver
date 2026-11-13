@@ -263,7 +263,7 @@ const
 
 
   // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder haupttext, kalkulation, notiz2, fahrtenplan, unterschrift.
-  CONDITIONS: array[0..129] of string = (
+  CONDITIONS: array[0..130] of string = (
     'vorgang = :vorgang',
     'nr = :nr',
     'anrede = :anrede',
@@ -393,10 +393,11 @@ const
     'datumfeld4 = :datumfeld4',
     'schnittstelle_sendtime = :schnittstelle_sendtime',
     'geaendert_von = :geaendert_von',
-    'mandant = :mandant'
+    'mandant = :mandant',
+    'logo = :logo'
   );
 
-  FILTER_PARAMS: array[0..129] of string = (
+  FILTER_PARAMS: array[0..130] of string = (
     'vorgang','nr','anrede','name1','name2','name3',
     'land','plz','ort','strasse','telefon','telefax',
     'ziel','erstellt','kunde','preis','status','von',
@@ -418,7 +419,8 @@ const
     'fahrzeugprofil','fahrerprofil','filialnr','lzugriff','lzugriff_von','stornogrund',
     'sammelrechnung','anzahlung','anzfaelligam','zusatzinfo','stand','bereitstellung2',
     'ankunftort2','rueckort2','rueckzustieg2','fibu_archiv_am','bestellnummer','datumfeld3',
-    'datumfeld4','schnittstelle_sendtime','geaendert_von','mandant'
+    'datumfeld4','schnittstelle_sendtime','geaendert_von','mandant',
+    'logo'
   );
 begin
   DoSelectFilteredDynamic('ANMIET', ALLOWED, CONDITIONS, FILTER_PARAMS);

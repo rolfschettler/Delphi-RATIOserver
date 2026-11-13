@@ -28,18 +28,92 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aktualisiert einen bestehenden Datensatz in T_KATALOGREISE anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_KATALOGREISE', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+  **Katalogreise aktualisieren.** Ändert einen vorhandenen Eintrag in `T_KATALOGREISE`. Gefunden wird er über `nr`.
 
-  **Tabelle:** T_KATALOGREISE
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/toupac/updatet_katalogreise` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, reisenr, reisethema, code, katalognr, terminschema, internet, befkategorie, sachkonto, sachkontostorno, sachkontoprov, kostelle1, kostelle2, kostelle1storno, kostelle2storno, kostelle1prov, kostelle2prov, erstelltam, fbrabatt, fbbis, angebot, status, url1, url2, url3, url4, xkoord, ykoord, maximumpers, minimumpers, bemerkung, kategorie, anzahlungsbetrag, anzahlungsart, nrkreis, stornostaffel, zusatzinfo, katalogseite, veranstalter, hauptkategorie, pauschalierungsfaktor, versicherungsart, geaendertam, geaendertvon, erstelltvon, untertitel, mandant
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `reisenr` | Ganzzahl |
+  | `reisethema` | Text (max. 200 Zeichen) |
+  | `code` | Text (max. 20 Zeichen) |
+  | `katalognr` | Ganzzahl |
+  | `terminschema` | Ganzzahl |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `befkategorie` | Text (max. 60 Zeichen) |
+  | `sachkonto` | Text (max. 12 Zeichen) |
+  | `sachkontostorno` | Text (max. 12 Zeichen) |
+  | `sachkontoprov` | Text (max. 12 Zeichen) |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `kostelle2` | Text (max. 12 Zeichen) |
+  | `kostelle1storno` | Text (max. 12 Zeichen) |
+  | `kostelle2storno` | Text (max. 12 Zeichen) |
+  | `kostelle1prov` | Text (max. 12 Zeichen) |
+  | `kostelle2prov` | Text (max. 12 Zeichen) |
+  | `erstelltam` | Datum/Uhrzeit |
+  | `fbrabatt` | Kommazahl |
+  | `fbbis` | Datum/Uhrzeit |
+  | `angebot` | Text (max. 4 Zeichen) |
+  | `status` | Ganzzahl |
+  | `url1` | Text (max. 240 Zeichen) |
+  | `url2` | Text (max. 240 Zeichen) |
+  | `url3` | Text (max. 240 Zeichen) |
+  | `url4` | Text (max. 240 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `maximumpers` | Ganzzahl |
+  | `minimumpers` | Ganzzahl |
+  | `bemerkung` | Langtext/Datei |
+  | `kategorie` | Langtext/Datei |
+  | `anzahlungsbetrag` | Kommazahl |
+  | `anzahlungsart` | Text (max. 4 Zeichen) |
+  | `nrkreis` | Ganzzahl |
+  | `stornostaffel` | Ganzzahl |
+  | `zusatzinfo` | Text (max. 32000 Zeichen) |
+  | `katalogseite` | Ganzzahl |
+  | `veranstalter` | Text (max. 10 Zeichen) |
+  | `hauptkategorie` | Text (max. 60 Zeichen) |
+  | `pauschalierungsfaktor` | Kommazahl |
+  | `versicherungsart` | Text (max. 254 Zeichen) |
+  | `geaendertam` | Datum/Uhrzeit |
+  | `geaendertvon` | Text (max. 20 Zeichen) |
+  | `erstelltvon` | Text (max. 20 Zeichen) |
+  | `untertitel` | Text (max. 200 Zeichen) |
+  | `mandant` | Text (max. 30 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.updateT_Katalogreise` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_KATALOGREISE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

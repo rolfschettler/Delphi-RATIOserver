@@ -25,16 +25,100 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensaetze aus T_REISELEISTUNGEN auf (ungefiltert). Ruft intern `DoSelect('T_REISELEISTUNGEN', ALLOWED)` auf.
+  **Reiseleistungen auflisten.** Liefert alle Einträge aus `T_REISELEISTUNGEN` – auf Wunsch sortiert und seitenweise.
 
-  **Tabelle:** T_REISELEISTUNGEN
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/gett_reiseleistungen` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, leistungnr, rabatterlaubt, standard, leistungsgeber, code, geraet, von, bis, internet, vontag, bistag, zeitvon, zeitbis, bemerkung, params, status, inklusiv, leistungsgruppe, preisoption, marge, adresskennziffer, vontagref, rundungsoption, sortierung, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, gesperrt, kopiertaus, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, provklasse, referenz1, referenz2, preis_steuerfrei, sachkonto_steuerfrei, onlinebuchung, app, termin, optionsdatum, referenz3, referenz4
+  ### Was du mitschickst
+  Alles ist optional – ein leerer Body `{}` liefert alles.
 
-  **Body (optional):** `{ "fields": [...] | "*", "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` (ohne `fields` bzw. mit `"*"` werden alle ALLOWED-Felder geliefert).
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `katalogreisenr` | Ganzzahl |
+  | `leistungnr` | Ganzzahl |
+  | `rabatterlaubt` | Text (max. 4 Zeichen) |
+  | `standard` | Text (max. 4 Zeichen) |
+  | `leistungsgeber` | Ganzzahl |
+  | `code` | Text (max. 120 Zeichen) |
+  | `geraet` | Ganzzahl |
+  | `von` | Datum/Uhrzeit |
+  | `bis` | Datum/Uhrzeit |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `vontag` | Ganzzahl |
+  | `bistag` | Ganzzahl |
+  | `zeitvon` | Text (max. 5 Zeichen) |
+  | `zeitbis` | Text (max. 5 Zeichen) |
+  | `bemerkung` | Langtext/Datei |
+  | `params` | Text (max. 40 Zeichen) |
+  | `status` | Ganzzahl |
+  | `inklusiv` | Ganzzahl |
+  | `leistungsgruppe` | Ganzzahl |
+  | `preisoption` | Ganzzahl |
+  | `marge` | Kommazahl |
+  | `adresskennziffer` | Ganzzahl |
+  | `vontagref` | Text (max. 1 Zeichen) |
+  | `rundungsoption` | Ganzzahl |
+  | `sortierung` | Ganzzahl |
+  | `ek_tats` | Kommazahl |
+  | `ek_kalk` | Kommazahl |
+  | `freiplatz_lt` | Ganzzahl |
+  | `freiplatz_kunde` | Ganzzahl |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `kopiertaus` | Ganzzahl |
+  | `ek_kalk1` | Kommazahl |
+  | `ek_kalk2` | Kommazahl |
+  | `ek_kalk3` | Kommazahl |
+  | `ek_kalk4` | Kommazahl |
+  | `bezeichnung2` | Text (max. 200 Zeichen) |
+  | `provklasse` | Ganzzahl |
+  | `referenz1` | Text (max. 60 Zeichen) |
+  | `referenz2` | Text (max. 60 Zeichen) |
+  | `preis_steuerfrei` | Kommazahl |
+  | `sachkonto_steuerfrei` | Text (max. 12 Zeichen) |
+  | `onlinebuchung` | Text (max. 4 Zeichen) |
+  | `app` | Text (max. 4 Zeichen) |
+  | `termin` | Datum/Uhrzeit |
+  | `optionsdatum` | Datum/Uhrzeit |
+  | `referenz3` | Text (max. 60 Zeichen) |
+  | `referenz4` | Text (max. 60 Zeichen) |
 
-  **LocalOnly:** nein
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "katalogreisenr": 42, "leistungnr": 42, ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
 
-  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Ohne `limit` kommt die komplette Tabelle** – bei vielen Einträgen besser seitenweise abrufen.
+  - **Zum Suchen** den passenden `…filtered`-Endpunkt verwenden, für einen einzelnen Eintrag `…byid`.
+  - **Nicht abrufbar** sind hier: `dauer`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getT_Reiseleistungen` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_REISELEISTUNGEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

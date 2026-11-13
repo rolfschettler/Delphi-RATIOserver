@@ -25,14 +25,62 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensätze der Tabelle LAND auf (Aufruf: `DoSelect('LAND', ALLOWED)`).
+  **Länder auflisten.** Liefert alle Einträge aus `LAND` – auf Wunsch sortiert und seitenweise.
 
-  **Erlaubte Felder (ALLOWED):** code, staat, steuer, fiskel, euland, inland, formular, iso2, iso3, sortierung, sachkonto
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fuhrpark/getland` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `{ "fields": [...] | "*", "orderby": "feld", "limit": 10, "offset": 0 }` (alle Angaben optional)
+  ### Was du mitschickst
+  Alles ist optional – ein leerer Body `{}` liefert alles.
 
-  **Hinweis:** LAND ist ein reiner Read-Only-Stammdaten-Endpunkt – es existieren weder Insert-, Update-, Delete- noch Key-Route.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `code` | Text (max. 5 Zeichen) |
+  | `staat` | Text (max. 20 Zeichen) |
+  | `steuer` | Kommazahl |
+  | `fiskel` | Text (max. 4 Zeichen) |
+  | `euland` | Text (max. 4 Zeichen) |
+  | `inland` | Text (max. 1 Zeichen) |
+  | `formular` | Text (max. 20 Zeichen) |
+  | `iso2` | Text (max. 2 Zeichen) |
+  | `iso3` | Text (max. 3 Zeichen) |
+  | `sortierung` | Ganzzahl |
+  | `sachkonto` | Text (max. 12 Zeichen) |
 
-  **Antwort:** ohne `limit` `{"header":{"<feld>":"<typ>",...},"data":[{...},...]}` (SerializeQuery: `header` = Feldname -> Typ, `data` = Datensaetze); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"code": "Text", "staat": "Text", "steuer": 12.5, ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Ohne `limit` kommt die komplette Tabelle** – bei vielen Einträgen besser seitenweise abrufen.
+  - **Zum Suchen** den passenden `…filtered`-Endpunkt verwenden, für einen einzelnen Eintrag `…byid`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFuhrpark.getLand` in `Shared/DataModuls/DataModulFuhrparkClass.pas`
+  - Tabelle: `LAND`, Schlüssel `code`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -13,7 +13,7 @@ http:
         "bearbeiter": "SUPERVISOR",
         "erfasst": "2026-08-31",
         "betrag": 50.00,
-        "kennziffer": "GS-STD",
+        "kennziffer": 42,
         "gutscheinkonto": "1590",
         "kurzbemerkung": "Gutschein Neuanlage",
         "nrkreis": 0
@@ -30,10 +30,81 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Eigenimplementierung, KEIN generisches `DoInsert`. Das Feld `vorgang` wird NIEMALS aus dem Body uebernommen, sondern immer serverseitig erzeugt (Praefix "GS" + Nummer): ist im Body `nrkreis` > 0 gesetzt, wird die laufende Nummer ueber den zugehoerigen Generator `GS_NRKREIS<nrkreis>` ermittelt (existiert fuer den angegebenen Nummernkreis kein Generator, bricht der Insert mit der Exception "Generator nicht vorhanden." ab und die Transaktion wird zurueckgerollt -- es gibt KEINEN Fallback auf `GS_NRKREIS1`); andernfalls ueber den Standardgenerator `GUTSCHEIN_VORGANG_GEN`. Die Primaernummer `nr` wird intern wie bei getgutscheinkey per `GEN_ID(GUTSCHEIN_NR_GEN,1)` ermittelt (kein RETURNING, da von InterBase nicht unterstuetzt). Insert und `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` laufen in einer gemeinsamen Transaktion; bei Fehler Rollback.
+  **Gutschein anlegen.** Legt einen neuen Gutschein an. Der Server vergibt dabei selbst die Gutschein-Nummer und die Vorgangsnummer (z.B. `GS5001`) und bucht den Gutschein anschließend in die Finanzbuchhaltung (Fibu).
 
-  **Erlaubte Felder (ALLOWED, ohne nr und ohne vorgang):** bearbeiter, geaendert_am, geaendert_von, erfasst, faellig, kennziffer, gutscheinkonto, kurzbemerkung, bemerkung, betrag, gueltig_bis, erledigt, storniert, storniert_am, stornogrund, fuerkunde, zusatzfeld1, zusatzfeld2, zusatzfeld3, fibukto, kulanz, kostelle1, kostelle2, code, motivnr, fibu_archiv_am, nrkreis, entstehung, zahlungsart. Alle sind optional (fehlende Felder werden beim Insert ausgelassen).
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fibu/insertgutschein` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert` im JSON-Body. Alle sind freiwillig; nicht mitgeschickte Felder und Felder mit `null` bleiben leer.
 
-  **Antwort:** `{ "status": "OK", "nr": <neue_nr>, "vorgang": "<generierte_vorgangsnr>" }`
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `bearbeiter` | Text (max. 30 Zeichen) | |
+  | `geaendert_am` | Datum/Uhrzeit | |
+  | `geaendert_von` | Text (max. 30 Zeichen) | |
+  | `erfasst` | Datum/Uhrzeit | Belegdatum der Fibu-Buchung |
+  | `faellig` | Datum/Uhrzeit | Fälligkeit (wird mitgebucht) |
+  | `kennziffer` | Ganzzahl | Kundennummer (Adresse) |
+  | `gutscheinkonto` | Text (max. 12 Zeichen) | Sachkonto für die Buchung |
+  | `kurzbemerkung` | Text (max. 20 Zeichen) | |
+  | `bemerkung` | Langtext | |
+  | `betrag` | Kommazahl | Betrag des Gutscheins |
+  | `gueltig_bis` | Datum/Uhrzeit | |
+  | `erledigt` | Ja/Nein-Wert (`"JA"`/`"NEIN"`) | |
+  | `storniert` | Ja/Nein-Wert (`"JA"`/`"NEIN"`) | |
+  | `storniert_am` | Datum/Uhrzeit | |
+  | `stornogrund` | Text (max. 50 Zeichen) | |
+  | `fuerkunde` | Ganzzahl | |
+  | `zusatzfeld1` | Text (max. 50 Zeichen) | |
+  | `zusatzfeld2` | Text (max. 50 Zeichen) | |
+  | `zusatzfeld3` | Text (max. 50 Zeichen) | |
+  | `fibukto` | Text (max. 12 Zeichen) | Kundenkonto für die Buchung (leer = Konto aus der Kundenadresse) |
+  | `kulanz` | Ja/Nein-Wert (`"JA"`/`"NEIN"`) | Kulanz-Gutschein (andere Buchungsrichtung) |
+  | `kostelle1` | Text (max. 12 Zeichen) | Kostenstelle 1 (wird mitgebucht) |
+  | `kostelle2` | Text (max. 12 Zeichen) | Kostenstelle 2 (wird mitgebucht) |
+  | `code` | Text (max. 20 Zeichen) | |
+  | `motivnr` | Ganzzahl | |
+  | `fibu_archiv_am` | Datum/Uhrzeit | |
+  | `nrkreis` | Ganzzahl | Nummernkreis für die Vorgangsnummer (siehe Gut zu wissen) |
+  | `entstehung` | Text (max. 60 Zeichen) | |
+  | `zahlungsart` | Text (max. 120 Zeichen) | |
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "nr": 1234, "vorgang": "GS5001"}
+  ```
+  `nr` ist die neue Gutschein-Nummer, `vorgang` die vergebene Vorgangsnummer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab (z.B. Text zu lang, Buchstaben in einem Zahlenfeld, ungültiges Datum) oder die Fibu-Buchung schlägt fehl.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `Generator nicht vorhanden.` – du hast einen `nrkreis` größer als 0 angegeben, für den es in der Datenbank keinen Nummernkreis gibt.
+  - Bei jedem Fehler wird **nichts** gespeichert und nichts gebucht.
+
+  ### Gut zu wissen
+  - **Nummer und Vorgangsnummer vergibt immer der Server.** `nr` und `vorgang` im Body werden ignoriert. Eine vorher über `/fibu/getgutscheinkey` geholte Nummer wird nicht verwendet – es wird immer eine neue gezogen.
+  - **Nummernkreis (`nrkreis`):** Ist er größer als 0, kommt die Vorgangsnummer aus diesem Nummernkreis – der muss in der Datenbank eingerichtet sein, sonst gibt es den Fehler `Generator nicht vorhanden.` (es wird nicht auf Kreis 1 ausgewichen). Fehlt er oder ist er 0 bzw. negativ, gilt der Standard-Nummernkreis. Ein Wert, der keine Zahl ist, führt beim Speichern zu einem Datenbankfehler.
+  - **Die Fibu-Buchung passiert automatisch** – aber nur, wenn die Finanzbuchhaltung in den Firmenstammdaten eingeschaltet ist. Gebucht wird `betrag` vom Kundenkonto (`fibukto`, oder wenn leer das Fibu-Konto der Kundenadresse mit der `kennziffer`) an das `gutscheinkonto`, mit Belegdatum `erfasst`, Fälligkeit `faellig`, den Kostenstellen und dem Kundennamen als Buchungstext. Bei `"kulanz": "JA"` sind die Konten vertauscht und der Betrag ist negativ.
+  - **Ja/Nein-Felder erwarten `"JA"` bzw. `"NEIN"`.** Andere Werte wie `"J"` werden bei der Fibu-Buchung nicht als „ja“ erkannt.
+  - **Verbrauchte Nummern bleiben verbraucht:** Schlägt das Anlegen fehl, entstehen Lücken in Gutschein- und Vorgangsnummern.
+  - **Formate:** Datum als `"2026-08-31"` oder `"2026-08-31 14:00:00"`, Kommazahlen mit Punkt (`50.00`).
+  - **Nicht setzbar** sind hier: `mandant`, `logo`.
+  - **Unbekannte Felder werden ohne Meldung ignoriert;** die Groß-/Kleinschreibung der Feldnamen ist egal. Ein leerer oder ungültiger Body ist kein Fehler – dann entsteht ein Gutschein nur mit Nummer und Vorgangsnummer.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFibu.insertGutschein` in `Shared/DataModuls/DataModulFibuClass.pas`
+  - Tabelle: `GUTSCHEIN`, Schlüssel `nr`; Generatoren `GUTSCHEIN_NR_GEN` (wie `/fibu/getgutscheinkey`), `GUTSCHEIN_VORGANG_GEN`, `GS_NRKREIS<n>` (Existenz über `RDB$GENERATORS` geprüft)
+  - Ablauf in einer Transaktion: `nr` per Generator → Vorgangsnummer → `INSERT` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` → Commit, sonst Rollback (Generatorwerte bleiben verbraucht).
+  - `BUILDGSFIBU` (DB): Abbruch ohne Buchung, wenn `FIRMENSTAMM.FIBUAKTIV` nicht `JA`; sonst `GEGENBUCHEN(nr,'GS',...)` (offene FIBU-Zeilen mit `ART='GS'`/`RECHNUNGNR=nr` löschen, bereits übertragene gegenbuchen) und neue `FIBU`-Zeile (`SOLL` = `fibukto`/`ADRESSEN.DATEVKTO`, `HABEN` = `gutscheinkonto`, bei `KULANZ='JA'` getauscht und negativ).
+  - Auffälligkeit: Code-Kommentar nennt Fallback auf `GS_NRKREIS1`, tatsächlich wird eine Exception geworfen.
+  - **Auffälligkeit (bitte prüfen):** `BUILDGSFIBU` hat laut `RDB$PROCEDURE_PARAMETERS` zwei Eingabeparameter (`GSNR`, `BUCHTEXT`), der Server übergibt nur einen. InterBase kennt keine Default-Werte für Prozedur-Parameter – das dürfte mit „Input parameter mismatch“ scheitern (nicht live getestet, da schreibend).
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

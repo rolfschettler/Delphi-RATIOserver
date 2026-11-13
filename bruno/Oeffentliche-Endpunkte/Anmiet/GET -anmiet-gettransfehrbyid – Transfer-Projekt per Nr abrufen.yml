@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 501,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,18 +25,83 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen TRANSFEHR-Datensatz anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Transfer-Projekt per Nr abrufen.** Liefert genau einen Eintrag aus `TRANSFEHR`, gesucht über `nr`.
 
-  **Tabelle:** TRANSFEHR
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/anmiet/gettransfehrbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** identisch zu `gettransfehr` (siehe dort), inkl. `nr`
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `kunde` | Ganzzahl |
+  | `ansprechpartner` | Ganzzahl |
+  | `hinfahrt` | Datum/Uhrzeit |
+  | `hinfahrtende` | Datum/Uhrzeit |
+  | `rueckfahrt` | Datum/Uhrzeit |
+  | `rueckfahrtende` | Datum/Uhrzeit |
+  | `abfahrthin` | Text (max. 40 Zeichen) |
+  | `ankunfthin` | Text (max. 40 Zeichen) |
+  | `abfahrtrueck` | Text (max. 40 Zeichen) |
+  | `ankunftrueck` | Text (max. 40 Zeichen) |
+  | `zeit1h` | Text (max. 5 Zeichen) |
+  | `zeit2h` | Text (max. 5 Zeichen) |
+  | `zeit1r` | Text (max. 5 Zeichen) |
+  | `zeit2r` | Text (max. 5 Zeichen) |
+  | `text1` | Text (max. 40 Zeichen) |
+  | `text2` | Text (max. 40 Zeichen) |
+  | `text3` | Text (max. 40 Zeichen) |
+  | `text4` | Text (max. 40 Zeichen) |
+  | `text5` | Text (max. 40 Zeichen) |
+  | `text6` | Text (max. 40 Zeichen) |
+  | `datum1` | Datum/Uhrzeit |
+  | `datum2` | Datum/Uhrzeit |
+  | `kurztext` | Text (max. 600 Zeichen) |
+  | `text` | Langtext/Datei |
+  | `bearbeiter` | Text (max. 30 Zeichen) |
+  | `erstellt` | Datum/Uhrzeit |
+  | `perszahl` | Text (max. 25 Zeichen) |
+  | `personen` | Ganzzahl |
+  | `status` | Ganzzahl |
+  | `symbol` | Ganzzahl |
+  | `projektart` | Text (max. 40 Zeichen) |
+  | `angebot_gedruckt` | Text (max. 4 Zeichen) |
+  | `auftrag_gedruckt` | Text (max. 4 Zeichen) |
+  | `optionsdatum` | Datum/Uhrzeit |
+  | `filiale` | Text (max. 10 Zeichen) |
+  | `kontaktentstehung` | Text (max. 8 Zeichen) |
+  | `bearbeiter2` | Text (max. 30 Zeichen) |
+  | `vertretung` | Text (max. 30 Zeichen) |
+  | `reiseart` | Text (max. 8 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "kunde": 42, "ansprechpartner": 42, ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAnmiet.getTransfehrById` in `Shared/DataModuls/DataModulAnmietClass.pas`
+  - Tabelle: `TRANSFEHR`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -7,5 +7,10 @@ request:
   auth: inherit
 
 docs:
-  content: "Print-Controller (TDataModulPrint): erzeugt FastReport-Formulare serverseitig als PDF (ReportForm.DoExportieren, Export PDF). Der Aufruf ist durch einen globalen Report-Lock serialisiert (FastReport nicht vollstaendig threadsicher). Alle Query-Parameter werden als externe Report-Parameter an das Formular durchgereicht. **Auth:** Bearer-Token ({{jwttoken}}) erforderlich, LocalOnly=false. Tabellen: abhaengig vom Formular (Formulardefinitionen ueber bereich/art/formularname)."
+  content: |-
+    **Formulare drucken.** Mit `GET /print` erzeugt der Server ein hinterlegtes Druckformular (z.B. eine Rechnung) als PDF und liefert die Datei zurück. Welches Formular gedruckt wird, bestimmst du über Bereich, Art und Formularname in der URL; weitere URL-Parameter (z.B. die Nummer des Datensatzes) gehen direkt an das Formular.
+
+    Der Endpunkt braucht eine Anmeldung (Token aus `/login`), und der Benutzer muss ihn in seinen Rollen haben (sonst Fehler 403). Druckaufträge laufen nacheinander, nie gleichzeitig.
+
+    Technik: Controller `TDataModulPrint` (`Shared/DataModuls/DataModulPrintClass.pas`), FastReport.
   type: text/markdown

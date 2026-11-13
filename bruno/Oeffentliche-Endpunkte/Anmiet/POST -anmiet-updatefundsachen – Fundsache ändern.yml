@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 101,
+        "nr": 42,
         "status": "abgeholt",
         "abgeholt_am": "2026-08-30",
         "abgeholt_von": "Herr Mueller"
@@ -27,20 +27,62 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Ändert einen bestehenden FUNDSACHEN-Datensatz anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+  **Fundsache ändern.** Ändert einen vorhandenen Eintrag in `FUNDSACHEN`. Gefunden wird er über `nr`.
 
-  **Tabelle:** FUNDSACHEN
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/anmiet/updatefundsachen` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** abgeholt_am, abgeholt_von, abholort, bearbeitet_am, bearbeitet_von, beschreibung, erfasst_am, erfasst_von, status, text_intern, verlustdatum, verlustort, zusatzfeld1, zusatzfeld2, zusatzfeld3 (`nr` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Hinweis:** Die BLOB-Felder `bilder`, `bild_klein` und `unterschrift` gehören hier NICHT zu ALLOWED – sie können nur beim Anlegen über `insertfundsachenmitbildern` gesetzt werden.
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `abgeholt_am` | Datum/Uhrzeit |
+  | `abgeholt_von` | Text (max. 120 Zeichen) |
+  | `abholort` | Text (max. 1200 Zeichen) |
+  | `bearbeitet_am` | Datum/Uhrzeit |
+  | `bearbeitet_von` | Text (max. 120 Zeichen) |
+  | `beschreibung` | Text (max. 1200 Zeichen) |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `erfasst_von` | Text (max. 120 Zeichen) |
+  | `status` | Text (max. 120 Zeichen) |
+  | `text_intern` | Text (max. 3000 Zeichen) |
+  | `verlustdatum` | Datum/Uhrzeit |
+  | `verlustort` | Text (max. 1200 Zeichen) |
+  | `zusatzfeld1` | Text (max. 120 Zeichen) |
+  | `zusatzfeld2` | Text (max. 120 Zeichen) |
+  | `zusatzfeld3` | Text (max. 120 Zeichen) |
 
-  **Key-Feld:** `nr`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Body:** `{ "nr": <wert>, "feld": "...", ... }` – nr ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
+  - **Nicht änderbar** sind hier: `bilder`, `bild_klein`, `unterschrift`.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  <details><summary>Für Entwickler</summary>
 
-  **Antwort:** `{"status":"OK"}`
+  - Controller: `TDataModulAnmiet.updateFundsachen` in `Shared/DataModuls/DataModulAnmietClass.pas`
+  - Tabelle: `FUNDSACHEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

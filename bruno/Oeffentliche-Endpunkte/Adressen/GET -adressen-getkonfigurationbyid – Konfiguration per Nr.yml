@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 1,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,18 +25,49 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus KONFIGURATION anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Konfiguration per Nr.** Liefert genau einen Eintrag aus `KONFIGURATION`, gesucht über `nr`.
 
-  **Tabelle:** KONFIGURATION
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/adressen/getkonfigurationbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, name, art, id, content, art2
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `name` | Text (max. 80 Zeichen) |
+  | `art` | Text (max. 8 Zeichen) |
+  | `id` | Ganzzahl |
+  | `content` | Langtext/Datei |
+  | `art2` | Text (max. 8 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "name": "Text", "art": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.getKonfigurationById` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `KONFIGURATION`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

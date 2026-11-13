@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 55,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,16 +25,63 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz der Tabelle BILDTEXT (NICHT T_BILDTEXT – eigene Tabelle mit anderer Struktur) anhand des Primärschlüssels `nr` (generisches `DoSelectOne('BILDTEXT', ALLOWED, 'nr')`).
+  **BILDTEXT-Eintrag per Nr abrufen.** Liefert genau einen Eintrag aus `BILDTEXT`, gesucht über `nr`.
 
-  **Body:** `nr` (Pflicht; fehlt → Fehler "\"nr\" fehlt im Request-Body."), `fields` (optional, Array oder `"*"`).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dokumente/getbildtextbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, bild, text, art, code, imgtype, ueberschrift, bildindex, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, lastlock, erfasst_am, versteckt, bildformat, textformat.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Hinweis:** `bild` und `text` sind BLOB-Felder und werden von `SerializeQuery` standardmäßig als Base64-String zurückgegeben.
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `bild` | Langtext/Datei |
+  | `text` | Langtext/Datei |
+  | `art` | Text (max. 8 Zeichen) |
+  | `code` | Ganzzahl |
+  | `imgtype` | Text (max. 4 Zeichen) |
+  | `ueberschrift` | Text (max. 60 Zeichen) |
+  | `bildindex` | Ganzzahl |
+  | `copr` | Text (max. 120 Zeichen) |
+  | `sprache` | Text (max. 3 Zeichen) |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `app` | Text (max. 4 Zeichen) |
+  | `externe_id` | Text (max. 60 Zeichen) |
+  | `nutzungsrecht_bis` | Datum/Uhrzeit |
+  | `urheber` | Text (max. 60 Zeichen) |
+  | `lastlock` | Datum/Uhrzeit |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `versteckt` | Text (max. 4 Zeichen) |
+  | `bildformat` | Text (max. 4 Zeichen) |
+  | `textformat` | Text (max. 4 Zeichen) |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "bild": "Text", "text": "Text", ...} ]}
+  ```
 
-  **LocalOnly:** false.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDokumente.getBildtextById` in `Shared/DataModuls/DataModulDokumenteClass.pas`
+  - Tabelle: `BILDTEXT`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

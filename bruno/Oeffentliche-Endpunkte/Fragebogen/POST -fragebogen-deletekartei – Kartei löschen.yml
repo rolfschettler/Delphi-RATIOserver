@@ -1,0 +1,63 @@
+info:
+  name: POST /fragebogen/deletekartei – Kartei löschen
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/deletekartei"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{karteiid}}
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Kartei löschen.** Löscht einen Eintrag aus `FORM_KARTEI` endgültig.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fragebogen/deletekartei` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `id` | Ganzzahl | **ja** | Welcher Eintrag gelöscht wird. |
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. bei einem ungültigen Wert für den Schlüssel.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn `id` fehlt – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Endgültig:** Es gibt keinen Papierkorb und kein Rückgängig.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch dann kommt `{"status": "OK"}`.
+  - **Wird automatisch mitgelöscht:** zugehörige Einträge in `FORM_PAT_PROPERTY`, `FORM_KARTEI_HISTORY` – und in der Folge auch davon abhängige Einträge in `FORM_KARTEI_CONTENT`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.deleteKartei` in `Shared/DataModuls/DataModulFragebogenClass.pas`
+  - Tabelle: `FORM_KARTEI`, Schlüssel `id`
+  - Umsetzung: generische Methode `DoDelete` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

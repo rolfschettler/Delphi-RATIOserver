@@ -24,16 +24,40 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Löscht einen Datensatz aus T_HALTESTELLE anhand des Primärschlüssels `nr` (generisches `DoDelete`).
+  **Haltestelle löschen.** Löscht einen Eintrag aus `T_HALTESTELLE` endgültig.
 
-  **Tabelle:** T_HALTESTELLE
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fahrtenplanung/deletet_haltestelle` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Key-Feld:** `nr`
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag gelöscht wird. |
 
-  **Body:** `{ "nr": <wert> }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. bei einem ungültigen Wert für den Schlüssel.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn `nr` fehlt – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Endgültig:** Es gibt keinen Papierkorb und kein Rückgängig.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch dann kommt `{"status": "OK"}`.
+  - **Abhängige Daten:** Die Datenbank kennt keine festen Verknüpfungen zu dieser Tabelle – es wird nichts mitgelöscht und nichts blockiert. Daten, die nur über die Nummer auf den Eintrag zeigen, bleiben stehen.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFahrtenplanung.deleteT_Haltestelle` in `Shared/DataModuls/DataModulFahrtenplanungClass.pas`
+  - Tabelle: `T_HALTESTELLE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoDelete` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

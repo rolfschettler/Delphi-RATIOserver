@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 302,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,10 +25,58 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus URLAUBSANTRAG anhand des Primärschlüssels. Implementierung: `DoSelectOne('URLAUBSANTRAG', ALLOWED, 'nr')`. Body: `{"nr":<Urlaubsantrag-Nr>,"fields":[...]|"*"}`.
+  **Urlaubsantrag per Nr abrufen.** Liefert genau einen Eintrag aus `URLAUBSANTRAG`, gesucht über `nr`.
 
-  **Erlaubte Felder:** identisch zu `/dispo/geturlaubsantrag` (15 Felder, siehe dort).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/geturlaubsantragbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** `{"header":{...},"data":[{...}]}` – 0 oder 1 Datensatz.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `mitarbeiter` | Text (max. 15 Zeichen) |
+  | `von` | Datum/Uhrzeit |
+  | `bis` | Datum/Uhrzeit |
+  | `beantragtam` | Datum/Uhrzeit |
+  | `genehmigtam` | Datum/Uhrzeit |
+  | `genehmigtvon` | Text (max. 15 Zeichen) |
+  | `bemerkung` | Langtext/Datei |
+  | `text1` | Text (max. 60 Zeichen) |
+  | `text2` | Text (max. 60 Zeichen) |
+  | `text3` | Text (max. 60 Zeichen) |
+  | `status` | Text (max. 30 Zeichen) |
+  | `statusam` | Datum/Uhrzeit |
+  | `statusvon` | Text (max. 15 Zeichen) |
+  | `vertretung` | Text (max. 15 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "mitarbeiter": "Text", "von": "2026-09-01 08:00:00", ...} ]}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getUrlaubsantragById` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `URLAUBSANTRAG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

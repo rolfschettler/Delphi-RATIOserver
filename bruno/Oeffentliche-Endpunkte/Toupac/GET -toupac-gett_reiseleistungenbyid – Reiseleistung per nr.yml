@@ -25,18 +25,92 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_REISELEISTUNGEN anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_REISELEISTUNGEN', ALLOWED, 'nr')` auf.
+  **Reiseleistung per nr.** Liefert genau einen Eintrag aus `T_REISELEISTUNGEN`, gesucht über `nr`.
 
-  **Tabelle:** T_REISELEISTUNGEN
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/gett_reiseleistungenbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, leistungnr, rabatterlaubt, standard, leistungsgeber, code, geraet, von, bis, internet, vontag, bistag, zeitvon, zeitbis, bemerkung, params, status, inklusiv, leistungsgruppe, preisoption, marge, adresskennziffer, vontagref, rundungsoption, sortierung, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, gesperrt, kopiertaus, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, provklasse, referenz1, referenz2, preis_steuerfrei, sachkonto_steuerfrei, onlinebuchung, app, termin, optionsdatum, referenz3, referenz4
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `katalogreisenr` | Ganzzahl |
+  | `leistungnr` | Ganzzahl |
+  | `rabatterlaubt` | Text (max. 4 Zeichen) |
+  | `standard` | Text (max. 4 Zeichen) |
+  | `leistungsgeber` | Ganzzahl |
+  | `code` | Text (max. 120 Zeichen) |
+  | `geraet` | Ganzzahl |
+  | `von` | Datum/Uhrzeit |
+  | `bis` | Datum/Uhrzeit |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `vontag` | Ganzzahl |
+  | `bistag` | Ganzzahl |
+  | `zeitvon` | Text (max. 5 Zeichen) |
+  | `zeitbis` | Text (max. 5 Zeichen) |
+  | `bemerkung` | Langtext/Datei |
+  | `params` | Text (max. 40 Zeichen) |
+  | `status` | Ganzzahl |
+  | `inklusiv` | Ganzzahl |
+  | `leistungsgruppe` | Ganzzahl |
+  | `preisoption` | Ganzzahl |
+  | `marge` | Kommazahl |
+  | `adresskennziffer` | Ganzzahl |
+  | `vontagref` | Text (max. 1 Zeichen) |
+  | `rundungsoption` | Ganzzahl |
+  | `sortierung` | Ganzzahl |
+  | `ek_tats` | Kommazahl |
+  | `ek_kalk` | Kommazahl |
+  | `freiplatz_lt` | Ganzzahl |
+  | `freiplatz_kunde` | Ganzzahl |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `kopiertaus` | Ganzzahl |
+  | `ek_kalk1` | Kommazahl |
+  | `ek_kalk2` | Kommazahl |
+  | `ek_kalk3` | Kommazahl |
+  | `ek_kalk4` | Kommazahl |
+  | `bezeichnung2` | Text (max. 200 Zeichen) |
+  | `provklasse` | Ganzzahl |
+  | `referenz1` | Text (max. 60 Zeichen) |
+  | `referenz2` | Text (max. 60 Zeichen) |
+  | `preis_steuerfrei` | Kommazahl |
+  | `sachkonto_steuerfrei` | Text (max. 12 Zeichen) |
+  | `onlinebuchung` | Text (max. 4 Zeichen) |
+  | `app` | Text (max. 4 Zeichen) |
+  | `termin` | Datum/Uhrzeit |
+  | `optionsdatum` | Datum/Uhrzeit |
+  | `referenz3` | Text (max. 60 Zeichen) |
+  | `referenz4` | Text (max. 60 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "katalogreisenr": 42, "leistungnr": 42, ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+  - **Nicht abrufbar** sind hier: `dauer`.
 
-  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getT_ReiseleistungenById` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_REISELEISTUNGEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

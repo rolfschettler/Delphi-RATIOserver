@@ -12,7 +12,7 @@ http:
       {
         "nr": 42,
         "status": "GEPLANT",
-        "kennzeichen": "AB-CD 456"
+        "kennzeichen": "B-RX 123"
       }
   auth:
     type: bearer
@@ -26,18 +26,62 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Ändert einen Datensatz in T_Z_FAHRZEUG anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+  **Fahrzeug ändern.** Ändert einen vorhandenen Eintrag in `T_Z_FAHRZEUG`. Gefunden wird er über `nr`.
 
-  **Tabelle:** T_Z_FAHRZEUG
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fahrtenplanung/updatet_z_fahrzeug` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** zplanungsnr, bezeichnung, typ, kennzeichen, kennziffer, zielhaltnr, kmprofil, zieluhrzeit, refnr, status, zusatzinfo, info, erledigt, farbe, zusatzfeld1, zusatzfeld2 – nur übergebene Felder werden geändert.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Key-Feld:** `nr` (Pflicht, wird selbst nicht geändert)
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `zplanungsnr` | Ganzzahl |
+  | `bezeichnung` | Text (max. 200 Zeichen) |
+  | `typ` | Text (max. 40 Zeichen) |
+  | `kennzeichen` | Text (max. 15 Zeichen) |
+  | `kennziffer` | Ganzzahl |
+  | `zielhaltnr` | Ganzzahl |
+  | `kmprofil` | Ganzzahl |
+  | `zieluhrzeit` | Text (max. 6 Zeichen) |
+  | `refnr` | Text (max. 255 Zeichen) |
+  | `status` | Text (max. 30 Zeichen) |
+  | `zusatzinfo` | Text (max. 255 Zeichen) |
+  | `info` | Langtext/Datei |
+  | `erledigt` | Text (max. 4 Zeichen) |
+  | `farbe` | Ganzzahl |
+  | `zusatzfeld1` | Text (max. 200 Zeichen) |
+  | `zusatzfeld2` | Text (max. 200 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "status": "...", ... }`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFahrtenplanung.updateT_Z_Fahrzeug` in `Shared/DataModuls/DataModulFahrtenplanungClass.pas`
+  - Tabelle: `T_Z_FAHRZEUG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

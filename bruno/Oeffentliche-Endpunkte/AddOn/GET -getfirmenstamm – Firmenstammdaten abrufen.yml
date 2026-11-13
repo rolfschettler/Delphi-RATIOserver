@@ -18,12 +18,40 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert den (einzigen) Datensatz der Tabelle FIRMENSTAMM (Mandanten-Stammdaten) per `SELECT * FROM FIRMENSTAMM`. Kein Body, keine Parameter, keine Feld-Whitelist.
+  **Firmenstammdaten abrufen.** Liefert die Stammdaten der eigenen Firma (Mandant) – z.B. Firmenname, Anschrift, Steuernummer, Bankverbindung und Grundeinstellungen.
 
-  **Auth:** erforderlich (Bearer Token).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/getfirmenstamm` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **LocalOnly:** false.
+  ### Was du mitschickst
+  Nichts. URL-Parameter und Body werden nicht ausgewertet.
 
-  **Antwort:** JSON-Array (`SerializeQuery`), alle Spalten der Tabelle; BLOB-Felder als Base64-String.
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"firmenname": "ftstring 40", "ustid": "ftstring 25", ...},
+    "data": [ {"firmenname": "Muster Reisen GmbH", "firmenanschrift1": "Musterstraße 1", "ustid": "DE123456789", "email": "info@example.com", ...} ]
+  }
+  ```
+  `data` enthält die Firmenstammdaten – in der Regel genau einen Eintrag – mit kleingeschriebenen Feldnamen. `header` nennt zu jedem Feld den technischen Typ. Datumswerte kommen als `"2026-09-01"` bzw. `"2026-09-01 08:00:00"`, leere Felder als `null`, Dateien und Langtexte als Base64-Text.
 
-  **Hinweis:** Wegen `SELECT *` werden ALLE Spalten ausgeliefert – auch eventuell interne/sensible Konfigurationsfelder.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **Es kommen immer alle Felder** – rund 100 Stück, auch interne Einstellungen (z.B. Lizenzangaben, Nummernkreis-Präfixe, Buchhaltungs-Konten). Du kannst die Auswahl nicht einschränken; Parameter wie `fields`, `orderby` oder `limit` gibt es hier nicht. Die Berechtigung für diesen Endpunkt deshalb nur gezielt vergeben.
+  - **Mehrere Einträge möglich:** Stehen in der Datenbank mehrere Firmenstammsätze, kommen alle zurück.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAddOn.getFirmenstamm` in `Shared/DataModuls/DataModulAddOnClass.pas`
+  - Tabelle: `FIRMENSTAMM` (Schlüssel `firmenname`, aktuell 1 Zeile), Abfrage `SELECT * FROM FIRMENSTAMM`, Ausgabe über `SerializeQuery`
+  - Keine Feld-Whitelist: alle Spalten inkl. `LIZENZ`, `LIZENZINFO`, `PWDZAHLUNG` und Blobs (Base64) werden ausgeliefert.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

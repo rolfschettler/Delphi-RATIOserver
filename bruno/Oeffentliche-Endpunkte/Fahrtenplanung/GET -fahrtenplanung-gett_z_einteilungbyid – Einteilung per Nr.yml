@@ -25,18 +25,48 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_Z_EINTEILUNG anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Einteilung per Nr.** Liefert genau einen Eintrag aus `T_Z_EINTEILUNG`, gesucht über `nr`.
 
-  **Tabelle:** T_Z_EINTEILUNG
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fahrtenplanung/gett_z_einteilungbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, zwegenr, tzustiegenr, einteilungsfolge, uhrzeit_ha
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `zwegenr` | Ganzzahl |
+  | `tzustiegenr` | Ganzzahl |
+  | `einteilungsfolge` | Ganzzahl |
+  | `uhrzeit_ha` | Text (max. 6 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "zwegenr": 42, "tzustiegenr": 42, ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFahrtenplanung.getT_Z_EinteilungById` in `Shared/DataModuls/DataModulFahrtenplanungClass.pas`
+  - Tabelle: `T_Z_EINTEILUNG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -1,0 +1,71 @@
+info:
+  name: POST /fragebogen/copykartei – Kartei kopieren
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/copykartei"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{karteiid}}
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Kartei kopieren.** Legt eine Kopie einer vorhandenen Kartei mit all ihren Feldern an und liefert die Nummer der Kopie zurück. Praktisch, um einen bestehenden Fragebogen als Vorlage für einen neuen zu nutzen.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fragebogen/copykartei` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `id` | Ganzzahl über 0 | **ja** | Nummer der Kartei, die kopiert werden soll. |
+
+  In Bruno steht hier `{{karteiid}}`. Diese Variable füllt Bruno automatisch, sobald du „Kartei anlegen“ ausgeführt hast. Für eine andere Kartei trägst du die Zahl einfach direkt ein.
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "id": 18}
+  ```
+  `id` ist die Nummer der neuen Kartei (der Kopie). Achtung: Diese Nummer landet **nicht** automatisch in `{{karteiid}}`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit `{"status":"ERROR","message":"\"id\" fehlt oder ist keine Zahl."}` – `id` fehlt, ist keine ganze Zahl oder nicht größer als 0.
+  - **404** mit `{"status":"ERROR","message":"Kartei nicht gefunden."}` – es gibt keine Kartei mit dieser Nummer.
+  - **400** mit `{"status":"error","message":"..."}` – Fehler in der Datenbank.
+
+  ### Gut zu wissen
+  - **Die Kopie heißt wie das Original plus „ (Kopie)“.** Ist der Name sehr lang, wird er vorher auf 72 Zeichen gekürzt, damit alles in 80 Zeichen passt. Eine Kopie der Kopie heißt z.B. `"X (Kopie) (Kopie)"`.
+  - **Die Beschreibung wird unverändert übernommen.**
+  - **Alle Felder werden mitkopiert** – Beschriftung, Art, Auswahlmöglichkeiten, Breite, Abschnitt, Reihenfolge und Systemfeld-Kennzeichen. Systemfelder bleiben also auch in der Kopie geschützt. Die Felder bekommen neue Nummern.
+  - **Ausgefüllte Fragebögen werden nicht kopiert** – die Kopie ist eine leere Vorlage.
+  - **Alles oder nichts:** Entweder ist die Kopie vollständig da oder gar nicht.
+  - **Lücken in der Nummernfolge sind normal:** Die neue Nummer wird vorab reserviert. Schlägt das Kopieren fehl, ist sie trotzdem verbraucht.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.copyKartei` in `Shared/DataModuls/DataModulFragebogenClass.pas`
+  - Tabellen: `FORM_KARTEI` (Nummer per Generator `FORM_KARTEI_ID_GEN`), `FORM_PAT_PROPERTY` (per `INSERT … SELECT`, Feld-IDs vergibt Trigger `TI_FORM_PAT_PROPERTY`)
+  - Kopierte Spalten: `label`, `proptyp`, `options`, `maxwidth`, `bereich`, `sortierung`, `system`; nicht kopiert: `FORM_KARTEI_HISTORY` / `FORM_KARTEI_CONTENT`
+  - Beides in einer Transaktion mit Rollback
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

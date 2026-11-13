@@ -1,0 +1,117 @@
+info:
+  name: POST /fragebogen/insertproperty – Feld anlegen
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/insertproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "kartei_id": {{karteiid}},
+        "label": "Lieblingsfarbe",
+        "proptyp": "SEL",
+        "options": "rot,grün,blau,weiß",
+        "bereich": "Allgemein",
+        "sortierung": 10
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let body = null;
+        try { body = res.getBody(); if (typeof body === "string") body = JSON.parse(body); } catch (e) {}
+        if (res.getStatus() === 200 && body && body.id) {
+          bru.setVar("propertyid", body.id);
+        }
+        test("Feld angelegt", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(body && body.status).to.equal("OK");
+          expect(body && body.id).to.be.a("number");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Feld anlegen.** Fügt einer vorhandenen Kartei ein neues Feld (eine Frage) hinzu, z.B. ein Textfeld oder eine Auswahlliste. Die Antwort enthält die neue Feld-Nummer.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fragebogen/insertproperty` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `kartei_id` | Ganzzahl über 0 | **ja** | Kartei, in die das Feld kommt. Sie muss existieren. |
+  | `label` | Text (max. 255 Zeichen) | **ja** | Beschriftung, die im Fragebogen erscheint. |
+  | `proptyp` | Text | **ja** | Art des Feldes (siehe unten). Groß-/Kleinschreibung egal. |
+  | `options` | Text | bei `RDO`, `SEL`, `MUL` **ja** | Auswahlmöglichkeiten, durch Komma getrennt, z.B. `"rot,grün,blau"`. |
+  | `bereich` | Text (max. 60 Zeichen) | nein | Abschnitt, in dem das Feld steht. Leer oder `null` = kein Abschnitt. |
+  | `sortierung` | Ganzzahl | nein | Reihenfolge. Standard `0`. |
+
+  **Arten von Feldern (`proptyp`):**
+  | Wert | Bedeutung |
+  |---|---|
+  | `TXT` | Textfeld |
+  | `NUM` | Zahl |
+  | `DAT` | Datum |
+  | `CHK` | Ankreuzfeld (Ja/Nein) |
+  | `RDO` | Optionsfeld – eine Auswahl, alle Möglichkeiten sichtbar (braucht `options`) |
+  | `SEL` | Auswahlliste – eine Auswahl (braucht `options`) |
+  | `MUL` | Auswahlliste – mehrere Auswahlen möglich (braucht `options`) |
+
+  `{{karteiid}}` im Beispiel füllt Bruno automatisch, sobald du „Kartei anlegen“ ausgeführt hast. Für eine andere Kartei trägst du die Zahl direkt ein.
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "id": 42}
+  ```
+  `id` ist die Nummer des neuen Feldes.
+
+  **Bruno merkt sich diese Nummer automatisch** in der Variablen `{{propertyid}}`. „Feld ändern“ und „Feld löschen“ benutzen sie. Die Variable gilt nur, solange Bruno läuft.
+
+  ### Was schiefgehen kann
+  Geprüft wird in dieser Reihenfolge; gemeldet wird der erste Fehler.
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit `{"status":"ERROR","message":"..."}` und einer dieser Meldungen:
+    - `"kartei_id" fehlt oder ist keine Zahl.`
+    - `Beschriftung ist ein Pflichtfeld.`
+    - `Die Beschriftung darf höchstens 255 Zeichen lang sein.`
+    - `Unbekannte Art des Feldes: "XYZ".` – auch wenn `proptyp` fehlt (dann steht `""` in der Meldung).
+    - `Für diese Art des Feldes ist mindestens eine Option nötig.` – `RDO`, `SEL` oder `MUL` ohne `options`.
+    - `Der Bereich darf höchstens 60 Zeichen lang sein.`
+    - `Die Sortierung muss eine ganze Zahl sein.`
+  - **404** mit `{"status":"ERROR","message":"Kartei nicht gefunden."}`
+  - **400** mit `{"status":"error","message":"..."}` – Fehler in der Datenbank.
+
+  ### Gut zu wissen
+  - **Leerzeichen am Anfang und Ende werden entfernt** (bei `label`, `proptyp`, `options`, `bereich`). `proptyp` wird in Großbuchstaben gespeichert.
+  - **Auswahlmöglichkeiten nur, wo sie passen:** Bei `TXT`, `NUM`, `DAT` und `CHK` wird ein mitgeschicktes `options` ohne Meldung verworfen.
+  - **Die Auswahlliste wird nicht weiter geprüft** – leere Einträge oder doppelte Werte werden so gespeichert.
+  - **Systemfelder lassen sich hier nicht anlegen.** Jedes neue Feld ist ein normales Feld. Die Breite (`maxwidth`) ist immer 255.
+  - **`sortierung`:** leer oder `null` ergibt `0`; Kommazahlen wie `1.5` werden abgelehnt.
+  - **Lücken in der Nummernfolge sind normal:** Die Nummer wird vorab reserviert. Schlägt das Anlegen fehl, ist sie trotzdem verbraucht.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.insertProperty` in `Shared/DataModuls/DataModulFragebogenClass.pas`; Prüfungen in `PruefeProperty`
+  - Tabelle: `FORM_PAT_PROPERTY`, Schlüssel `id`, Nummer vorab per Generator `FORM_PAT_PROPERTY_ID_GEN`
+  - `system` fest `0`; `maxwidth` nicht im INSERT (Datenbank-Default 255)
+  - INSERT in eigener Transaktion; das after-response-Skript setzt `bru.setVar("propertyid", body.id)`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

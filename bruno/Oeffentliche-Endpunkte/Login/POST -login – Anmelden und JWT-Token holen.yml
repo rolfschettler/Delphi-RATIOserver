@@ -5,24 +5,33 @@ info:
 
 http:
   method: POST
-  url: "{{baseURL}}/login"
+  url: "{{baseURL}}/login?user={{loginuser}}"
+  params:
+    - name: user
+      value: "{{loginuser}}"
+      type: query
   body:
     type: json
     data: |-
       {
-        "user": "SUPERVISOR",
-        "password": "{{process.env.PW_SUPERVISOR}}"
+        "user": "{{loginuser}}",
+        "password": "{{loginpassword}}"
       }
   auth: inherit
 
 runtime:
   scripts:
     - type: after-response
-      code: "if (res.getStatus() === 200 && res.getBody().token) {\r
-
-        \    bru.setVar(\"jwttoken\", res.getBody().token);\r
-
-        }"
+      code: |-
+        let body = res.getBody();
+        try { if (typeof body === "string") body = JSON.parse(body); } catch (e) {}
+        if (res.getStatus() === 200 && body && body.token) {
+          bru.setVar("jwttoken", body.token);
+        }
+        test("Login liefert Token", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(body && body.token).to.be.a("string");
+        });
 
 settings:
   encodeUrl: true
@@ -32,21 +41,54 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  **Auth:** nicht erforderlich (dieser Endpunkt stellt das Token erst aus). Keine Rollen-Prüfung (WebAction, läuft nicht über den FRouter).
+  **Anmelden.** Prüft Benutzername und Passwort und liefert ein Token. Mit diesem Token rufst du danach alle anderen Endpunkte auf.
 
-  Meldet einen Benutzer über REGISTRIERUNG.USERNAME an (case-insensitiv, umlautsicher). Das Passwort wird im Klartext erwartet und direkt in Delphi (TBCrypt.CompareHash, Unit uBCrypt) gegen den bcrypt-Hash in REGISTRIERUNG.PWD2 geprüft (Kostenfaktor max. 14). Steht REGISTRIERUNG.GESPERRT auf "JA", wird die Anmeldung trotz korrektem Passwort abgelehnt ('Dieses Benutzerkonto ist gesperrt.').
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/login?user=BENUTZER` |
+  | **Anmeldung** | keine – hier wird das Token erst ausgestellt |
+  | **Berechtigung** | keine Prüfung |
 
-  Unterstützte Übergabe (Priorität JSON → Form-encoded → URL-Parameter): {"user":"...","password":"..."}. Der Benutzername für das Token selbst (JWT-Subject) wird zusätzlich aus dem Query-Parameter ?user=... gelesen — daher hier sowohl im Body als auch als Query-Parameter mitgeben. Bei Form-encoded/URL-Parametern ein "+" im Passwort als %2B kodieren; die Anfrage muss UTF-8 kodiert sein.
+  ### Was du mitschickst
+  In Bruno musst du nichts eintragen: **Benutzer und Passwort kommen aus den Collection-Variablen `{{loginuser}}` und `{{loginpassword}}`** (Collection-Einstellungen → *Vars*).
 
-  Antwort bei Erfolg (200): {"token":"<JWT>"}. Das Script dieses Requests speichert den Token automatisch in der Laufzeit-Variable {{jwttoken}}.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `user` | Text, im JSON-Body | ja | Benutzername. Groß-/Kleinschreibung egal, Umlaute erlaubt. |
+  | `password` | Text, im JSON-Body | ja | Passwort im Klartext (die Verbindung sollte verschlüsselt sein). |
+  | `user` | Text, zusätzlich in der URL (`?user=…`) | ja | Derselbe Benutzername noch einmal. Nur von hier übernimmt der Server den Namen ins Token (siehe „Gut zu wissen“). |
 
-  **Token-Inhalt (Claim role):** JSON-Objekt mit nr, kennziffer, loginname, username, gesperrt, typ, hauptregistrierung und rollen (pwd2 wird nie übernommen).
+  Statt JSON gehen auch Formularfelder (`user=…&password=…`) oder URL-Parameter. Reihenfolge: JSON zuerst, dann Formular, dann URL. Bei Formular und URL ein `+` im Passwort als `%2B` schreiben, sonst wird es zum Leerzeichen.
 
-  **Rollen (role.rollen):** REGISTRIERUNG.ROLLEN ist ein BLOB mit einer Rolle bzw. einem Endpunkt pro Zeile und kommt als Komma-Liste (getrimmt, kleingeschrieben, ohne Duplikate) in den Token. Einträge mit '@' (z.B. '@FAHRER') sind Blaupausen: Sie verweisen auf den REGISTRIERUNG-Datensatz mit username '@FAHRER', dessen ROLLEN beim Login eingesetzt werden (ResolveRoleBlueprints in DataModulLoginClass.pas). Keine Verschachtelung ('@'-Einträge innerhalb einer Blaupause werden nicht weiter aufgelöst); die '@'-Einträge selbst bleiben in der Liste, unbekannte Blaupausen ergeben keine Rechte.
-  Beispiel: ROLLEN = Zeilen "@FAHRER" und "/adressen/getadressen" → role.rollen = "@fahrer,<ROLLEN von @FAHRER>,/adressen/getadressen".
+  ### Was zurückkommt
+  ```json
+  {"token": "eyJhbGciOiJIUzI1NiIs..."}
+  ```
+  Bruno speichert das Token automatisch in der Variable `{{jwttoken}}` – nur für die laufende Sitzung, nicht in der Datei. Alle anderen Requests schicken es dann von selbst mit.
 
-  **Auswertung (HasRouteAccess in Shared/webUtils.pas):** Jede Route mit Auth=true und LocalOnly=false wird gegen role.rollen geprüft. Zugriff, wenn rollen leer ist (= keine Einschränkung), 'Supervisor' enthält, eine für die Route hinterlegte Rolle enthält oder den Endpunkt nennt — genau ('/adressen/getadressen') oder per Wildcard ('/adressen/*'). Sonst HTTP 403 "Keine Berechtigung für diesen Endpunkt.". Rollenänderungen wirken erst nach erneutem Login (neues Token).
+  ### Was schiefgehen kann
+  - **401** mit `{"status":"error","message":"Benutzername oder Passwort sind falsch"}` – Name unbekannt, Passwort falsch oder für das Konto ist kein (gültiges) Passwort hinterlegt.
+  - **401** mit `Dieses Benutzerkonto ist gesperrt.` – Passwort stimmt, aber das Konto ist gesperrt.
+  - **401** mit `Anmeldedaten sind nicht UTF-8 kodiert. Umlaute müssen als UTF-8 übergeben werden (ü = %C3%BC). [...]` – Umlaute im falschen Zeichensatz geschickt.
 
-  Bei falschen Anmeldedaten: HTTP 401 mit Fehlermeldung 'Benutzername oder Passwort sind falsch' .
+  ### Gut zu wissen
+  - **Den Benutzernamen auch in die URL schreiben (`?user=…`).** Fehlt er dort, ist das Token trotzdem gültig, enthält aber keinen Benutzernamen – `/verifytoken` zeigt dann `"user": ""`. Der Name steht in dem Fall nur noch in den Kontodaten (`role.username`).
+  - **Das Token gilt standardmäßig 900 Minuten (15 Stunden).** Die Dauer kann in der Server-Konfiguration anders eingestellt sein. Danach neu anmelden.
+  - **Rechte werden beim Anmelden festgeschrieben.** Das Token enthält die Kontodaten und die Liste der erlaubten Endpunkte. Ändert jemand die Rechte des Benutzers, wirkt das erst nach einem neuen Login.
+  - **Rollen-Vorlagen werden aufgelöst:** Steht in den Rechten eine Vorlage wie `@FAHRER`, übernimmt der Server beim Login die Rechte des Kontos mit dem Namen `@FAHRER`. Vorlagen in Vorlagen werden nicht weiter aufgelöst; eine unbekannte Vorlage gibt keine Rechte.
+  - **Ohne Passwort kein Login:** Ein Konto, für das kein Passwort-Hash hinterlegt ist, kann sich nicht anmelden.
+  - **Die Sperre wird erst nach richtigem Passwort gemeldet** – wer das Passwort nicht kennt, erfährt nicht, ob es das Konto gibt.
+  - **Der Zeitpunkt der Anmeldung wird gespeichert** (Feld `letzter_login` im Benutzerkonto).
 
-  Gültigkeit des Tokens: 900 Minuten (15 Std.), sofern nicht über die Server-Konfiguration [security] minutes_valid abweichend gesetzt.
+  <details><summary>Für Entwickler</summary>
+
+  - Umsetzung: WebAction (nicht über den FRouter) – `TWebModule1.DoLogin` in `Shared/WebModuleUnit1.pas` + `TDataModulLoginClass.login` in `Shared/DataModuls/DataModulLoginClass.pas`; keine Rollenprüfung
+  - Tabelle: `REGISTRIERUNG`; Suche über `USERNAME` (case-insensitiv/umlautsicher per `CaseInsCondition`), Passwortprüfung per bcrypt (`uBCrypt`, `TBCrypt.CompareHash`) gegen `PWD2`
+  - Hashes mit Kostenfaktor über 14 (`MAX_BCRYPT_COST`) oder leerem `PWD2` werden abgewiesen – mit derselben unspezifischen Meldung.
+  - `GESPERRT = 'JA'` (beliebige Schreibweise) sperrt.
+  - Token: `sub` = Query-Parameter `user`; `role` = JSON mit `nr`, `kennziffer`, `loginname`, `username`, `gesperrt`, `typ`, `hauptregistrierung`, `rollen`, `userkonfig`, `personalzeichen`, `usersloginname` (alle als String, `pwd2` nie). Gültigkeit `[security] minutes_valid`, Default 900.
+  - `rollen`: Blob `REGISTRIERUNG.ROLLEN` (eine Rolle pro Zeile) wird zur Komma-Liste (getrimmt, kleingeschrieben, ohne Duplikate); `@`-Blaupausen per `ResolveRoleBlueprints` (eine Ebene).
+  - Nach Erfolg: `UPDATE REGISTRIERUNG SET LETZTER_LOGIN = Now` (Fehler dabei werden verschluckt).
+  - 401-Antwort: `CreateJsonResponse('error', …)` als Text, ohne gesetzten Content-Type.
+
+  </details>

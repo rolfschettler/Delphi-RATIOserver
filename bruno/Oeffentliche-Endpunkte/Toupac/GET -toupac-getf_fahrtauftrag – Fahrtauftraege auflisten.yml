@@ -24,16 +24,73 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensaetze aus F_FAHRTAUFTRAG auf (ungefiltert). Ruft intern `DoSelect('F_FAHRTAUFTRAG', ALLOWED)` auf.
+  **Fahrtauftraege auflisten.** Liefert alle Einträge aus `F_FAHRTAUFTRAG` – auf Wunsch sortiert und seitenweise.
 
-  **Tabelle:** F_FAHRTAUFTRAG
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/getf_fahrtauftrag` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+  ### Was du mitschickst
+  Alles ist optional – ein leerer Body `{}` liefert alles.
 
-  **Body (optional):** `{ "fields": [...] | "*", "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` (ohne `fields` bzw. mit `"*"` werden alle ALLOWED-Felder geliefert).
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `fahrtnr` | Text (max. 20 Zeichen) |
+  | `einsatznr` | Ganzzahl |
+  | `fahrtabrechnungsnr` | Ganzzahl |
+  | `fahrtenbuchnr` | Ganzzahl |
+  | `auftragsart` | Text (max. 40 Zeichen) |
+  | `personenzahl` | Ganzzahl |
+  | `fahrzeugprofil` | Langtext/Datei |
+  | `fahrerprofil` | Langtext/Datei |
+  | `status` | Ganzzahl |
+  | `filiale` | Text (max. 10 Zeichen) |
+  | `gedruckt` | Text (max. 4 Zeichen) |
+  | `erledigt` | Text (max. 4 Zeichen) |
+  | `angelegt_am` | Datum/Uhrzeit |
+  | `geaendert_am` | Datum/Uhrzeit |
+  | `erstelltvon` | Text (max. 20 Zeichen) |
+  | `geaendertvon` | Text (max. 20 Zeichen) |
+  | `zusatzinfo` | Langtext/Datei |
+  | `fahrtenplan` | Langtext/Datei |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
 
-  **LocalOnly:** nein
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "fahrtnr": "Text", "einsatznr": 42, ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
 
-  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Ohne `limit` kommt die komplette Tabelle** – bei vielen Einträgen besser seitenweise abrufen.
+  - **Zum Suchen** den passenden `…filtered`-Endpunkt verwenden, für einen einzelnen Eintrag `…byid`.
+  - **Nicht abrufbar** sind hier: `logo`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getF_Fahrtauftrag` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `F_FAHRTAUFTRAG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

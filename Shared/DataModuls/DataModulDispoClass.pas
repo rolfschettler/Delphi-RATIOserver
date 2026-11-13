@@ -436,8 +436,8 @@ const
     'vertretung','resturlaub_aktuell','altefreietage2','alterurlaub2','nation',
     'xkoord','ykoord','koords_erfasst_am','pushid_fis','pushid_dispo','pushid_tickets'
   );
-  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Passwort-Felder passwort, passwort2, apikey.
-  CONDITIONS: array[0..84] of string = (
+  // Alle Tabellenspalten sind optional filterbar -- ausgenommen Passwort-Felder passwort, passwort2 (apikey ist bewusst filterbar).
+  CONDITIONS: array[0..85] of string = (
     'zeichen = :zeichen',
     'nr = :nr',
     'anrede = :anrede',
@@ -522,9 +522,10 @@ const
     'text7 = :text7',
     'text8 = :text8',
     'text9 = :text9',
-    'text10 = :text10'
+    'text10 = :text10',
+    'apikey = :apikey'
   );
-  FILTER_PARAMS: array[0..84] of string = (
+  FILTER_PARAMS: array[0..85] of string = (
     'zeichen','nr','anrede','name1','name2','strasse',
     'land','plz','ort','telefon1','telefon2','fsnummer',
     'pbs_gueltig_bis','verwendung','geburtstag','bemerkung','angestellt_seit','urlaubgesamt',
@@ -539,7 +540,8 @@ const
     'betrag2','betrag3','betrag4','betrag5','betrag6','betrag7',
     'betrag8','betrag9','betrag10','text1','text2','text3',
     'text4','text5','text6','text7','text8','text9',
-    'text10'
+    'text10',
+    'apikey'
   );
 begin
   DoSelectFilteredDynamic('PERSONALSTAMM', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -731,13 +733,45 @@ const
   // Pro Filterparameter genau eine Bedingung (parallel zu FILTER_PARAMS).
   // Die WHERE-Klausel wird dynamisch nur aus den im Body gesetzten Parametern
   // gebaut -> kein NULL-Hack, kein untypisiertes NULL, keine Mehrfachbindung.
-  CONDITIONS: array[0..2] of string = (
+  CONDITIONS: array[0..29] of string = (
     'einsatznr = :einsatznr',
     'cast(datum as date) = :datum',
-    'fahrer = :fahrer'
+    'fahrer = :fahrer',
+    'nr = :nr',
+    'xkoord = :xkoord',
+    'ykoord = :ykoord',
+    'status = :status',
+    'taetigkeit = :taetigkeit',
+    'herkunft = :herkunft',
+    'fahrzeug = :fahrzeug',
+    'zusatzfeld1 = :zusatzfeld1',
+    'zusatzfeld2 = :zusatzfeld2',
+    'kmstand = :kmstand',
+    'distance = :distance',
+    'dauer = :dauer',
+    'fremdnr = :fremdnr',
+    'text = :text',
+    'standort = :standort',
+    'zeitpunkt = :zeitpunkt',
+    'sortierung = :sortierung',
+    'loginname = :loginname',
+    'art = :art',
+    'textfeld1 = :textfeld1',
+    'textfeld2 = :textfeld2',
+    'textfeld3 = :textfeld3',
+    'datumfeld1 = :datumfeld1',
+    'datumfeld2 = :datumfeld2',
+    'datumfeld3 = :datumfeld3',
+    'wert = :wert',
+    'erledigt_am = :erledigt_am'
   );
 
-  FILTER_PARAMS: array[0..2] of string = ('einsatznr', 'datum', 'fahrer');
+  FILTER_PARAMS: array[0..29] of string = ('einsatznr', 'datum', 'fahrer',
+    'nr', 'xkoord', 'ykoord', 'status', 'taetigkeit', 'herkunft',
+    'fahrzeug', 'zusatzfeld1', 'zusatzfeld2', 'kmstand', 'distance', 'dauer',
+    'fremdnr', 'text', 'standort', 'zeitpunkt', 'sortierung', 'loginname',
+    'art', 'textfeld1', 'textfeld2', 'textfeld3', 'datumfeld1', 'datumfeld2',
+    'datumfeld3', 'wert', 'erledigt_am');
 begin
   DoSelectFilteredDynamic('FIS_LOG', ALLOWED, CONDITIONS, FILTER_PARAMS);
 end;
@@ -891,7 +925,7 @@ const
     'nr','mitarbeiter','von','bis','beantragtam','genehmigtam','genehmigtvon',
     'bemerkung','text1','text2','text3','status','statusam','statusvon','vertretung'
   );
-  CONDITIONS: array[0..7] of string = (
+  CONDITIONS: array[0..13] of string = (
     'nr = :nr',
     'mitarbeiter = :mitarbeiter',
     'bis >= :von',
@@ -899,11 +933,18 @@ const
     'status = :status',
     'statusam = :statusam',
     'statusvon = :statusvon',
-    'vertretung = :vertretung'
+    'vertretung = :vertretung',
+    'beantragtam = :beantragtam',
+    'genehmigtam = :genehmigtam',
+    'genehmigtvon = :genehmigtvon',
+    'text1 = :text1',
+    'text2 = :text2',
+    'text3 = :text3'
   );
-  FILTER_PARAMS: array[0..7] of string = (
+  FILTER_PARAMS: array[0..13] of string = (
     'nr','mitarbeiter','von','bis',
-    'status','statusam','statusvon','vertretung'
+    'status','statusam','statusvon','vertretung',
+    'beantragtam', 'genehmigtam', 'genehmigtvon', 'text1', 'text2', 'text3'
   );
 begin
   Body := ParseJSONObject(Request.Content);
@@ -1009,7 +1050,7 @@ const
     'umlauf'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
-  CONDITIONS: array[0..69] of string = (
+  CONDITIONS: array[0..72] of string = (
     'nr = :nr','datum = :datum','von_soll = :von_soll','von_ist = :von_ist',
     'bis_soll = :bis_soll','bis_ist = :bis_ist','bereich = :bereich','art = :art',
     'xkoord = :xkoord','ykoord = :ykoord','sortierung = :sortierung','disponr = :disponr',
@@ -1031,9 +1072,12 @@ const
     'leerfahrt = :leerfahrt','wochenende = :wochenende','feiertag = :feiertag',
     'dienstnr = :dienstnr','umlaufnr = :umlaufnr','sv_teilnehmernr = :sv_teilnehmernr',
     'sv_typ = :sv_typ','sv_abrechenbar = :sv_abrechenbar','sv_streckenpreis = :sv_streckenpreis',
-    'freigabe = :freigabe','umlauf = :umlauf'
+    'freigabe = :freigabe','umlauf = :umlauf',
+    'fa_knoten = :fa_knoten',
+    'fa_knotenhaltnr = :fa_knotenhaltnr',
+    'fa_zfahrzeugnr = :fa_zfahrzeugnr'
   );
-  FILTER_PARAMS: array[0..69] of string = (
+  FILTER_PARAMS: array[0..72] of string = (
     'nr','datum','von_soll','von_ist','bis_soll','bis_ist','bereich','art','xkoord','ykoord',
     'sortierung','disponr','zeichen','kennzeichen','eart','dienstelementnr','dienstelementart',
     'bemerkung','zusatzfeld1','zusatzfeld2','zusatzfeld3','datumfeld1','datumfeld2','datumfeld3',
@@ -1043,7 +1087,8 @@ const
     'ortsteil','region','land','meter_soll','meter_ist','meter_kalk','sekunden_soll','sekunden_ist',
     'sekunden_kalk','fahrzeugprofil','anzahl_fahrer','kosten','leerfahrt','wochenende','feiertag',
     'dienstnr','umlaufnr','sv_teilnehmernr','sv_typ','sv_abrechenbar','sv_streckenpreis','freigabe',
-    'umlauf'
+    'umlauf',
+    'fa_knoten', 'fa_knotenhaltnr', 'fa_zfahrzeugnr'
   );
 begin
   DoSelectFilteredDynamic('FAHRTABLAUF', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -1222,11 +1267,16 @@ const
   ALLOWED: array[0..8] of string = (
     'nr','von','bis','objekt','einsatznr','dienstobjnr','art','bemerkung','fahrtablaufnr'
   );
-  CONDITIONS: array[0..4] of string = (
-    'bis >= :von', 'von <= :bis', 'objekt = :objekt', 'einsatznr = :einsatznr', 'dienstobjnr = :dienstobjnr'
+  CONDITIONS: array[0..8] of string = (
+    'bis >= :von', 'von <= :bis', 'objekt = :objekt', 'einsatznr = :einsatznr', 'dienstobjnr = :dienstobjnr',
+    'nr = :nr',
+    'art = :art',
+    'bemerkung = :bemerkung',
+    'fahrtablaufnr = :fahrtablaufnr'
   );
-  FILTER_PARAMS: array[0..4] of string = (
-    'von','bis','objekt','einsatznr','dienstobjnr'
+  FILTER_PARAMS: array[0..8] of string = (
+    'von','bis','objekt','einsatznr','dienstobjnr',
+    'nr', 'art', 'bemerkung', 'fahrtablaufnr'
   );
 begin
   Body := ParseJSONObject(Request.Content);

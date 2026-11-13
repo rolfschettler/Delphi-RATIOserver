@@ -16,26 +16,86 @@ config:
 
 request:
   variables:
+    - name: baseURL
+      value: "localhost/ibapi"
+    - name: phpurl
+      value: "localhost/php"
     - name: jwttoken
       value: ""
-    - name: baseURL
-      value: localhost/ibapi
-    - name: phpurl
-      value: localhost/php
+    - name: loginuser
+      value: "SUPERVISOR"
+    - name: loginpassword
+      value: "masterkey_12345678"
     - name: einladungstoken
       value: ""
+    - name: testpasswordhash
+      value: "$2y$12$f8Rq4jedjseTZgLKhyWK2uGR25cXIPyNUwH7KE18wdeStNucnJzYO"
 
 docs:
   content: |-
-    Öffentliche REST-Endpunkte des RATIOserver (Delphi WebBroker, FireDAC/InterBase). Enthält nur die Endpunkte, die laut Router-Konfiguration (Shared/WebModuleUnit1.pas, Abschnitt "PUBLIC API") auch außerhalb von localhost erreichbar sind — reine Diagnose-/PHP-Entwicklungs-Endpunkte (z.B. /select, /insert, /tablestructure) und Localhost-only-Routen (z.B. /public/checkmailtoken, /registrierung/insertregistrierunglocal, /users/getuserlocal) sind nicht Teil dieser Collection.
+    # RATIOserver – API-Doku
 
-    Jeder Controller (DataModul) hat einen eigenen Unterordner, die Endpunkte darin sind nach ihrer Route sortiert.
+    Diese Collection beschreibt alle Endpunkte des RATIOserver, die **von außen erreichbar** sind. Jeder Ordner ist ein Fachbereich (Adressen, Fuhrpark, Dispo, …). Jeder Request enthält im Reiter **Docs** eine Beschreibung: was er tut, was du mitschickst, was zurückkommt und worauf du achten musst.
 
-    **Authentifizierung:** Alle Endpunkte außer /login und den /public/-Routen (Einladungs-Token) benötigen ein gültiges JWT-Bearer-Token. /createtoken ist nur vom localhost erreichbar und deshalb nicht Teil dieser Collection. Zuerst den Request "Login" im Ordner "Login" ausführen (setzt automatisch die Laufzeit-Variable {{jwttoken}} per bru.setVar – sie wird nicht in opencollection.yml gespeichert; das Passwort kommt aus .env: PW_SUPERVISOR, Vorlage .env.example), danach laufen alle weiteren Requests mit Bearer-Auth über {{jwttoken}}.
+    ## So fängst du an
+    1. **Zugangsdaten prüfen:** Collection-Einstellungen → *Vars*. Dort stehen die Server-Adresse (`baseURL`) und die Login-Daten (`loginuser`, `loginpassword`).
+    2. **Anmelden:** Ordner **Login** → **POST /login** ausführen. Das Token wird automatisch gespeichert.
+    3. **Loslegen:** Alle anderen Requests schicken das Token jetzt automatisch mit. Nach 15 Stunden läuft es ab – dann einfach neu anmelden.
 
-    **Rollen:** Jede Route mit Auth und ohne LocalOnly wird gegen REGISTRIERUNG.ROLLEN des angemeldeten Benutzers geprüft (im Token unter role.rollen). Erlaubt ist, was dort als Endpunkt steht (genau oder mit Wildcard, z.B. /adressen/*), über eine Blaupause (@FAHRER usw.) eingebunden ist oder wenn "Supervisor" enthalten ist. Leeres ROLLEN = keine Einschränkung. Sonst 403 "Keine Berechtigung für diesen Endpunkt.". Rollen-Tests: Collection bruno/Rollen-Tests.
+    ## Variablen
+    | Variable | Bedeutung |
+    |---|---|
+    | `baseURL` | Adresse des Servers, z.B. `localhost/ibapi` |
+    | `phpurl` | Adresse des PHP-Backends |
+    | `loginuser` / `loginpassword` | Benutzer und Passwort für den Login |
+    | `jwttoken` | Das Anmelde-Token. Wird vom Login automatisch gefüllt – hier leer lassen. |
+    | `einladungstoken` | Token aus einer Einladungs-Mail, für die Endpunkte im Ordner **Public** |
+    | `testpasswordhash` | Beispiel-Passwort (verschlüsselt) zum Anlegen von Benutzerkonten |
+    | `karteiid`, `propertyid` | Werden im Ordner **Fragebogen** von „Kartei anlegen“ bzw. „Feld anlegen“ automatisch gesetzt – diese Requests zuerst ausführen. |
 
-    Das Backend erwartet auch bei GET-Leseoperationen einen JSON-Body (z.B. "fields"/"orderby"/Filterparameter) – die GET-Requests dieser Collection senden ihn deshalb mit.
+    Beispielwerte wie `"nr": 42` stehen direkt im Body des jeweiligen Requests. Für echte Tests dort eine vorhandene Nummer eintragen.
+
+    ## Anmeldung und Berechtigungen
+    - **Fast alle Endpunkte brauchen eine Anmeldung.** Ohne gültiges Token kommt **Fehler 401**.
+    - **Ausnahmen:** `/login` selbst und der Ordner **Public** – dort wird statt mit Login mit einem Einladungs-Token gearbeitet.
+    - **Berechtigungen:** Jeder Benutzer hat in seinem Konto eine Liste erlaubter Endpunkte bzw. Rollen. Fehlt ein Endpunkt darin, kommt **Fehler 403** („Keine Berechtigung für diesen Endpunkt.“).
+      - Ein Konto **ohne** Einträge darf alles. „Supervisor“ darf ebenfalls alles.
+      - Einträge wie `/adressen/*` erlauben einen ganzen Bereich.
+      - Einträge mit `@` (z.B. `@FAHRER`) sind Rollen-Vorlagen: Sie übernehmen die Rechte des Kontos mit diesem Namen.
+      - Geänderte Rechte gelten erst nach erneutem Login.
+
+    ## Was für alle Endpunkte gilt
+    - **Parameter gehören in den Body (JSON)** – auch beim Lesen. Ausnahmen sind in der jeweiligen Doku genannt.
+    - **GET oder POST ist egal:** Der Server schaut nur auf den Pfad. Lesende Requests sind hier als GET angelegt, schreibende als POST.
+    - **Felder auswählen:** `"fields": "*"` (oder weglassen) liefert alle verfügbaren Felder, `"fields": ["nr", "name1"]` nur die genannten.
+    - **Sortieren:** `"orderby": "name1"` – genau ein Feld, aufsteigend.
+    - **Blättern:** `"limit": 20, "offset": 40` liefert 20 Einträge ab dem 41. (Seite 3). Die Antwort enthält dann auch `total` = Gesamtzahl.
+    - **Suchen:** Die `…filtered`-Endpunkte suchen nach genau passenden Werten. Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.
+    - **Antwort beim Lesen:** `{"header": {...}, "data": [ {...}, ... ]}` – die Einträge stehen in `data`.
+    - **Antwort beim Schreiben:** `{"status": "OK"}`.
+    - **Fehler:** `{"status": "error", "message": "..."}`. Achtung: Manche Fehler kommen trotzdem mit HTTP-Status 200 – **immer auf `"status": "error"` prüfen**.
+    - **Ändern und Löschen melden auch „OK“, wenn es den Eintrag gar nicht gibt.** Es wurde dann einfach nichts geändert.
+    - **Unbekannte Feldnamen werden meist ohne Meldung ignoriert** – Tippfehler fallen also nicht auf.
+
+    ## Statuscodes auf einen Blick
+    | Code | Bedeutung |
+    |---|---|
+    | 200 | Erfolg – oder Fehler mit `"status": "error"` im Text |
+    | 400 | Die Datenbank hat die Daten abgelehnt (z.B. Text zu lang) |
+    | 401 | Nicht angemeldet / Token abgelaufen |
+    | 403 | Keine Berechtigung für diesen Endpunkt |
+    | 404 | Diesen Pfad gibt es nicht |
+
+    <details><summary>Für Entwickler</summary>
+
+    - Delphi WebBroker (Apache-DLL bzw. CGI), FireDAC/InterBase. Routen: `FRouter.AddRoute(...)` in `Shared/WebModuleUnit1.pas`; enthalten sind alle Routen mit LocalOnly = false plus die WebActions `/login` und `/verifytoken`.
+    - Nicht enthalten sind reine Localhost-Routen (z.B. `/select`, `/insert`, `/tablestructure`, `/createtoken`, `/adddemo`, `/calculateroute`, `/getpublicendpoints`) – von außen antworten sie mit 403 „Zugriff nur vom lokalen Server erlaubt.“
+    - Rollenprüfung: `HasRouteAccess` in `Shared/webUtils.pas`, Rollen stehen im Token unter `role.rollen`. Tests: Collection `bruno/Rollen-Tests`.
+    - Token-Gültigkeit: 900 Minuten bzw. `[security] minutes_valid`.
+    - Fehlerausgabe: `TWebModule1.WebModuleException` – HTTP 400 nur bei FireDAC-Datenbankfehlern.
+    - Keine `.env`-Datei: Alle Variablen stehen in `opencollection.yml` (Passwort bewusst im Klartext).
+
+    </details>
   type: text/markdown
 bundled: false
 extensions:

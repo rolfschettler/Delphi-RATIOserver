@@ -28,18 +28,73 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in der Tabelle ZUSATZTABELLE an (generisches `DoInsert`).
+  **Zusatzdatensatz anlegen.** Legt einen neuen Eintrag in `ZUSATZTABELLE` an.
 
-  **Tabelle:** ZUSATZTABELLE
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/adressen/insertzusatztabelle` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** reftable, refnr, modul, bereich, zusatzfeld1–zusatzfeld10, zusatzdatum1–zusatzdatum3, zusatzzahl1–zusatzzahl3, zusatznum1–zusatznum3, zusatzblob1–zusatzblob3, erstellt, geaendert, erfasstvon, geaendertvon, kennziffer, sortierung, bemerkung – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Hinweis:** Der Primärschlüssel `nr` ist NICHT in ALLOWED und wird ignoriert – die Vergabe muss datenbankseitig (Generator/Trigger) erfolgen; `/adressen/getzusatztabellekey` liefert nur den nächsten Generatorwert.
+  | Feld | Typ |
+  |---|---|
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
+  | `modul` | Text (max. 80 Zeichen) |
+  | `bereich` | Text (max. 80 Zeichen) |
+  | `zusatzfeld1` | Text (max. 255 Zeichen) |
+  | `zusatzfeld2` | Text (max. 255 Zeichen) |
+  | `zusatzfeld3` | Text (max. 255 Zeichen) |
+  | `zusatzfeld4` | Text (max. 255 Zeichen) |
+  | `zusatzfeld5` | Text (max. 255 Zeichen) |
+  | `zusatzfeld6` | Text (max. 255 Zeichen) |
+  | `zusatzfeld7` | Text (max. 255 Zeichen) |
+  | `zusatzfeld8` | Text (max. 255 Zeichen) |
+  | `zusatzfeld9` | Text (max. 255 Zeichen) |
+  | `zusatzfeld10` | Text (max. 255 Zeichen) |
+  | `zusatzdatum1` | Datum/Uhrzeit |
+  | `zusatzdatum2` | Datum/Uhrzeit |
+  | `zusatzdatum3` | Datum/Uhrzeit |
+  | `zusatzzahl1` | Ganzzahl |
+  | `zusatzzahl2` | Ganzzahl |
+  | `zusatzzahl3` | Ganzzahl |
+  | `zusatznum1` | Kommazahl |
+  | `zusatznum2` | Kommazahl |
+  | `zusatznum3` | Kommazahl |
+  | `zusatzblob1` | Langtext/Datei |
+  | `zusatzblob2` | Langtext/Datei |
+  | `zusatzblob3` | Langtext/Datei |
+  | `erstellt` | Datum/Uhrzeit |
+  | `geaendert` | Datum/Uhrzeit |
+  | `erfasstvon` | Text (max. 80 Zeichen) |
+  | `geaendertvon` | Text (max. 80 Zeichen) |
+  | `kennziffer` | Ganzzahl |
+  | `sortierung` | Ganzzahl |
+  | `bemerkung` | Text (max. 255 Zeichen) |
 
-  **Body:** `{ "reftable": "...", "refnr": <wert>, "modul": "...", "bereich": "...", "bemerkung": "...", ... }`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) vergibt die Datenbank automatisch** – mitschicken geht nicht, sie würde ignoriert. Die Antwort enthält die neue Nummer nicht; wer sie braucht, sucht den Eintrag danach (z.B. über den `…filtered`-Endpunkt).
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.insertZusatztabelle` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ZUSATZTABELLE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

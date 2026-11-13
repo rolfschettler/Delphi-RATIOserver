@@ -12,7 +12,7 @@ http:
       {
         "nr": 42,
         "fahrtnr": "F-2026-042",
-        "einsatznr": 100,
+        "einsatznr": 4711,
         "auftragsart": "Transfer",
         "personenzahl": 4,
         "status": "neu",
@@ -31,18 +31,62 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in F_FAHRTAUFTRAG an. Ruft intern `DoInsert('F_FAHRTAUFTRAG', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/getf_fahrtauftragkey` ermittelt werden.
+  **Fahrtauftrag anlegen.** Legt einen neuen Eintrag in `F_FAHRTAUFTRAG` an.
 
-  **Tabelle:** F_FAHRTAUFTRAG
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/toupac/insertf_fahrtauftrag` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+  | Feld | Typ | Pflicht laut Datenbank |
+  |---|---|---|
+  | `nr` | Ganzzahl | ja |
+  | `fahrtnr` | Text (max. 20 Zeichen) |  |
+  | `einsatznr` | Ganzzahl |  |
+  | `fahrtabrechnungsnr` | Ganzzahl |  |
+  | `fahrtenbuchnr` | Ganzzahl |  |
+  | `auftragsart` | Text (max. 40 Zeichen) |  |
+  | `personenzahl` | Ganzzahl |  |
+  | `fahrzeugprofil` | Langtext/Datei |  |
+  | `fahrerprofil` | Langtext/Datei |  |
+  | `status` | Ganzzahl |  |
+  | `filiale` | Text (max. 10 Zeichen) |  |
+  | `gedruckt` | Text (max. 4 Zeichen) |  |
+  | `erledigt` | Text (max. 4 Zeichen) |  |
+  | `angelegt_am` | Datum/Uhrzeit |  |
+  | `geaendert_am` | Datum/Uhrzeit |  |
+  | `erstelltvon` | Text (max. 20 Zeichen) |  |
+  | `geaendertvon` | Text (max. 20 Zeichen) |  |
+  | `zusatzinfo` | Langtext/Datei |  |
+  | `fahrtenplan` | Langtext/Datei |  |
+  | `reftable` | Text (max. 80 Zeichen) |  |
+  | `refnr` | Ganzzahl |  |
 
-  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) kannst du mitschicken** – eine freie Nummer liefert vorher der passende `…key`-Endpunkt. Lässt du sie weg, vergibt die Datenbank automatisch eine. Die Antwort enthält keine Nummer.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
+  - **Nicht setzbar** sind hier: `logo`.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.insertF_Fahrtauftrag` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `F_FAHRTAUFTRAG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

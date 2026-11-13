@@ -183,7 +183,7 @@ const
     'strasse','plz','ort','telefon1','email','matchcode','lvorgang'
   );
   // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder bemerkung, adressenbaum.
-  CONDITIONS: array[0..180] of string = (
+  CONDITIONS: array[0..186] of string = (
     'gruppe = :gruppe',
     'name1 = :name1',
     'name2 = :name2',
@@ -364,9 +364,15 @@ const
     'pass_name1 = :pass_name1',
     'pass_name2 = :pass_name2',
     'steuernummer = :steuernummer',
-    'mandant = :mandant'
+    'mandant = :mandant',
+    'ustid_absender = :ustid_absender',
+    'rechemail = :rechemail',
+    'rechnamenszusatz = :rechnamenszusatz',
+    'hr_nummer = :hr_nummer',
+    'hr_registergericht = :hr_registergericht',
+    'erechnung_format = :erechnung_format'
   );
-  FILTER_PARAMS: array[0..180] of string = (
+  FILTER_PARAMS: array[0..186] of string = (
     'gruppe','name1','name2','name3','namenszusatz','strasse',
     'ort','email','kennziffer','code','anrede','titel',
     'land','plz','ansprech','briefanrede','ntermin','lvorgang',
@@ -397,7 +403,8 @@ const
     'kat13','kat14','kat15','kat16','kat17','kat18',
     'kat19','kat20','kat21','kat22','kat23','kat24',
     'tourkuerzel_kostentraeger','telefon3','heimatort','pass_name1','pass_name2','steuernummer',
-    'mandant'
+    'mandant',
+    'ustid_absender', 'rechemail', 'rechnamenszusatz', 'hr_nummer', 'hr_registergericht', 'erechnung_format'
   );
 begin
   DoSelectFilteredDynamic('ADRESSEN', ALLOWED, CONDITIONS, FILTER_PARAMS);

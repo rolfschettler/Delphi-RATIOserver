@@ -25,10 +25,155 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensätze aus der Tabelle EINSATZ (`DoSelect('EINSATZ', ALLOWED)`) ohne Filter. Body optional: `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}`.
+  **Einsätze auflisten.** Liefert alle Einträge aus `EINSATZ` – auf Wunsch sortiert und seitenweise.
 
-  **Erlaubte Felder (ALLOWED, 103):** nr, von, bis, bezeichnung, typ, hinweis, auftragnr, fahrzeug, fahrer1, fahrer2, fahrzeugstatus, fahrer1status, fahrer2status, gruppe, lognr, bemerkung, km, stunden, abfahrtsort, abfahrtszeit, firma, dienstnr, einsatznr, linie, tournr, toureinsatznr, disponentinfo, geprueft, bereich, liniedienstplannr, dienstobjektnr, abrechnungstd, fahrtenplan, stationid, dispostatus, markiert, angemeldet, liniemappenr, ausdienst, betrieb, fahrzeugprofil, fahrerprofil, standort, betreiber, telematikorderid, telematiksendtime, telematikchangetime, telematikfreigabe, durchgefuehrt_von, ivuorderid, ivusendtime, ivustatus, gsbetrag, nachauftragnehmer, minuten, rueckkehrort, maxfislognr, angemeldet1, angemeldet2, maxfislog1, maxfislog2, einsatzstatus, stornogrund, perszahl, personen, sv_tournr, sv_tournummer, sv_fahrtnummer, sv_fahrtnr, sv_fahrtbezeichnung, sv_sammeleinzel_auftragnr, sv_gutschrift_auftragnr, sv_begleit_auftragnr, sv_tourbezeichnung, xkoord_start, ykoord_start, xkoord_ende, ykoord_ende, erledigt_am, storniert_am, umlauf, anhaenger, begleiter, fahrer3, fahrer3status, fis_abgelehnt, fis_abgelehnt_fahrer2, fis_abgelehnt_fahrer3, fis_abgeschlossen, fis_abgeschlossen_fahrer2, fis_abgeschlossen_fahrer3, fis_bestaetigt, fis_bestaetigt_fahrer2, fis_bestaetigt_fahrer3, fis_geaendert, fis_geaendert_fahrer2, fis_geaendert_fahrer3, fis_gelesen, fis_gelesen_fahrer2, fis_gelesen_fahrer3, geaendert, geaendertvon, zielort.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/geteinsatz` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Was du mitschickst
+  Alles ist optional – ein leerer Body `{}` liefert alles.
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
+
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `von` | Datum/Uhrzeit |
+  | `bis` | Datum/Uhrzeit |
+  | `bezeichnung` | Text (max. 120 Zeichen) |
+  | `typ` | Text (max. 1 Zeichen) |
+  | `hinweis` | Text (max. 40 Zeichen) |
+  | `auftragnr` | Ganzzahl |
+  | `fahrzeug` | Text (max. 30 Zeichen) |
+  | `fahrer1` | Text (max. 30 Zeichen) |
+  | `fahrer2` | Text (max. 30 Zeichen) |
+  | `fahrzeugstatus` | Ganzzahl |
+  | `fahrer1status` | Ganzzahl |
+  | `fahrer2status` | Ganzzahl |
+  | `gruppe` | Text (max. 20 Zeichen) |
+  | `lognr` | Ganzzahl |
+  | `bemerkung` | Text (max. 40 Zeichen) |
+  | `km` | Ganzzahl |
+  | `stunden` | Ganzzahl |
+  | `abfahrtsort` | Text (max. 40 Zeichen) |
+  | `abfahrtszeit` | Text (max. 5 Zeichen) |
+  | `firma` | Text (max. 10 Zeichen) |
+  | `dienstnr` | Text (max. 10 Zeichen) |
+  | `einsatznr` | Text (max. 10 Zeichen) |
+  | `linie` | Text (max. 10 Zeichen) |
+  | `tournr` | Ganzzahl |
+  | `toureinsatznr` | Ganzzahl |
+  | `disponentinfo` | Text (max. 40 Zeichen) |
+  | `geprueft` | Text (max. 4 Zeichen) |
+  | `bereich` | Text (max. 10 Zeichen) |
+  | `liniedienstplannr` | Ganzzahl |
+  | `dienstobjektnr` | Ganzzahl |
+  | `abrechnungstd` | Kommazahl |
+  | `fahrtenplan` | Langtext/Datei |
+  | `stationid` | Ganzzahl |
+  | `dispostatus` | Ganzzahl |
+  | `markiert` | Text (max. 4 Zeichen) |
+  | `angemeldet` | Datum/Uhrzeit |
+  | `liniemappenr` | Ganzzahl |
+  | `ausdienst` | Ganzzahl |
+  | `betrieb` | Text (max. 8 Zeichen) |
+  | `fahrzeugprofil` | Text (max. 40 Zeichen) |
+  | `fahrerprofil` | Text (max. 40 Zeichen) |
+  | `standort` | Text (max. 80 Zeichen) |
+  | `betreiber` | Text (max. 80 Zeichen) |
+  | `telematikorderid` | Text (max. 40 Zeichen) |
+  | `telematiksendtime` | Datum/Uhrzeit |
+  | `telematikchangetime` | Datum/Uhrzeit |
+  | `telematikfreigabe` | Ganzzahl |
+  | `durchgefuehrt_von` | Ganzzahl |
+  | `ivuorderid` | Text (max. 40 Zeichen) |
+  | `ivusendtime` | Datum/Uhrzeit |
+  | `ivustatus` | Ganzzahl |
+  | `gsbetrag` | Kommazahl |
+  | `nachauftragnehmer` | Ganzzahl |
+  | `minuten` | Ganzzahl |
+  | `rueckkehrort` | Text (max. 600 Zeichen) |
+  | `maxfislognr` | Ganzzahl |
+  | `angemeldet1` | Datum/Uhrzeit |
+  | `angemeldet2` | Datum/Uhrzeit |
+  | `maxfislog1` | Ganzzahl |
+  | `maxfislog2` | Ganzzahl |
+  | `einsatzstatus` | Text (max. 30 Zeichen) |
+  | `stornogrund` | Text (max. 255 Zeichen) |
+  | `perszahl` | Text (max. 25 Zeichen) |
+  | `personen` | Ganzzahl |
+  | `sv_tournr` | Ganzzahl |
+  | `sv_tournummer` | Text (max. 30 Zeichen) |
+  | `sv_fahrtnummer` | Text (max. 30 Zeichen) |
+  | `sv_fahrtnr` | Ganzzahl |
+  | `sv_fahrtbezeichnung` | Text (max. 120 Zeichen) |
+  | `sv_sammeleinzel_auftragnr` | Ganzzahl |
+  | `sv_gutschrift_auftragnr` | Ganzzahl |
+  | `sv_begleit_auftragnr` | Ganzzahl |
+  | `sv_tourbezeichnung` | Text (max. 120 Zeichen) |
+  | `xkoord_start` | Text (max. 20 Zeichen) |
+  | `ykoord_start` | Text (max. 20 Zeichen) |
+  | `xkoord_ende` | Text (max. 20 Zeichen) |
+  | `ykoord_ende` | Text (max. 20 Zeichen) |
+  | `erledigt_am` | Datum/Uhrzeit |
+  | `storniert_am` | Datum/Uhrzeit |
+  | `umlauf` | Text (max. 30 Zeichen) |
+  | `anhaenger` | Text (max. 30 Zeichen) |
+  | `begleiter` | Text (max. 30 Zeichen) |
+  | `fahrer3` | Text (max. 30 Zeichen) |
+  | `fahrer3status` | Ganzzahl |
+  | `fis_abgelehnt` | Datum/Uhrzeit |
+  | `fis_abgelehnt_fahrer2` | Datum/Uhrzeit |
+  | `fis_abgelehnt_fahrer3` | Datum/Uhrzeit |
+  | `fis_abgeschlossen` | Datum/Uhrzeit |
+  | `fis_abgeschlossen_fahrer2` | Datum/Uhrzeit |
+  | `fis_abgeschlossen_fahrer3` | Datum/Uhrzeit |
+  | `fis_bestaetigt` | Datum/Uhrzeit |
+  | `fis_bestaetigt_fahrer2` | Datum/Uhrzeit |
+  | `fis_bestaetigt_fahrer3` | Datum/Uhrzeit |
+  | `fis_geaendert` | Datum/Uhrzeit |
+  | `fis_geaendert_fahrer2` | Datum/Uhrzeit |
+  | `fis_geaendert_fahrer3` | Datum/Uhrzeit |
+  | `fis_gelesen` | Datum/Uhrzeit |
+  | `fis_gelesen_fahrer2` | Datum/Uhrzeit |
+  | `fis_gelesen_fahrer3` | Datum/Uhrzeit |
+  | `geaendert` | Datum/Uhrzeit |
+  | `geaendertvon` | Text (max. 30 Zeichen) |
+  | `zielort` | Text (max. 100 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "von": "2026-09-01 08:00:00", "bis": "2026-09-01 08:00:00", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Ohne `limit` kommt die komplette Tabelle** – bei vielen Einträgen besser seitenweise abrufen.
+  - **Zum Suchen** den passenden `…filtered`-Endpunkt verwenden, für einen einzelnen Eintrag `…byid`.
+  - **Nicht abrufbar** sind hier: `refnr`, `reftable`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getEinsatz` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `EINSATZ`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -18,16 +18,39 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Kein generischer CRUD-Endpunkt: führt die feste Abfrage `SELECT * FROM ADRESSEN_NEXTKENNZIFFER` aus und liefert damit die nächste freie Kennziffer für einen neuen ADRESSEN-Datensatz. Body wird nicht ausgewertet.
+  **Nächste Kennziffer ermitteln.** Reserviert die nächste freie Kennziffer (Adressnummer) und liefert sie zurück.
 
-  **Tabelle:** ADRESSEN (View/Prozedur ADRESSEN_NEXTKENNZIFFER)
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/adressen/getadressenkey` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Key-Feld:** `kennziffer`
+  ### Was du mitschickst
+  Nichts. URL-Parameter und Body werden nicht ausgewertet.
 
-  **Body:** keiner
+  ### Was zurückkommt
+  ```json
+  {"header": {"kennziffer": "ftinteger"}, "data": [{"kennziffer": 10263}]}
+  ```
+  Die neue Nummer steht in `data[0].kennziffer`.
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – Datenbankfehler.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Jeder Aufruf verbraucht eine Nummer.** Die Kennziffer wird sofort weitergezählt – auch wenn du sie danach nicht verwendest. Zwei Aufrufe liefern nie dieselbe Nummer; Lücken in der Nummerierung sind normal.
+  - **Für das Anlegen einer Adresse brauchst du diesen Endpunkt nicht.** Beim Anlegen über `/adressen/insertadressen` vergibt die Datenbank die Kennziffer automatisch – aus demselben Zähler.
+  - **Die geholte Nummer lässt sich beim Anlegen nicht mitgeben:** `/adressen/insertadressen` nimmt keine `kennziffer` an und ignoriert sie ohne Meldung. Die Adresse bekommt dann eine weitere neue Nummer, die hier geholte bleibt ungenutzt.
 
-  **Antwort:** `{"header":{...},"data":[{...}]}` – Feldname(n) entsprechend der Definition von ADRESSEN_NEXTKENNZIFFER in der Datenbank.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.getNextKennziffer` in `Shared/DataModuls/DataModulAdressenClass.pas` (Route heißt `/adressen/getadressenkey`)
+  - Abfrage `SELECT * FROM ADRESSEN_NEXTKENNZIFFER` – das ist eine Stored Procedure: `kennziffer = GEN_ID(ADRESSEN_KENNZIFFER_GEN, 1); suspend;`
+  - Trigger `TI_ADRESSEN` setzt `KENNZIFFER = GEN_ID(ADRESSEN_KENNZIFFER_GEN, 1)`, wenn sie beim Insert NULL ist.
+  - Auffälligkeit: `insertAdresse` hat `kennziffer` nicht in `ALLOWED` – ein vorab geholter Schlüssel kann dort nicht verwendet werden; der Endpunkt verbraucht also nur Nummern.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

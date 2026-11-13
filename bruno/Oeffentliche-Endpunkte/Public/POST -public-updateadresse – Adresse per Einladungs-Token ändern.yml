@@ -20,9 +20,7 @@ http:
         "telefon1": "07392 123456",
         "email": "max.mustermann@example.com"
       }
-  auth:
-    type: bearer
-    token: "{{jwttoken}}"
+  auth: inherit
 
 settings:
   encodeUrl: true
@@ -32,14 +30,46 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Ändert die Adresse, zu der der Einladungs-Token gehört (`UPDATE ADRESSEN SET ... WHERE kennziffer = <aus Token>`). Der Schlüssel kommt ausschließlich aus dem Token, nie aus dem Body – IDOR ist strukturell ausgeschlossen. Darf beliebig oft aufgerufen werden, solange der Gast nicht `/public/adresse/abschliessen` aufruft.
+  **Adresse per Einladungs-Token ändern.** Der Gast korrigiert seine eigene Adresse – die Adresse, zu der sein Einladungs-Token gehört. Ohne Login.
 
-  **Token-Übergabe:** Body-Feld `token` (empfohlen) oder ersatzweise `?token=...`. Erwartet: REFERENCE_TYPE = `ADRESSEN`, PURPOSE = `einladung`.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/public/updateadresse` |
+  | **Anmeldung** | kein Login – stattdessen Einladungs-Token im Body |
 
-  **Erlaubte Felder (ALLOWED):** anrede, titel, name1, name2, strasse, plz, ort, telefon1, email – bewusst OHNE `gruppe`/`kennziffer`. Nur im Body vorhandene Felder werden geschrieben; ein explizites JSON `null` setzt das Feld auf NULL. Kein gültiges Feld → 400 "Keine gueltigen Felder uebergeben.".
+  ### Was du mitschickst
+  Im JSON-Body:
 
-  **Auth:** Auth=false – kein JWT nötig, autorisiert allein über den Einladungs-Token (Bearer-Block schadet nicht).
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `token` | Text | ja | Der Token aus der Einladungsmail (ersatzweise in der URL `?token=…`). Muss ein **Adress-Einladungs-Token** sein. |
+  | `anrede`, `titel`, `name1`, `name2`, `strasse`, `plz`, `ort`, `telefon1`, `email` | Text | mindestens eins | Die Felder, die geändert werden sollen. `name1` = Vorname, `name2` = Nachname. |
 
-  **LocalOnly:** false – bewusst aus dem Internet erreichbar.
+  Nur mitgeschickte Felder werden geändert, alle anderen bleiben, wie sie sind. `null` macht ein Feld ausdrücklich leer. Groß-/Kleinschreibung der Feldnamen ist egal.
 
-  **Antwort:** `{"status":"OK"}`; Token-Fehler wie bei `/public/getadresse` (401/403).
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **400** `{"status":"ERROR","message":"Keine gueltigen Felder uebergeben."}` – kein einziges der erlaubten Felder im Body.
+  - **401 / 403** – Probleme mit dem Token, Meldungen wie bei `/public/getadresse`: `Kein Token uebergeben.`, `Token unbekannt.`, `Token wurde widerrufen.`, `Sie haben diesen Vorgang bereits abgeschlossen.`, `Token ist abgelaufen.`, `Token wurde bereits verwendet.` (alle 401), `Token gehoert nicht zu diesem Vorgang.` (403, falscher Token-Typ).
+  - **400** `{"status":"error","message":"..."}` – die Datenbank lehnt ab, z.B. weil ein Text zu lang für das Feld ist.
+
+  ### Gut zu wissen
+  - **Der Gast kann nur seine eigene Adresse ändern.** Welche Adresse geändert wird, legt allein der Token fest. Eine mitgeschickte `kennziffer` wird ignoriert.
+  - **Die Kategorie (`gruppe`) ist bewusst nicht änderbar** – sie ist nur für den internen Gebrauch. Diese und alle anderen nicht erlaubten Felder werden ohne Meldung ignoriert.
+  - **Beliebig oft aufrufbar,** z.B. jedes Mal, wenn der Gast ein Feld verlässt. Der Token wird dabei nicht verbraucht – erst `/public/adresse/abschliessen` beendet den Link.
+  - **Kein Fehler, wenn die Adresse fehlt:** Gibt es die Adresse zum Token nicht mehr, wird nichts geändert – die Antwort ist trotzdem `{"status":"OK"}`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulPublic.updateAdresseByToken` in `Shared/DataModuls/DataModulPublicClass.pas`; Token-Prüfung `ValidatePublicToken`, Schreiben `UpdateRecordByKey`
+  - Tabellen: `ACCESS_TOKENS` (`REFERENCE_TYPE` = `ADRESSEN`, `PURPOSE` = `einladung`), `ADRESSEN` (`UPDATE … WHERE kennziffer = REFERENCE_ID`)
+  - Erlaubte Felder fest verdrahtet, ohne `gruppe`; Werte werden als String gebunden; Schreiben in einer Transaktion.
+  - Kein 404, wenn das UPDATE keine Zeile trifft.
+  - Route mit `Auth=false`, `LocalOnly=false`; kein JWT, keine Rollenprüfung.
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

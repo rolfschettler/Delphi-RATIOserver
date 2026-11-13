@@ -28,14 +28,66 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aendert einen bestehenden Datensatz in REGISTRIERUNG anhand des Primaerschluessels (`DoUpdate('REGISTRIERUNG', ALLOWED, 'nr')`).
+  **Registrierung aendern.** Ändert einen vorhandenen Eintrag in `REGISTRIERUNG`. Gefunden wird er über `nr`.
 
-  **Erlaubte Felder (ALLOWED):** kennziffer, pwd, username, userkonfig, erstellt, geaendert, gesperrt, pwd2, versuche, zeitsperre, pushid, letzter_login, hauptregistrierung, typ.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/registrierung/updateregistrierung` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `nr` (Pflicht, Integer, Primaerschluessel) plus beliebige der erlaubten Felder.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Hinweise:** `rollen` ist NICHT in ALLOWED und laesst sich ueber diesen Endpunkt nicht aendern; eine Aenderung von `typ` passt die Rollen-Blaupause (`@KUNDE` usw.) NICHT an – die automatische Zuweisung gibt es nur bei insertregistrierung. `pwd2` muss ein bcrypt-Hash sein (wird unveraendert gespeichert). `gesperrt` = "JA" sperrt die Anmeldung. Rollenaenderungen wirken erst nach erneutem Login.
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `kennziffer` | Ganzzahl |
+  | `pwd` | Text (max. 40 Zeichen) |
+  | `username` | Text (max. 120 Zeichen) |
+  | `userkonfig` | Langtext/Datei |
+  | `erstellt` | Datum/Uhrzeit |
+  | `geaendert` | Datum/Uhrzeit |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `pwd2` | Text (max. 255 Zeichen) |
+  | `versuche` | Ganzzahl |
+  | `zeitsperre` | Datum/Uhrzeit |
+  | `pushid` | Text (max. 255 Zeichen) |
+  | `letzter_login` | Datum/Uhrzeit |
+  | `hauptregistrierung` | Ganzzahl |
+  | `typ` | Text (max. 30 Zeichen) |
+  | `email` | Text (max. 100 Zeichen) |
+  | `rollen` | Langtext/Datei |
+  | `personalzeichen` | Text (max. 15 Zeichen) |
+  | `usersloginname` | Text (max. 20 Zeichen) |
 
-  **Antwort:** `{"status":"OK"}`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Passwort nur als Hash:** `pwd` und `pwd2` werden genau so gespeichert, wie sie ankommen. In `pwd2` muss ein bcrypt-Hash stehen (z.B. aus PHP `password_hash()`) – ein Passwort im Klartext sperrt den Benutzer aus.
+  - **Hier lassen sich Berechtigungen vergeben:** Über `rollen` (eine Rolle bzw. ein Endpunkt pro Zeile) kann jeder, der diesen Endpunkt nutzen darf, Rechte verteilen – auch sich selbst. Die Änderung wirkt erst, wenn sich der Benutzer neu anmeldet.
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulRegistrierung.updateRegistrierung` in `Shared/DataModuls/DataModulRegistrierungClass.pas`
+  - Tabelle: `REGISTRIERUNG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -25,12 +25,53 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz der Tabelle LOHNART ueber `DoSelectOne('LOHNART', ALLOWED, 'lohnart')`. Primaerschluessel ist hier `lohnart`. Reine Read-Only-Stammdaten-Tabelle ohne Insert/Update/Delete.
+  **Lohnart per lohnart lesen (Read-Only).** Liefert genau einen Eintrag aus `LOHNART`, gesucht über `lohnart`.
 
-  **Erlaubte Felder (ALLOWED):** siehe getlohnart.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fibu/getlohnartbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `{ "lohnart": <wert>, "fields": [...] | "*" }` — Primaerschluessel `lohnart` ist Pflicht.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `lohnart` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `lohnart` | Ganzzahl |
+  | `bezeichnung` | Text (max. 25 Zeichen) |
+  | `stdlohn` | Text (max. 4 Zeichen) |
+  | `vorgabe` | Text (max. 4 Zeichen) |
+  | `zuschlag` | Text (max. 4 Zeichen) |
+  | `fest` | Text (max. 4 Zeichen) |
+  | `kalkuliertauf` | Text (max. 10 Zeichen) |
+  | `faktor` | Ganzzahl |
+  | `reihenfolge` | Ganzzahl |
+  | `saldouebernahme` | Text (max. 4 Zeichen) |
 
-  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"lohnart": 42, "bezeichnung": "Text", "stdlohn": "Text", ...} ]}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`lohnart` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFibu.getLohnartById` in `Shared/DataModuls/DataModulFibuClass.pas`
+  - Tabelle: `LOHNART`, Schlüssel `lohnart`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

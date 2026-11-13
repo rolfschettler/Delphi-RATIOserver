@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "username": "{{testuser}}",
-        "pwd2": "{{process.env.TEST_PWD2}}",
+        "pwd2": "{{test_pwd2}}",
         "typ": "mitarbeiter"
       }
   auth:
@@ -40,5 +40,5 @@ settings:
 docs: |-
   Auth: nicht erforderlich (localhost-only), {{jwttoken}} wird trotzdem mitgeschickt.
 
-  pwd2 ist der bcrypt-Hash von TEST_PASSWORD (beides in .env).
+  pwd2 ist der bcrypt-Hash von test_password (beides Collection-Variablen).
   Erwartet: REGISTRIERUNG.ROLLEN = '@MITARBEITER'.

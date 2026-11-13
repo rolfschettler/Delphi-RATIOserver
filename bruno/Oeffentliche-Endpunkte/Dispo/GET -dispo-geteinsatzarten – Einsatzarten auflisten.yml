@@ -18,8 +18,48 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Nicht-generischer Endpunkt mit fest verdrahtetem SQL (kein Body, keine Parameter): `Select nr, code, beschreibung, farbe from einsatzarten order by code`.
+  **Einsatzarten auflisten.** Liefert alle Einsatzarten mit Kürzel, Beschreibung und Farbe – z.B. für eine Auswahlliste. Sortiert nach Kürzel.
 
-  **Antwort:** `{"header":{...},"data":[...]}` (SerializeQuery, Feldnamen klein), z. B. `{"header":{"nr":"ftinteger","code":"ftstring 10",...},"data":[{"nr":1,"code":"L","beschreibung":"Linienfahrt","farbe":16711680}, ...]}`.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/geteinsatzarten` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Was du mitschickst
+  Nichts – ein Body wird nicht benötigt (und ignoriert).
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", "code": "ftstring 1", "beschreibung": "ftstring 30", "farbe": "ftinteger"},
+    "data": [ {"nr": 1, "code": "A", "beschreibung": "Anmietverkehr", "farbe": 8454143} ]
+  }
+  ```
+  Die Einsatzarten stehen in `data`, je Eintrag diese Felder:
+
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `nr` | Ganzzahl | Nummer der Einsatzart |
+  | `code` | Text (1 Zeichen) | Kürzel, z.B. `A`, `L`, `T` |
+  | `beschreibung` | Text (max. 30 Zeichen) | Bezeichnung, z.B. „Linienverkehr“ |
+  | `farbe` | Ganzzahl | Anzeigefarbe als Zahl |
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **Es kommen immer alle Einsatzarten mit genau diesen vier Feldern.** Angaben wie `fields`, `orderby`, `limit` oder `offset` haben hier keine Wirkung.
+  - **`farbe` reicht der Server unverändert aus der Datenbank durch.** Die vorhandenen Werte haben das Delphi-Farbformat (hexadezimal Blau-Grün-Rot): `8454143` = hex `80FFFF` = Hellgelb.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.geteinsatzarten` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `EINSATZARTEN` (nur lesend)
+  - Festes SQL: `SELECT nr, code, beschreibung, farbe FROM einsatzarten ORDER BY code`, in eigener Transaktion.
+  - `farbe` als Delphi-`TColor` (`$00BBGGRR`) – im Server-Code nicht interpretiert; Format aus den DB-Werten abgeleitet.
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

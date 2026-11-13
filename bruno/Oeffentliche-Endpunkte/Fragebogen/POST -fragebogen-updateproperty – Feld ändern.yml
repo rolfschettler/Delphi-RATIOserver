@@ -1,0 +1,90 @@
+info:
+  name: POST /fragebogen/updateproperty – Feld ändern
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/updateproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{propertyid}},
+        "label": "Lieblingsfarbe (Pflicht)",
+        "options": "rot,grün,blau,weiß,schwarz",
+        "sortierung": 20
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Feld ändern.** Ändert ein vorhandenes Feld (eine Frage) einer Kartei. Du schickst nur, was sich ändern soll – z.B. nur eine neue Reihenfolge.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fragebogen/updateproperty` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  `id` plus mindestens eine der übrigen Angaben. Was du nicht mitschickst, bleibt, wie es ist.
+
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `id` | Ganzzahl über 0 | **ja** | Welches Feld geändert wird. Die Nummer selbst ändert sich nicht. |
+  | `label` | Text (max. 255 Zeichen) | nein | Beschriftung. Wenn mitgeschickt, nicht leer oder `null`. |
+  | `proptyp` | Text | nein | Art des Feldes: `TXT` Text, `NUM` Zahl, `DAT` Datum, `CHK` Ankreuzfeld, `RDO` Optionsfeld, `SEL` Auswahlliste (eine Auswahl), `MUL` Auswahlliste (mehrere). Groß-/Kleinschreibung egal. |
+  | `options` | Text | nein | Auswahlmöglichkeiten, durch Komma getrennt. Leer oder `null` = keine. |
+  | `bereich` | Text (max. 60 Zeichen) | nein | Abschnitt. Leer oder `null` = kein Abschnitt. |
+  | `sortierung` | Ganzzahl | nein | Reihenfolge. |
+
+  **Nicht änderbar** sind hier die Kartei (`kartei_id`), das Systemfeld-Kennzeichen (`system`) und die Breite (`maxwidth`) – mitgeschickt werden sie ignoriert.
+
+  In Bruno steht bei `id` die Variable `{{propertyid}}`. Bruno füllt sie automatisch, sobald du „Feld anlegen“ ausgeführt hast. Für ein anderes Feld trägst du die Zahl einfach direkt ein.
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  Geprüft wird in dieser Reihenfolge; gemeldet wird der erste Fehler.
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt (Meldung `Keine Berechtigung für diesen Endpunkt.`).
+  - **400** mit `{"status":"ERROR","message":"\"id\" fehlt oder ist keine Zahl."}`
+  - **404** mit `{"status":"ERROR","message":"Feld nicht gefunden."}`
+  - **403** mit `{"status":"ERROR","message":"Systemfeld - geschützt."}` – Systemfelder dürfen nicht geändert werden.
+  - **400** mit `{"status":"ERROR","message":"..."}` und einer dieser Meldungen:
+    - `Beschriftung ist ein Pflichtfeld.` bzw. `Die Beschriftung darf höchstens 255 Zeichen lang sein.`
+    - `Unbekannte Art des Feldes: "XYZ".`
+    - `Für diese Art des Feldes ist mindestens eine Option nötig.`
+    - `Der Bereich darf höchstens 60 Zeichen lang sein.`
+    - `Die Sortierung muss eine ganze Zahl sein.`
+    - `Keine gültigen Felder übergeben.` – keine der änderbaren Angaben war dabei.
+  - **400** mit `{"status":"error","message":"..."}` – Fehler in der Datenbank.
+
+  ### Gut zu wissen
+  - **403 kann zwei Ursachen haben:** fehlende Berechtigung oder ein geschütztes Systemfeld. Die Meldung sagt, welches.
+  - **Geprüft wird das Feld als Ganzes.** Was du nicht mitschickst, nimmt der Server aus dem gespeicherten Feld. Beispiel: Du schickst nur `"proptyp": "SEL"`, das Feld hat aber bisher keine Auswahlmöglichkeiten – dann kommt der Fehler „mindestens eine Option nötig“. Schick `options` in dem Fall gleich mit.
+  - **Wechsel auf eine Art ohne Auswahl** (`TXT`, `NUM`, `DAT`, `CHK`): Schickst du dabei `options` mit, wird es geleert. Schickst du es nicht mit, bleiben die alten Auswahlmöglichkeiten gespeichert.
+  - **`null`-Werte:** `"sortierung": null` setzt die Reihenfolge auf `0`. `"label": null` und `"proptyp": null` werden als leer abgelehnt.
+  - **Leerzeichen am Anfang und Ende werden entfernt** (bei `label`, `options`, `bereich`). `proptyp` wird in Großbuchstaben gespeichert.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Groß-/Kleinschreibung der Feldnamen ist egal.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.updateProperty` in `Shared/DataModuls/DataModulFragebogenClass.pas`; Prüfungen in `PruefeProperty` (mit altem `proptyp`/`options` als Rückfall)
+  - Tabelle: `FORM_PAT_PROPERTY`, Schlüssel `id`; schreibbar nur `PROPERTY_SCHREIBEN` (`label`, `proptyp`, `options`, `bereich`, `sortierung`), Spalte wird gesetzt, wenn der Schlüssel im Body steht (`isKeyInBody`, auch bei `null`)
+  - UPDATE in eigener Transaktion
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

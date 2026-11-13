@@ -27,21 +27,78 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet FUNDSACHEN-Datensätze gefiltert auf (generisches `DoSelectFilteredDynamic`).
+  **Fundsachen gefiltert auflisten.** Sucht Einträge in `FUNDSACHEN` – du gibst die Suchkriterien als Felder im Body mit.
 
-  **Tabelle:** FUNDSACHEN
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/anmiet/getfundsachenfiltered` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** identisch zu `getfundsachen` (siehe dort)
+  ### Suchkriterien (Filter)
+  **Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.** Hier nicht filterbar: `bilder`, `bild_klein`, `unterschrift`.
 
-  **Filterparameter (alle optional, AND-verknüpft, je `feld = :feld`):** nr, abgeholt_am, abgeholt_von, abholort, bearbeitet_am, bearbeitet_von, beschreibung, erfasst_am, erfasst_von, status, text_intern, verlustdatum, verlustort, zusatzfeld1, zusatzfeld2, zusatzfeld3 – nur im Body vorhandene (nicht-null) Parameter erzeugen eine WHERE-Bedingung; ohne Filter werden alle Datensätze geliefert.
+  So funktioniert die Suche:
+  - Jedes mitgeschickte Feld ist ein Kriterium, z.B. `{"ort": "Berlin"}`.
+  - **Mehrere Kriterien müssen alle zutreffen** (UND): `{"ort": "Berlin", "plz": "10115"}`.
+  - **Der Wert muss genau stimmen** – keine Teilsuche, Groß-/Kleinschreibung zählt („berlin“ findet nicht „Berlin“).
+  - Datum als `"2026-09-01"` oder mit Uhrzeit `"2026-09-01 08:00:00"`. Bei Feldern mit Uhrzeit findet ein reines Datum nur Einträge um 00:00 Uhr.
+  - Ohne Kriterien kommen alle Einträge.
 
-  **Hinweis:** Die BLOB-Felder `bilder`, `bild_klein`, `unterschrift` sind nicht filterbar (nicht in FILTER_PARAMS).
+  ### Weitere Angaben (optional)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
+  ### Verfügbare Felder (für `fields` und `orderby`)
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `abgeholt_am` | Datum/Uhrzeit |
+  | `abgeholt_von` | Text (max. 120 Zeichen) |
+  | `abholort` | Text (max. 1200 Zeichen) |
+  | `bearbeitet_am` | Datum/Uhrzeit |
+  | `bearbeitet_von` | Text (max. 120 Zeichen) |
+  | `beschreibung` | Text (max. 1200 Zeichen) |
+  | `bilder` | Langtext/Datei |
+  | `bild_klein` | Langtext/Datei |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `erfasst_von` | Text (max. 120 Zeichen) |
+  | `status` | Text (max. 120 Zeichen) |
+  | `text_intern` | Text (max. 3000 Zeichen) |
+  | `unterschrift` | Langtext/Datei |
+  | `verlustdatum` | Datum/Uhrzeit |
+  | `verlustort` | Text (max. 1200 Zeichen) |
+  | `zusatzfeld1` | Text (max. 120 Zeichen) |
+  | `zusatzfeld2` | Text (max. 120 Zeichen) |
+  | `zusatzfeld3` | Text (max. 120 Zeichen) |
 
-  **Body:** `{ "fields": [...] | "*", "status": "...", "verlustort": "...", ... }` – zusätzlich `orderby` (ALLOWED-Feld), `limit`, `offset`. Der Body muss ein gültiges JSON-Objekt sein (mindestens `{}`), sonst Fehler.
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "abgeholt_am": "2026-09-01 08:00:00", "abgeholt_von": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Achtung bei Tippfehlern:** Ein falsch geschriebener Feldname wird einfach ignoriert – dann kommen *alle* Einträge statt der gesuchten.
+  - Der Body muss mindestens `{}` sein, sonst kommt ein Fehler.
 
-  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAnmiet.getFundsachenFiltered` in `Shared/DataModuls/DataModulAnmietClass.pas`
+  - Tabelle: `FUNDSACHEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectFilteredDynamic` der Basisklasse `TDataModulTableBase`; Filter über `CONDITIONS`/`FILTER_PARAMS`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

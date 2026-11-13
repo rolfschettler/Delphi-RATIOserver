@@ -7,5 +7,10 @@ request:
   auth: inherit
 
 docs:
-  content: "AddOn-Controller (TDataModulAddOn, Basis TDataModulBaseClass, KEIN generisches CRUD): Demo-Datengeneratoren (Zufallsadressen/-personal), Teilnehmer-Import aus CSV bzw. per KI (OpenAI) aus beliebigen Dateien, Routen-/Distanzberechnung ueber das PHP-Backend (PHP_Call), Dokument-Download (Binaerdatei aus VORLAGEN.HAUPTTEXT), Generatorwerte und Firmenstammdaten. Routen liegen OHNE Praefix direkt unter {{baseURL}}. **Auth:** Bearer-Token ({{jwttoken}}) erforderlich, ausser /showroute und /travelroute (Auth=false). **LocalOnly:** /adddemo, /adddemopersonal, /readteilnehmer, /showroute, /calculatedistance, /travelroute, /calculateroute und /getpublicendpoints sind LocalOnly (nur vom Server selbst erreichbar, sonst 403); die uebrigen AddOn-Routen sind oeffentlich. Tabellen: ADRESSEN, PERSONALSTAMM, T_TEILNEHMER (Generator T_TEILNEHMER_NR_GEN), VORLAGEN, FIRMENSTAMM, RDB$GENERATORS."
+  content: |-
+    **Zusatzfunktionen**, die zu keinem Fachbereich gehören: eine gespeicherte Dokumentvorlage als Datei herunterladen (`/getdokument`), die eigenen Firmenstammdaten abrufen (`/getfirmenstamm`), die nächste Nummer aus einem beliebigen Nummernzähler holen (`/getgeneratorvalue`) und Teilnehmer für einen Vorgang importieren – entweder per KI aus einer beliebigen Datei (`/ki_getteilnehmer`) oder aus einer CSV-Reservierungsliste (`/teilnehmerfromcsv`).
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`), und der Benutzer muss den jeweiligen Endpunkt in seinen Rollen haben (sonst Fehler 403). Die Adressen haben kein Präfix, sie liegen direkt unter `{{baseURL}}`.
+
+    Technik: Controller `TDataModulAddOn` (`Shared/DataModuls/DataModulAddOnClass.pas`); weitere AddOn-Routen sind nur vom Server selbst erreichbar und deshalb nicht in dieser Collection.
   type: text/markdown

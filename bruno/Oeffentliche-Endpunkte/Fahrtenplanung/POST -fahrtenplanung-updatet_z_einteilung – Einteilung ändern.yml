@@ -26,18 +26,50 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Ändert einen Datensatz in T_Z_EINTEILUNG anhand des Primärschlüssels `nr` (generisches `DoUpdate`).
+  **Einteilung ändern.** Ändert einen vorhandenen Eintrag in `T_Z_EINTEILUNG`. Gefunden wird er über `nr`.
 
-  **Tabelle:** T_Z_EINTEILUNG
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fahrtenplanung/updatet_z_einteilung` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** zwegenr, tzustiegenr, einteilungsfolge, uhrzeit_ha – nur übergebene Felder werden geändert.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Key-Feld:** `nr` (Pflicht, wird selbst nicht geändert)
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `zwegenr` | Ganzzahl |
+  | `tzustiegenr` | Ganzzahl |
+  | `einteilungsfolge` | Ganzzahl |
+  | `uhrzeit_ha` | Text (max. 6 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "einteilungsfolge": <wert>, "uhrzeit_ha": "...", ... }`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFahrtenplanung.updateT_Z_Einteilung` in `Shared/DataModuls/DataModulFahrtenplanungClass.pas`
+  - Tabelle: `T_Z_EINTEILUNG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

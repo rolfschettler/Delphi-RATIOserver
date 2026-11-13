@@ -7,5 +7,12 @@ request:
   auth: inherit
 
 docs:
-  content: "Fahrer- und Personaldisposition: Einsätze (EINSATZ), Personalstamm (PERSONALSTAMM), Fahrergruppen, Urlaubsanträge (URLAUBSANTRAG), Fahrtabläufe (FAHRTABLAUF), Linienwegeobjekte (LINIEWEGEOBJEKTE), Zeiträume (ZEITRAUM), Dispo-Belegungen (DISPO), Dispotouren (DISPOTOUR) sowie das FIS-Systemlog (FIS_LOG). Quelle: DataModulDispoClass.pas. **Auth:** alle Routen erfordern einen gültigen Bearer-Token ({{jwttoken}}); LocalOnly ist bei keiner Route gesetzt."
+  content: |-
+    Hier geht es um die **Planung von Fahrern und Personal**: Einsätze, Dispo-Einträge (wer wann verplant ist) und Dispotouren, der Personalstamm, die Suche nach **freiem Personal** in einem Zeitraum sowie **Urlaubsanträge**.
+
+    Außerdem gibt es Fahrtabläufe, Zeiträume, Linienwegeobjekte, das Protokoll des Fahrer-Informationssystems (FIS-Log) und Auswahllisten für Fahrergruppen und Einsatzarten. Je nach Bereich kannst du auflisten, gefiltert suchen, einzeln abrufen und teilweise auch anlegen, ändern und löschen. `/dispo/demo` dient zum Testen.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`) und die Berechtigung für den jeweiligen Endpunkt in den Rollen des Benutzers (sonst Fehler 403).
+
+    Technik: Controller `TDataModulDispo` in `Shared/DataModuls/DataModulDispoClass.pas`.
   type: text/markdown

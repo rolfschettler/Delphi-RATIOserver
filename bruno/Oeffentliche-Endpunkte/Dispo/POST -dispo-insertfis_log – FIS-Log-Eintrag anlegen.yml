@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 9002,
+        "nr": 42,
         "datum": "2026-09-01 06:15:00",
         "einsatznr": 4711,
         "fahrer": "MU",
@@ -29,10 +29,70 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in FIS_LOG an. Implementierung: `DoInsert('FIS_LOG', ALLOWED)` – nur ALLOWED-Felder werden aus dem Body übernommen.
+  **FIS-Log-Eintrag anlegen.** Legt einen neuen Eintrag in `FIS_LOG` an.
 
-  **Erlaubte Felder (ALLOWED, 30):** identisch zu `/dispo/getfis_log` (siehe dort).
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/dispo/insertfis_log` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** `{"status":"OK"}`
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  | Feld | Typ | Pflicht laut Datenbank |
+  |---|---|---|
+  | `nr` | Ganzzahl | ja |
+  | `datum` | Datum/Uhrzeit |  |
+  | `xkoord` | Text (max. 20 Zeichen) |  |
+  | `ykoord` | Text (max. 20 Zeichen) |  |
+  | `status` | Text (max. 4 Zeichen) |  |
+  | `einsatznr` | Ganzzahl |  |
+  | `taetigkeit` | Ganzzahl |  |
+  | `herkunft` | Text (max. 20 Zeichen) |  |
+  | `fahrer` | Text (max. 30 Zeichen) |  |
+  | `fahrzeug` | Text (max. 30 Zeichen) |  |
+  | `zusatzfeld1` | Text (max. 60 Zeichen) |  |
+  | `zusatzfeld2` | Text (max. 60 Zeichen) |  |
+  | `kmstand` | Ganzzahl |  |
+  | `distance` | Ganzzahl |  |
+  | `dauer` | Ganzzahl |  |
+  | `fremdnr` | Ganzzahl |  |
+  | `text` | Text (max. 500 Zeichen) |  |
+  | `standort` | Text (max. 255 Zeichen) |  |
+  | `zeitpunkt` | Datum/Uhrzeit |  |
+  | `sortierung` | Ganzzahl |  |
+  | `loginname` | Text (max. 20 Zeichen) |  |
+  | `art` | Text (max. 3 Zeichen) |  |
+  | `textfeld1` | Text (max. 255 Zeichen) |  |
+  | `textfeld2` | Text (max. 255 Zeichen) |  |
+  | `textfeld3` | Text (max. 255 Zeichen) |  |
+  | `datumfeld1` | Datum/Uhrzeit |  |
+  | `datumfeld2` | Datum/Uhrzeit |  |
+  | `datumfeld3` | Datum/Uhrzeit |  |
+  | `wert` | Text (max. 3200 Zeichen) |  |
+  | `erledigt_am` | Datum/Uhrzeit |  |
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) kannst du mitschicken** – eine freie Nummer liefert vorher der passende `…key`-Endpunkt. Lässt du sie weg, vergibt die Datenbank automatisch eine. Die Antwort enthält keine Nummer.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.insertFis_Log` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `FIS_LOG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

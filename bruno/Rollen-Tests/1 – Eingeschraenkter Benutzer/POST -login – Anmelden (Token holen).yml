@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "user": "{{user_eingeschraenkt}}",
-        "password": "{{process.env.PW_EINGESCHRAENKT}}"
+        "password": "{{pw_eingeschraenkt}}"
       }
   auth:
     type: bearer
@@ -43,5 +43,5 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Meldet user_eingeschraenkt an (Passwort aus .env: PW_EINGESCHRAENKT) und legt
+  Meldet user_eingeschraenkt an (Passwort aus Variable pw_eingeschraenkt) und legt
   den Token in {{jwttoken}} ab.

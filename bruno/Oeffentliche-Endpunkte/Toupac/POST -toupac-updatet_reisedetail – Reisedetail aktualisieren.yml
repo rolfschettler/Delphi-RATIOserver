@@ -25,18 +25,49 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aktualisiert einen bestehenden Datensatz in T_REISEDETAIL anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('T_REISEDETAIL', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+  **Reisedetail aktualisieren.** Ändert einen vorhandenen Eintrag in `T_REISEDETAIL`. Gefunden wird er über `nr`.
 
-  **Tabelle:** T_REISEDETAIL
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/toupac/updatet_reisedetail` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, reisenr, sprache, bezeichnung
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `reisenr` | Ganzzahl |
+  | `sprache` | Text (max. 3 Zeichen) |
+  | `bezeichnung` | Text (max. 60 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.updateT_Reisedetail` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_REISEDETAIL`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -18,8 +18,35 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert den nächsten Primärschlüsselwert für FAHRTABLAUF über den InterBase-Generator: `SELECT GEN_ID(FAHRTABLAUF_NR_GEN,1) AS NR FROM RDB$DATABASE`. Kein Body erforderlich.
+  **nächste Fahrtablauf-Nr ermitteln.** Reserviert die nächste freie Nummer und gibt sie zurück – typischerweise vor dem Anlegen eines neuen Eintrags.
 
-  **Antwort:** `{"header":{"nr":"ftinteger"},"data":[{"nr":816}]}` (Generator-Wert wird bei jedem Aufruf hochgezählt).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/getfahrtablaufkey` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Was du mitschickst
+  Nichts – ein Body wird nicht benötigt.
+
+  ### Was zurückkommt
+  ```json
+  {"header": {"nr": "ftlargeint"}, "data": [ {"nr": 4711} ]}
+  ```
+  Die neue Nummer steht in `data[0].nr`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+
+  ### Gut zu wissen
+  - **Jeder Aufruf verbraucht eine Nummer** – auch wenn danach nichts angelegt wird. Lücken in der Nummerierung sind deshalb normal.
+  - **Die Nummer gehört dir:** Kein anderer Aufruf bekommt dieselbe Nummer.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getFahrtablaufKey` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - InterBase-Generator `FAHRTABLAUF_NR_GEN` (`GEN_ID(FAHRTABLAUF_NR_GEN, 1)`)
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

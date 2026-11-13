@@ -31,18 +31,48 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in T_REISE an. Ruft intern `DoInsert('T_REISE', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_reisekey` ermittelt werden.
+  **Reise anlegen.** Legt einen neuen Eintrag in `T_REISE` an.
 
-  **Tabelle:** T_REISE
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/toupac/insertt_reise` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, bezeichnung, code, land, region, suchbegriff, gesperrt, kategorie
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+  | Feld | Typ | Pflicht laut Datenbank |
+  |---|---|---|
+  | `nr` | Ganzzahl | ja |
+  | `bezeichnung` | Text (max. 60 Zeichen) |  |
+  | `code` | Text (max. 20 Zeichen) |  |
+  | `land` | Text (max. 60 Zeichen) |  |
+  | `region` | Text (max. 60 Zeichen) |  |
+  | `suchbegriff` | Text (max. 200 Zeichen) |  |
+  | `gesperrt` | Text (max. 4 Zeichen) |  |
+  | `kategorie` | Langtext/Datei |  |
 
-  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) kannst du mitschicken** – eine freie Nummer liefert vorher der passende `…key`-Endpunkt. Lässt du sie weg, vergibt die Datenbank automatisch eine. Die Antwort enthält keine Nummer.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.insertT_Reise` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_REISE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "user": "SUPERVISOR",
-        "password": "{{process.env.PW_SUPERVISOR}}"
+        "password": "{{login_password}}"
       }
   auth:
     type: bearer
@@ -45,7 +45,7 @@ settings:
 docs: |-
   **Auth:** nicht erforderlich (stellt das Token erst aus); {{jwttoken}} wird trotzdem mitgeschickt.
 
-  Meldet login_user an (Passwort aus .env: PW_LOGIN) und legt den Token per
+  Meldet login_user an (Passwort aus der Collection-Variable login_password) und legt den Token per
   bru.setVar in {{jwttoken}} ab (Laufzeit-Variable, landet nicht in opencollection.yml).
 
   **Antwort:** 200 {"token":"<JWT>"}, bei falschen Daten 401.

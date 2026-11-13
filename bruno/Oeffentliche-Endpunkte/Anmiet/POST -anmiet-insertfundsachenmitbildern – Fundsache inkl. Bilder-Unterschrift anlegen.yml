@@ -15,7 +15,7 @@ http:
         "status": "offen",
         "verlustdatum": "2026-08-30",
         "erfasst_von": "hw",
-        "bilder": "<Base64-codierte-Bilddaten>",
+        "bilder": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
         "bild_klein": null,
         "unterschrift": null
       }
@@ -31,18 +31,76 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen FUNDSACHEN-Datensatz in einem einzigen INSERT an, inkl. optionaler Base64-codierter BLOB-Felder. Kein generisches CRUD, sondern eigens implementiert (Parameter über `isParamFromBody`/`getParamFromBody`/`isKeyInBody`): Nur für im Body vorhandene Felder wird eine Spalte in das INSERT aufgenommen; ohne gültiges Feld Fehler „Keine gueltigen Felder uebergeben.“.
+  **Fundsache mit Bildern und Unterschrift anlegen.** Legt eine neue Fundsache an – wie `/anmiet/insertfundsachen`, aber zusätzlich mit Foto, Vorschaubild und Unterschrift in einem einzigen Schritt.
 
-  **Tabelle:** FUNDSACHEN
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/anmiet/insertfundsachenmitbildern` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED, wie insertfundsachen):** abgeholt_am, abgeholt_von, abholort, bearbeitet_am, bearbeitet_von, beschreibung, erfasst_am, erfasst_von, status, text_intern, verlustdatum, verlustort, zusatzfeld1, zusatzfeld2, zusatzfeld3
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert` im JSON-Body – mindestens eines, alle sind freiwillig. Nicht mitgeschickte Felder bleiben leer.
 
-  **Zusätzliche BLOB-Felder (BLOB_ALLOWED):** `bilder`, `bild_klein`, `unterschrift` – jeweils als Base64-String. Optional: Ist der Schlüssel vorhanden, der Wert aber JSON `null`, bleibt der Blob NULL. Ist ein Wert gesetzt, wird er auf gültiges Base64 geprüft (`IsValidBase64Value`, Whitespace wird ignoriert) und dekodiert; bei ungültigem Wert Fehler. KEINE Bildformat-Prüfung.
+  **Normale Felder** (`null` wirkt hier wie weglassen):
 
-  **Body:** `{ "beschreibung": "...", ..., "bilder": "<Base64>", "bild_klein": "<Base64>" | null, "unterschrift": "<Base64>" | null }` – `nr` wird ignoriert.
+  | Feld | Typ |
+  |---|---|
+  | `abgeholt_am` | Datum/Uhrzeit |
+  | `abgeholt_von` | Text (max. 120 Zeichen) |
+  | `abholort` | Text (max. 1200 Zeichen) |
+  | `bearbeitet_am` | Datum/Uhrzeit |
+  | `bearbeitet_von` | Text (max. 120 Zeichen) |
+  | `beschreibung` | Text (max. 1200 Zeichen) |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `erfasst_von` | Text (max. 120 Zeichen) |
+  | `status` | Text (max. 120 Zeichen) |
+  | `text_intern` | Text (max. 3000 Zeichen) |
+  | `verlustdatum` | Datum/Uhrzeit |
+  | `verlustort` | Text (max. 1200 Zeichen) |
+  | `zusatzfeld1` | Text (max. 120 Zeichen) |
+  | `zusatzfeld2` | Text (max. 120 Zeichen) |
+  | `zusatzfeld3` | Text (max. 120 Zeichen) |
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  **Bild-Felder** – die Datei als Base64-Text (`null` = Feld bleibt leer):
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `bilder` | Datei (Base64) | Foto der Fundsache |
+  | `bild_klein` | Datei (Base64) | Vorschaubild |
+  | `unterschrift` | Datei (Base64) | Unterschrift (z.B. bei der Abholung) |
 
-  **Antwort:** `{"status":"OK"}`
+  Das Beispiel im Body enthält ein gültiges, winziges Bild (1×1 Pixel, PNG).
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder ein ungültiges Datum.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `Keine gueltigen Felder uebergeben.` – kein einziges bekanntes Feld im Body (auch, wenn der Body fehlt oder kein JSON-Objekt ist).
+    - `Feld "bilder": kein gueltiger Base64-Wert.` (bzw. `bild_klein`, `unterschrift`) – der Text ist kein gültiges Base64.
+    - `Feld "...": Base64-Dekodierung fehlgeschlagen (...).` – der Text sah gültig aus, ließ sich aber trotzdem nicht umwandeln.
+
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) vergibt die Datenbank automatisch** – mitschicken geht nicht, sie würde ignoriert. Die Antwort enthält die neue Nummer nicht; wer sie braucht, sucht die Fundsache danach (z.B. über `/anmiet/getfundsachenfiltered`).
+  - **Base64 ohne Vorspann schicken:** Ein vorangestelltes `data:image/png;base64,` führt zum Fehler. Zeilenumbrüche und Leerzeichen im Base64-Text sind dagegen erlaubt. Ein leerer Text `""` ist kein Fehler – das Feld wird dann leer gespeichert.
+  - **Bildformat und Größe werden nicht geprüft.** Gespeichert wird genau das, was du schickst.
+  - **`null` wirkt unterschiedlich:** Bei normalen Feldern wird das Feld einfach weggelassen (es bekommt dann den Standardwert der Datenbank, falls es einen gibt). Bei Bild-Feldern wird das Feld ausdrücklich leer gespeichert.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf. Groß-/Kleinschreibung der Feldnamen ist egal.
+  - **Alles oder nichts:** Schlägt das Speichern fehl, wird gar nichts angelegt.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAnmiet.insertFundsachenMitBildern` in `Shared/DataModuls/DataModulAnmietClass.pas`
+  - Tabelle: `FUNDSACHEN`, Schlüssel `nr` (wird per Trigger vergeben)
+  - Eigene INSERT-Logik (nicht `DoInsert`): normale Felder über `isParamFromBody`, Blob-Felder über `isKeyInBody`; Blob-Werte werden nach Entfernen von Whitespace geprüft (Länge durch 4 teilbar, `^[A-Za-z0-9+/]*={0,2}$`), mit `TNetEncoding.Base64` dekodiert und per `LoadFromStream(ftBlob)` gebunden.
+  - Schreiben in eigener Transaktion mit Rollback bei Fehler.
+  - Auffälligkeit: Ein Blob-Feld mit `null` zählt als „gültiges Feld“ – `{"bilder": null}` allein legt also eine leere Fundsache an.
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

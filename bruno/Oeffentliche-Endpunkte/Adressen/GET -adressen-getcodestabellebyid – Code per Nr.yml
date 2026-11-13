@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 1,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,18 +25,47 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus CODESTABELLE anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Code per Nr.** Liefert genau einen Eintrag aus `CODESTABELLE`, gesucht über `nr`.
 
-  **Tabelle:** CODESTABELLE
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/adressen/getcodestabellebyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, bezeichnung, code, bereich
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `bezeichnung` | Text (max. 40 Zeichen) |
+  | `code` | Text (max. 8 Zeichen) |
+  | `bereich` | Text (max. 40 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "bezeichnung": "Text", "code": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.getCodestabelleById` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `CODESTABELLE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

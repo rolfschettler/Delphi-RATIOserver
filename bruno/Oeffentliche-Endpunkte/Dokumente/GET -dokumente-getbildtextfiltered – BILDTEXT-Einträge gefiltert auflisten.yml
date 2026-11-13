@@ -30,18 +30,79 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensätze der Tabelle BILDTEXT (NICHT T_BILDTEXT – eigene Tabelle mit anderer Struktur) gefiltert auf (`DoSelectFilteredDynamic('BILDTEXT', ALLOWED, CONDITIONS, FILTER_PARAMS)`).
+  **BILDTEXT-Einträge gefiltert auflisten.** Sucht Einträge in `BILDTEXT` – du gibst die Suchkriterien als Felder im Body mit.
 
-  **Erlaubte Felder (ALLOWED):** nr, bild, text, art, code, imgtype, ueberschrift, bildindex, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, lastlock, erfasst_am, versteckt, bildformat, textformat.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dokumente/getbildtextfiltered` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Filter-Parameter (alle optional, im Body; jeder gesetzte, nicht-null Parameter erzeugt eine AND-verknüpfte `feld = :feld`-Bedingung):** nr, art, code, imgtype, ueberschrift, bildindex, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, lastlock, erfasst_am, versteckt, bildformat, textformat.
+  ### Suchkriterien (Filter)
+  **Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.** Hier nicht filterbar: `bild`, `text`.
 
-  **Weitere Body-Felder:** `fields` (Array oder `"*"`), `orderby` (muss in ALLOWED sein), `limit`/`offset` (optional, Pagination per `ROWS x TO y`).
+  So funktioniert die Suche:
+  - Jedes mitgeschickte Feld ist ein Kriterium, z.B. `{"ort": "Berlin"}`.
+  - **Mehrere Kriterien müssen alle zutreffen** (UND): `{"ort": "Berlin", "plz": "10115"}`.
+  - **Der Wert muss genau stimmen** – keine Teilsuche, Groß-/Kleinschreibung zählt („berlin“ findet nicht „Berlin“).
+  - Datum als `"2026-09-01"` oder mit Uhrzeit `"2026-09-01 08:00:00"`. Bei Feldern mit Uhrzeit findet ein reines Datum nur Einträge um 00:00 Uhr.
+  - Ohne Kriterien kommen alle Einträge.
 
-  **Hinweis:** Die BLOB-Felder `bild` und `text` sind nur in ALLOWED enthalten, aber nicht filterbar; sie werden als Base64-String zurückgegeben (im Beispiel bewusst nicht angefordert, um die Antwort klein zu halten). Die Beispielwerte für `art`/`code` sind Platzhalter.
+  ### Weitere Angaben (optional)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Verfügbare Felder (für `fields` und `orderby`)
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `bild` | Langtext/Datei |
+  | `text` | Langtext/Datei |
+  | `art` | Text (max. 8 Zeichen) |
+  | `code` | Ganzzahl |
+  | `imgtype` | Text (max. 4 Zeichen) |
+  | `ueberschrift` | Text (max. 60 Zeichen) |
+  | `bildindex` | Ganzzahl |
+  | `copr` | Text (max. 120 Zeichen) |
+  | `sprache` | Text (max. 3 Zeichen) |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `app` | Text (max. 4 Zeichen) |
+  | `externe_id` | Text (max. 60 Zeichen) |
+  | `nutzungsrecht_bis` | Datum/Uhrzeit |
+  | `urheber` | Text (max. 60 Zeichen) |
+  | `lastlock` | Datum/Uhrzeit |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `versteckt` | Text (max. 4 Zeichen) |
+  | `bildformat` | Text (max. 4 Zeichen) |
+  | `textformat` | Text (max. 4 Zeichen) |
 
-  **LocalOnly:** false.
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "bild": "Text", "text": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
 
-  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Achtung bei Tippfehlern:** Ein falsch geschriebener Feldname wird einfach ignoriert – dann kommen *alle* Einträge statt der gesuchten.
+  - Der Body muss mindestens `{}` sein, sonst kommt ein Fehler.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDokumente.getBildtextFiltered` in `Shared/DataModuls/DataModulDokumenteClass.pas`
+  - Tabelle: `BILDTEXT`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectFilteredDynamic` der Basisklasse `TDataModulTableBase`; Filter über `CONDITIONS`/`FILTER_PARAMS`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -1,0 +1,22 @@
+info:
+  name: Fragebogen
+  type: folder
+  seq: 18
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Hier baust du **Fragebögen**. Ein Fragebogen heißt hier **Kartei**; seine Fragen heißen **Felder** (z.B. Textfeld, Datum, Auswahlliste).
+
+    - **Karteien:** auflisten, anlegen, ändern, kopieren (samt Feldern), löschen (samt Feldern und Antworten).
+    - **Felder:** die Felder einer Kartei auflisten, anlegen, ändern, löschen. Systemfelder sind geschützt.
+    - `demo`: Testendpunkt, gibt die mitgeschickten Werte zurück.
+
+    **Reihenfolge in Bruno:** Zuerst „Kartei anlegen“ ausführen, dann „Feld anlegen“. Beide merken sich die neue Nummer automatisch (`{{karteiid}}` bzw. `{{propertyid}}`), die übrigen Requests benutzen sie. Das **Ausfüllen** eines Fragebogens durch Gäste läuft nicht hier, sondern über die öffentlichen Endpunkte mit Einladungs-Token.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`) und die passende Berechtigung in den Rollen des Benutzers (sonst Fehler 401 bzw. 403).
+
+    Technik: Controller `TDataModulFragebogen` (`Shared/DataModuls/DataModulFragebogenClass.pas`), Tabellen `FORM_KARTEI`, `FORM_PAT_PROPERTY`, `FORM_KARTEI_CONTENT`.
+  type: text/markdown

@@ -7,5 +7,15 @@ request:
   auth: inherit
 
 docs:
-  content: "Public-Controller (TDataModulPublic): token-autorisierte Endpunkte fuer den Browser des Gastes - ohne Login, ohne JWT. Autorisiert wird ausschliesslich ueber den Einladungs-Token aus der Mail ({{einladungstoken}}), uebergeben als Body-Feld token oder ersatzweise als Query-Parameter ?token=... (Body hat Vorrang). Der Server bildet SHA-256 ueber den Klartext-Token und sucht ihn in ACCESS_TOKENS (token_hash); geprueft werden REVOKED, EXPIRES_AT, SINGLE_USE/USED_AT sowie REFERENCE_TYPE + PURPOSE (Adress-Endpunkte: ADRESSEN/einladung, Passwort: REGISTRIERUNG/passwort). Fehler kommen als {status:ERROR,message:...} mit 401/403/404/400. **Auth:** Auth=false (kein JWT noetig; der Bearer-Block der Requests schadet nicht). **LocalOnly:** false - bewusst aus dem Internet erreichbar. Tabellen: ACCESS_TOKENS, ADRESSEN, REGISTRIERUNG."
+  content: |-
+    **Endpunkte für Gäste – ohne Login.** Hierüber arbeitet die Gast-Seite, die ein Kunde über den Link in einer Mail öffnet. Statt eines Logins weist er sich mit dem Token aus der Mail aus (im Body als `token`, ersatzweise in der URL `?token=…`). In Bruno steht dieser Token in der Variable `{{einladungstoken}}`.
+
+    Es gibt drei Arten von Links, und jeder Token passt nur zu seiner Gruppe (sonst Fehler 403):
+    - **Adress-Einladung:** eigene Adresse lesen, ändern und abschließen (`/public/getadresse`, `/public/updateadresse`, `/public/adresse/abschliessen`).
+    - **Passwort-Link:** neues Passwort setzen (`/public/setpasswort`).
+    - **Fragebogen:** Fragebogen lesen, Antworten speichern und abschließen (`/public/getformular`, `/public/saveformular`, `/public/formular/abschliessen`).
+
+    Lesen und Speichern sind beliebig oft möglich; erst Abschließen bzw. Passwort setzen beendet den Link endgültig – beim Testen also Vorsicht. Fehler kommen als `{"status":"ERROR","message":"..."}` mit Status 400, 401, 403 oder 404.
+
+    Technik: Controller `TDataModulPublic` (`Shared/DataModuls/DataModulPublicClass.pas`), Routen ohne JWT und ohne Rollenprüfung, bewusst aus dem Internet erreichbar; Token-Prüfung über `ACCESS_TOKENS`.
   type: text/markdown

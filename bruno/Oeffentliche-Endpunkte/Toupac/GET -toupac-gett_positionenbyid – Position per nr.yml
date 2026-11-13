@@ -25,18 +25,145 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_POSITIONEN anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_POSITIONEN', ALLOWED, 'nr')` auf.
+  **Position per nr.** Liefert genau einen Eintrag aus `T_POSITIONEN`, gesucht über `nr`.
 
-  **Tabelle:** T_POSITIONEN
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/gett_positionenbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, masterpos, postyp, erstellt, geaendert, vorgangnr, agenturnr, menge, personen, leistungscode, kontingentcode, kostelle1, kostelle2, ltraeger, datum_von, datum_bis, leistungnr, provklasse, prov, prov_betrag, provust, ustpflichtig, sachkonto, maxcapacity, mincapacity, capacity, rabatterlaubt, stornierbar, typ, zahlbarsofort, geraet, leistungsgeber, belegt_nr, einzelpreis, gesamtpreis, endpreis, optionstage, regel_mitltyp, katalogreisenr, direktinkasso, ltbezeichnung, reisebezeichnung, alter_von, alter_bis, bemerkung, erm, ermdatum, status, provisionskonto, stornostaffel, sachkontostorno, zeitvon, zeitbis, params, preisschema, leistungsgruppe, inklusiv, preisoption, marge, packagenr, leistungsstatus, ltraegerkennziffer, personenpreis, preisberechnet, kurs, sortierung, rundungsoption, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, termin, referenz1, referenz2, waehrung, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, optionsdatum, teilnehmernr, rabatt, externenr1, externenr2, buchungsdatum, stornodatum, referenz3, referenz4, gruppe, internet, onlinebuchung, app, vk_preis_fremdwaehrung, kurs_vk_fremdwaehrung, waehrung_ek, lcode, menge_alt, auskatalogreise, mindestnaechte, bezeichnung
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `masterpos` | Ganzzahl |
+  | `postyp` | Text (max. 2 Zeichen) |
+  | `erstellt` | Datum/Uhrzeit |
+  | `geaendert` | Datum/Uhrzeit |
+  | `vorgangnr` | Ganzzahl |
+  | `agenturnr` | Ganzzahl |
+  | `menge` | Kommazahl |
+  | `personen` | Ganzzahl |
+  | `leistungscode` | Text (max. 120 Zeichen) |
+  | `kontingentcode` | Text (max. 20 Zeichen) |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `kostelle2` | Text (max. 12 Zeichen) |
+  | `ltraeger` | Ganzzahl |
+  | `datum_von` | Datum/Uhrzeit |
+  | `datum_bis` | Datum/Uhrzeit |
+  | `leistungnr` | Ganzzahl |
+  | `provklasse` | Ganzzahl |
+  | `prov` | Kommazahl |
+  | `prov_betrag` | Kommazahl |
+  | `provust` | Kommazahl |
+  | `ustpflichtig` | Text (max. 4 Zeichen) |
+  | `sachkonto` | Text (max. 12 Zeichen) |
+  | `maxcapacity` | Ganzzahl |
+  | `mincapacity` | Ganzzahl |
+  | `capacity` | Ganzzahl |
+  | `rabatterlaubt` | Text (max. 4 Zeichen) |
+  | `stornierbar` | Text (max. 4 Zeichen) |
+  | `typ` | Ganzzahl |
+  | `zahlbarsofort` | Text (max. 4 Zeichen) |
+  | `geraet` | Ganzzahl |
+  | `leistungsgeber` | Ganzzahl |
+  | `belegt_nr` | Ganzzahl |
+  | `einzelpreis` | Kommazahl |
+  | `gesamtpreis` | Kommazahl |
+  | `endpreis` | Kommazahl |
+  | `optionstage` | Ganzzahl |
+  | `regel_mitltyp` | Ganzzahl |
+  | `katalogreisenr` | Ganzzahl |
+  | `direktinkasso` | Text (max. 4 Zeichen) |
+  | `ltbezeichnung` | Text (max. 40 Zeichen) |
+  | `reisebezeichnung` | Text (max. 60 Zeichen) |
+  | `alter_von` | Ganzzahl |
+  | `alter_bis` | Ganzzahl |
+  | `bemerkung` | Langtext/Datei |
+  | `erm` | Kommazahl |
+  | `ermdatum` | Datum/Uhrzeit |
+  | `status` | Ganzzahl |
+  | `provisionskonto` | Text (max. 12 Zeichen) |
+  | `stornostaffel` | Ganzzahl |
+  | `sachkontostorno` | Text (max. 12 Zeichen) |
+  | `zeitvon` | Text (max. 5 Zeichen) |
+  | `zeitbis` | Text (max. 5 Zeichen) |
+  | `params` | Text (max. 40 Zeichen) |
+  | `preisschema` | Text (max. 12000 Zeichen) |
+  | `leistungsgruppe` | Ganzzahl |
+  | `inklusiv` | Ganzzahl |
+  | `preisoption` | Ganzzahl |
+  | `marge` | Kommazahl |
+  | `packagenr` | Ganzzahl |
+  | `leistungsstatus` | Ganzzahl |
+  | `ltraegerkennziffer` | Ganzzahl |
+  | `personenpreis` | Kommazahl |
+  | `preisberechnet` | Kommazahl |
+  | `kurs` | Kommazahl |
+  | `sortierung` | Ganzzahl |
+  | `rundungsoption` | Ganzzahl |
+  | `ek_tats` | Kommazahl |
+  | `ek_kalk` | Kommazahl |
+  | `freiplatz_lt` | Ganzzahl |
+  | `freiplatz_kunde` | Ganzzahl |
+  | `termin` | Datum/Uhrzeit |
+  | `referenz1` | Text (max. 60 Zeichen) |
+  | `referenz2` | Text (max. 60 Zeichen) |
+  | `waehrung` | Text (max. 10 Zeichen) |
+  | `ek_kalk1` | Kommazahl |
+  | `ek_kalk2` | Kommazahl |
+  | `ek_kalk3` | Kommazahl |
+  | `ek_kalk4` | Kommazahl |
+  | `bezeichnung2` | Text (max. 200 Zeichen) |
+  | `optionsdatum` | Datum/Uhrzeit |
+  | `teilnehmernr` | Ganzzahl |
+  | `rabatt` | Kommazahl |
+  | `externenr1` | Text (max. 255 Zeichen) |
+  | `externenr2` | Text (max. 255 Zeichen) |
+  | `buchungsdatum` | Datum/Uhrzeit |
+  | `stornodatum` | Datum/Uhrzeit |
+  | `referenz3` | Text (max. 60 Zeichen) |
+  | `referenz4` | Text (max. 60 Zeichen) |
+  | `gruppe` | Ganzzahl |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `onlinebuchung` | Text (max. 4 Zeichen) |
+  | `app` | Text (max. 4 Zeichen) |
+  | `vk_preis_fremdwaehrung` | Kommazahl |
+  | `kurs_vk_fremdwaehrung` | Kommazahl |
+  | `waehrung_ek` | Text (max. 10 Zeichen) |
+  | `lcode` | Text (max. 20 Zeichen) |
+  | `menge_alt` | Kommazahl |
+  | `auskatalogreise` | Ganzzahl |
+  | `mindestnaechte` | Ganzzahl |
+  | `bezeichnung` | Text (max. 200 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "masterpos": 42, "postyp": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+  - **Nicht abrufbar** sind hier: `dauer`, `kurs_ek`.
 
-  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getT_PositionenById` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_POSITIONEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

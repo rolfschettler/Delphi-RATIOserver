@@ -5,10 +5,10 @@ info:
 
 http:
   method: POST
-  url: "{{baseURL}}/ki_getteilnehmer?vorgangnr=4711"
+  url: "{{baseURL}}/ki_getteilnehmer?vorgangnr=1001"
   params:
     - name: vorgangnr
-      value: "4711"
+      value: "1001"
       type: query
   body:
     type: multipart-form
@@ -28,18 +28,55 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Lädt eine Datei (Teilnehmerliste in beliebigem Layout) per `multipart/form-data` hoch, lässt die Teilnehmer per KI (OpenAI, `KI_Support.getTeilnehmer`, API-Key aus der Server-Konfiguration Sektion `KI`/`token`) extrahieren und importiert sie in T_TEILNEHMER (`nr` per Generator `T_TEILNEHMER_NR_GEN`, `name` = "Nachname Vorname", `name1` = Vorname, `name2` = Nachname, `geburtstag` (Format dd.mm.yyyy), `email`). Alles in EINER Transaktion.
+  **Teilnehmer per KI aus einer Datei importieren.** Du lädst eine Teilnehmerliste in beliebigem Layout hoch (PDF, Foto, Word, Excel …). Eine KI (OpenAI GPT-4o) liest die Namen heraus, und die Teilnehmer werden dem angegebenen Vorgang hinzugefügt.
 
-  **Query-Parameter:** `vorgangnr` (Pflicht, Integer; fehlt/0 → Exception).
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/ki_getteilnehmer?vorgangnr=1001` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Datei (`Request.Files[0]`, Pflicht):** nur die erste Datei wird verarbeitet. Unterstützte Endungen: .pdf .txt .csv .jpg .jpeg .png .gif .webp .docx .xlsx (sonst Exception).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `vorgangnr` | Ganzzahl, in der URL (`?vorgangnr=1001`) | ja | Vorgang, zu dem die Teilnehmer gehören sollen. |
+  | Datei | als Datei-Upload (Formular, `multipart/form-data`) | ja | Die Teilnehmerliste. Der Name des Formularfelds ist egal; verarbeitet wird nur die **erste** Datei. Erlaubt: `.pdf`, `.txt`, `.csv`, `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.docx`, `.xlsx`. |
 
-  **Duplikate:** Datensätze mit gleicher `vorgangnr` + `name1` + `name2` werden übersprungen. Unbekannte Werte liefert die KI als `??????` → Feld bleibt NULL.
+  In Bruno: im Body beim Feld `file` eine Datei auswählen.
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "imported": 12, "skipped": 3}
+  ```
+  `imported` = neu angelegte Teilnehmer, `skipped` = übersprungen, weil es sie im Vorgang schon gab.
 
-  **LocalOnly:** false.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `Parameter "vorgangnr" fehlt oder ist ungültig` – fehlt, ist `0` oder keine Zahl.
+    - `Es wurde keine Datei hochgeladen`
+    - `Die Datei hat keine Dateiendung. Unterstuetzte Formate: ...` bzw. `Dateiformat ".xyz" wird nicht unterstuetzt. Unterstuetzte Formate: ...`
+    - `Es sind keine Teilnehmerdaten in diesem Dokument vorhanden.` – die KI hat keine Teilnehmer gefunden.
+    - Fehler von OpenAI (z.B. Dienst nicht erreichbar) werden mit ihrer Meldung weitergegeben.
+  - **400** – Datenbankfehler; dann wird **nichts** gespeichert.
 
-  **Antwort:** `{"status":"OK","imported":N,"skipped":M}`
+  ### Gut zu wissen
+  - **Die Datei geht an einen externen Dienst (OpenAI).** Sie enthält meist personenbezogene Daten – Datenschutz beachten. Jeder Aufruf kostet API-Gebühren.
+  - **Was gespeichert wird:** Vorname, Nachname, der Name als „Nachname Vorname“, Geburtstag und E-Mail. Den Geburtstag übernimmt der Server nur, wenn er als `TT.MM.JJJJ` lesbar ist – sonst bleibt er leer.
+  - **Unsichere Werte prüfen:** Was die KI nicht sicher erkennt, liefert sie als `??????`. Bei Geburtstag und E-Mail bleibt das Feld dann leer – **bei Vor- und Nachname wird `??????` aber so gespeichert.** Nach dem Import also die Teilnehmerliste kontrollieren.
+  - **Doppelte werden übersprungen:** Gibt es im Vorgang schon einen Teilnehmer mit genau gleichem Vor- und Nachnamen (Schreibweise muss exakt stimmen), wird er nicht noch einmal angelegt. Das gilt auch für Doppelte innerhalb derselben Datei.
+  - **Alles oder nichts:** Scheitert ein Teilnehmer beim Speichern, wird keiner gespeichert.
+  - **Der Vorgang wird nicht geprüft:** Gibt es die `vorgangnr` nicht, werden die Teilnehmer trotzdem angelegt.
 
-  **Hinweis:** Die Datei wird an einen externen KI-Dienst (OpenAI) übertragen – personenbezogene Daten (Datenschutz beachten). Jeder Aufruf verursacht API-Kosten.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAddOn.KI_GetTeilnehmer` in `Shared/DataModuls/DataModulAddOnClass.pas`, KI-Aufruf `KI_Support.getTeilnehmer` (`Shared/KI_Support.pas`)
+  - API-Key aus der Server-Konfiguration, Sektion `KI`, Schlüssel `token`
+  - Tabelle: `T_TEILNEHMER`; `nr` aus Generator `T_TEILNEHMER_NR_GEN` (kein Trigger), geschrieben werden `nr`, `vorgangnr`, `name1` = Vorname, `name2` = Nachname, `name`, `geburtstag`, `email`
+  - Duplikatprüfung: `VORGANGNR` + `NAME1` + `NAME2` (exakter Vergleich), innerhalb derselben Transaktion
+  - Alle Inserts in einer Transaktion; bei Rollback sind die bereits gezogenen Generatorwerte trotzdem verbraucht.
+  - Eine leere E-Mail (`""`) wird als Leerstring gespeichert, nicht als NULL.
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

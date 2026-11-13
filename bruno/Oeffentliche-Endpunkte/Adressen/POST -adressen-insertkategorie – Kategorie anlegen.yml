@@ -27,16 +27,68 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in der Tabelle ADRKATS an (generisches `DoInsert`).
+  **Kategorie anlegen.** Legt einen neuen Eintrag in `ADRKATS` an.
 
-  **Tabelle:** ADRKATS
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/adressen/insertkategorie` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** gruppe, kat1–kat12, bezeichnung, debitkredit, symbol, kat13–kat24 – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Body:** `{ "gruppe": <wert>, "bezeichnung": "...", "debitkredit": "...", "symbol": "...", ... }` – `gruppe` ist der Primärschlüssel und muss beim Insert mitgegeben werden.
+  | Feld | Typ | Pflicht laut Datenbank |
+  |---|---|---|
+  | `gruppe` | Ganzzahl | ja |
+  | `kat1` | Text (max. 20 Zeichen) |  |
+  | `kat2` | Text (max. 20 Zeichen) |  |
+  | `kat3` | Text (max. 20 Zeichen) |  |
+  | `kat4` | Text (max. 20 Zeichen) |  |
+  | `kat5` | Text (max. 20 Zeichen) |  |
+  | `kat6` | Text (max. 20 Zeichen) |  |
+  | `kat7` | Text (max. 20 Zeichen) |  |
+  | `kat8` | Text (max. 20 Zeichen) |  |
+  | `kat9` | Text (max. 20 Zeichen) |  |
+  | `kat10` | Text (max. 20 Zeichen) |  |
+  | `kat11` | Text (max. 20 Zeichen) |  |
+  | `kat12` | Text (max. 20 Zeichen) |  |
+  | `bezeichnung` | Text (max. 20 Zeichen) |  |
+  | `debitkredit` | Text (max. 1 Zeichen) |  |
+  | `symbol` | Ganzzahl |  |
+  | `kat13` | Text (max. 20 Zeichen) |  |
+  | `kat14` | Text (max. 20 Zeichen) |  |
+  | `kat15` | Text (max. 20 Zeichen) |  |
+  | `kat16` | Text (max. 20 Zeichen) |  |
+  | `kat17` | Text (max. 20 Zeichen) |  |
+  | `kat18` | Text (max. 20 Zeichen) |  |
+  | `kat19` | Text (max. 20 Zeichen) |  |
+  | `kat20` | Text (max. 20 Zeichen) |  |
+  | `kat21` | Text (max. 20 Zeichen) |  |
+  | `kat22` | Text (max. 20 Zeichen) |  |
+  | `kat23` | Text (max. 20 Zeichen) |  |
+  | `kat24` | Text (max. 20 Zeichen) |  |
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **Antwort:** `{"status":"OK"}`
+  ### Gut zu wissen
+  - **Die Nummer (`gruppe`) kannst du mitschicken** – eine freie Nummer liefert vorher der passende `…key`-Endpunkt. Lässt du sie weg, vergibt die Datenbank automatisch eine. Die Antwort enthält keine Nummer.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.insertKategorie` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ADRKATS`, Schlüssel `gruppe`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -25,18 +25,56 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_TICKETDATEN anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_TICKETDATEN', ALLOWED, 'nr')` auf.
+  **Ticketdatensatz per nr.** Liefert genau einen Eintrag aus `T_TICKETDATEN`, gesucht über `nr`.
 
-  **Tabelle:** T_TICKETDATEN
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/gett_ticketdatenbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, gueltigvon, gueltigbis, daten, reftable, refnr, art, bezeichnung, datum1, datum2, datum3, datum4, wtag
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `gueltigvon` | Datum/Uhrzeit |
+  | `gueltigbis` | Datum/Uhrzeit |
+  | `daten` | Text (max. 32000 Zeichen) |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
+  | `art` | Text (max. 20 Zeichen) |
+  | `bezeichnung` | Text (max. 30 Zeichen) |
+  | `datum1` | Datum/Uhrzeit |
+  | `datum2` | Datum/Uhrzeit |
+  | `datum3` | Datum/Uhrzeit |
+  | `datum4` | Datum/Uhrzeit |
+  | `wtag` | Text (max. 21 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "gueltigvon": "2026-09-01 08:00:00", "gueltigbis": "2026-09-01 08:00:00", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getT_TicketdatenById` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_TICKETDATEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

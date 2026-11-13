@@ -8,5 +8,11 @@ request:
 
 docs:
   content: |-
-    Incoming-Controller (DataModulIncomingClass.pas) – Teilnehmerverwaltung Incoming-Touristik (Tabelle T_TEILNEHMER) sowie ein Demo-Referenzendpunkt. **Auth:** alle Routen erfordern einen gueltigen Bearer-Token (JWT). Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /incoming/*), sonst HTTP 403 "Keine Berechtigung fuer diesen Endpunkt.".
+    **Teilnehmer im Incoming-Geschäft verwalten:** Teilnehmer auflisten, gefiltert suchen, einzeln abrufen, anlegen, ändern und löschen. Vor dem Anlegen holst du mit `/incoming/gett_teilnehmernextnr` eine neue Teilnehmer-Nummer – die Datenbank vergibt sie hier nicht von selbst.
+
+    Dazu kommt ein Demo-Endpunkt zum Testen von Anmeldung und Berechtigungen.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`), und der Benutzer muss den jeweiligen Endpunkt in seinen Rollen haben (sonst Fehler 403).
+
+    Technik: Controller `TDataModulIncoming` (`Shared/DataModuls/DataModulIncomingClass.pas`), Tabelle `T_TEILNEHMER`.
   type: text/markdown

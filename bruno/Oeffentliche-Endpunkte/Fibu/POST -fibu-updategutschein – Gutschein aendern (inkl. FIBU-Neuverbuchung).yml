@@ -10,9 +10,9 @@ http:
     type: json
     data: |-
       {
-        "nr": 501,
-        "erledigt": "J",
-        "storniert": "N"
+        "nr": 42,
+        "erledigt": "JA",
+        "storniert": "NEIN"
       }
   auth:
     type: bearer
@@ -26,12 +26,88 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Eigenimplementierung, KEIN generisches `DoUpdate`. `nr` muss im Body vorhanden und eine gueltige Zahl sein (sonst Exception "nr fehlt." bzw. "nr ist keine gueltige Zahl"). Es wird `isKeyInBody` (statt `isParamFromBody`) verwendet: ein im Body EXPLIZIT auf `null` gesetztes Feld wird in der Datenbank auf NULL gesetzt (`Query.ParamByName(Field).Clear`), waehrend ein im Body komplett fehlendes Feld unveraendert bleibt. Ist kein einziges ALLOWED-Feld im Body vorhanden, wird eine Exception "Keine gueltigen Felder uebergeben." geworfen. Update und `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` laufen in einer gemeinsamen Transaktion; bei Fehler Rollback.
+  **Gutschein ändern.** Ändert einen vorhandenen Gutschein – gefunden über `nr` – und bucht ihn danach in der Finanzbuchhaltung (Fibu) neu.
 
-  **Erlaubte Felder (ALLOWED, ohne nr):** vorgang, bearbeiter, geaendert_am, geaendert_von, erfasst, faellig, kennziffer, gutscheinkonto, kurzbemerkung, bemerkung, betrag, gueltig_bis, erledigt, storniert, storniert_am, stornogrund, fuerkunde, zusatzfeld1, zusatzfeld2, zusatzfeld3, fibukto, kulanz, kostelle1, kostelle2, code, motivnr, fibu_archiv_am, nrkreis, entstehung, zahlungsart.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fibu/updategutschein` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `{ "nr": <wert>, <zu aendernde Felder> }` — Primaerschluessel `nr` ist Pflicht.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Nummer des Gutscheins, der geändert werden soll (wird selbst nicht geändert) |
+  | weitere Felder | siehe Liste | mindestens eines | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Auth:** erforderlich (Bearer Token)
+  **Änderbare Felder:**
 
-  **Antwort:** `{ "status": "OK", "nr": <wert> }`
+  | Feld | Typ |
+  |---|---|
+  | `vorgang` | Text (max. 20 Zeichen) |
+  | `bearbeiter` | Text (max. 30 Zeichen) |
+  | `geaendert_am` | Datum/Uhrzeit |
+  | `geaendert_von` | Text (max. 30 Zeichen) |
+  | `erfasst` | Datum/Uhrzeit |
+  | `faellig` | Datum/Uhrzeit |
+  | `kennziffer` | Ganzzahl |
+  | `gutscheinkonto` | Text (max. 12 Zeichen) |
+  | `kurzbemerkung` | Text (max. 20 Zeichen) |
+  | `bemerkung` | Langtext |
+  | `betrag` | Kommazahl |
+  | `gueltig_bis` | Datum/Uhrzeit |
+  | `erledigt` | Ja/Nein-Wert (`"JA"`/`"NEIN"`) |
+  | `storniert` | Ja/Nein-Wert (`"JA"`/`"NEIN"`) |
+  | `storniert_am` | Datum/Uhrzeit |
+  | `stornogrund` | Text (max. 50 Zeichen) |
+  | `fuerkunde` | Ganzzahl |
+  | `zusatzfeld1` | Text (max. 50 Zeichen) |
+  | `zusatzfeld2` | Text (max. 50 Zeichen) |
+  | `zusatzfeld3` | Text (max. 50 Zeichen) |
+  | `fibukto` | Text (max. 12 Zeichen) |
+  | `kulanz` | Ja/Nein-Wert (`"JA"`/`"NEIN"`) |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `kostelle2` | Text (max. 12 Zeichen) |
+  | `code` | Text (max. 20 Zeichen) |
+  | `motivnr` | Ganzzahl |
+  | `fibu_archiv_am` | Datum/Uhrzeit |
+  | `nrkreis` | Ganzzahl |
+  | `entstehung` | Text (max. 60 Zeichen) |
+  | `zahlungsart` | Text (max. 120 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "nr": 42}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab (z.B. Text zu lang, Buchstaben in einem Zahlenfeld, ungültiges Datum) oder die Fibu-Buchung schlägt fehl.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `"nr" fehlt.` – `nr` nicht mitgeschickt oder `null`.
+    - `"nr" ist keine gueltige Zahl: <wert>` – `nr` ist keine ganze Zahl.
+    - `Keine gueltigen Felder uebergeben.` – außer `nr` kein änderbares Feld im Body.
+  - Bei jedem Fehler wird **nichts** geändert und nichts gebucht.
+
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder ändern sich.** Alles andere bleibt, wie es ist; ein Feld mit `null` wird geleert.
+  - **Kein Fehler bei unbekannter Nummer:** Gibt es den Gutschein nicht, wird nichts geändert, die Fibu-Neuverbuchung läuft trotzdem und die Antwort lautet `"status": "OK"`. Wer sichergehen will, prüft vorher mit `/fibu/getgutscheinbyid`.
+  - **Was die Fibu-Neuverbuchung macht** (nur wenn die Finanzbuchhaltung in den Firmenstammdaten eingeschaltet ist): Noch nicht übertragene Buchungen dieses Gutscheins werden entfernt, bereits übertragene durch eine Gegenbuchung ausgeglichen (bei `"storniert": "JA"` mit dem Text „STORNIERUNG“). Danach wird der Gutschein mit den neuen Werten gebucht.
+  - **Ja/Nein-Felder erwarten `"JA"` bzw. `"NEIN"`.** Kürzel wie `"J"`/`"N"` werden zwar gespeichert, gelten bei der Fibu-Buchung aber nicht als „ja“.
+  - **Die Vorgangsnummer ist hier frei änderbar** – anders als beim Anlegen. Eine Änderung von `nrkreis` vergibt dagegen **keine** neue Vorgangsnummer.
+  - **Formate:** Datum als `"2026-08-31"` oder `"2026-08-31 14:00:00"`, Kommazahlen mit Punkt.
+  - **Nicht änderbar** sind hier: `nr`, `mandant`, `logo`.
+  - **Unbekannte Felder werden ohne Meldung ignoriert;** die Groß-/Kleinschreibung der Feldnamen ist egal.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFibu.updateGutschein` in `Shared/DataModuls/DataModulFibuClass.pas`
+  - Tabelle: `GUTSCHEIN`, Schlüssel `nr`
+  - Ablauf in einer Transaktion: `UPDATE GUTSCHEIN SET <Felder> WHERE nr=:nr` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` → Commit, sonst Rollback. Felder per `isKeyInBody` (auch `null` → `Clear`).
+  - `BUILDGSFIBU` → `GEGENBUCHEN(nr,'GS','TODAY',belegtext)`: offene `FIBU`-Zeilen (`ART='GS'`, `RECHNUNGNR=nr`, `GEBUCHT` nicht `JA`) löschen, übertragene gegenbuchen; dann neue `FIBU`-Zeile. Nichts davon, wenn `FIRMENSTAMM.FIBUAKTIV` nicht `JA`.
+  - Auffälligkeit: Bei nicht vorhandener `nr` findet `BUILDGSFIBU` keinen Gutschein, fügt aber trotzdem eine `FIBU`-Zeile mit leeren Werten ein (`ART='GS'`, `RECHNUNGNR=nr`) – nur `FIBU.NR` ist Pflicht.
+  - **Auffälligkeit (bitte prüfen):** `BUILDGSFIBU` hat zwei Eingabeparameter (`GSNR`, `BUCHTEXT`), der Server übergibt nur einen – InterBase kennt keine Default-Werte, Fehler „Input parameter mismatch“ zu erwarten (nicht live getestet, da schreibend).
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

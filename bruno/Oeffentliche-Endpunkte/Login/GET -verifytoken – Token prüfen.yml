@@ -18,14 +18,52 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  **Auth:** erforderlich (Bearer Token) — genau das wird hier geprüft. Keine Rollen-Prüfung (WebAction, läuft nicht über den FRouter).
+  **Token prüfen.** Zeigt, ob dein Token noch gültig ist, für welchen Benutzer es ausgestellt wurde und welche Rechte es enthält.
 
-  Prüft, ob das im Authorization-Header (oder alternativ als ?token=...) übergebene JWT gültig und nicht abgelaufen ist.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/verifytoken` |
+  | **Anmeldung** | nötig – genau dieses Token aus `/login` wird geprüft (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | keine Prüfung – jedes gültige Token darf diesen Endpunkt aufrufen |
 
-  Antwort bei gültigem Token (200): {"status":"OK","valid":true,"user":"<username>","role":<role-json-oder-null>}.
+  ### Was du mitschickst
+  Nur das Token. Bruno schickt es automatisch im Kopf der Anfrage mit (`Authorization: Bearer …`).
 
-  **role** enthält die beim Login übernommenen REGISTRIERUNG-Felder (nr, kennziffer, loginname, username, gesperrt, typ, hauptregistrierung, rollen). **role.rollen** ist die Komma-Liste der Berechtigungen aus REGISTRIERUNG.ROLLEN (eine Rolle/ein Endpunkt pro Zeile, kleingeschrieben). '@'-Blaupausen wie '@FAHRER' wurden beim Login bereits durch die ROLLEN des Datensatzes mit username '@FAHRER' ergänzt (keine Verschachtelung); die '@'-Einträge selbst bleiben in der Liste.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `token` | Text, in der URL (`?token=…`) | nein | Ersatzweise, falls du das Token nicht im Kopf der Anfrage schicken kannst. Wird nur beachtet, wenn dort keins steht. |
 
-  Gegen role.rollen prüft der Router jede Route mit Auth=true und LocalOnly=false (HasRouteAccess in Shared/webUtils.pas): erlaubt bei leerer Liste (= keine Einschränkung), 'supervisor', passender Routen-Rolle oder Endpunkt genau bzw. per Wildcard ('/adressen/*'); sonst HTTP 403 "Keine Berechtigung für diesen Endpunkt.". Mit diesem Request lässt sich also prüfen, welche Rechte das aktuelle Token trägt.
+  ### Was zurückkommt
+  ```json
+  {
+    "status": "OK",
+    "valid": true,
+    "user": "mmustermann",
+    "role": {"nr": "5", "kennziffer": "4711", "loginname": "mmustermann", "username": "mmustermann", "gesperrt": "", "typ": "kunde", "hauptregistrierung": "1", "rollen": "@kunde,/adressen/*", "userkonfig": "", "personalzeichen": "", "usersloginname": ""}
+  }
+  ```
+  - `user` – der Benutzername, der beim Login in der URL (`?user=…`) stand. Fehlte er dort, ist `user` leer (`""`); der Name steht dann nur in `role.username`.
+  - `role` – die Kontodaten zum Zeitpunkt des Logins, **alle Werte als Text**. Enthält das Token keine Kontodaten, ist `role` `null`.
+  - `role.rollen` – die Liste der erlaubten Endpunkte und Rollen, kommagetrennt und kleingeschrieben. Rollen-Vorlagen wie `@kunde` sind bereits durch ihren Inhalt ergänzt; der Vorlagen-Eintrag selbst bleibt in der Liste stehen.
 
-  Bei fehlendem, ungültigem oder abgelaufenem Token: HTTP 401 mit Fehlermeldung.
+  ### Was schiefgehen kann
+  Immer **401** mit `{"status":"error","message":"..."}`:
+  - `Keine Anmeldedaten verfügbar. Bitte neu anmelden.` – kein Token mitgeschickt → zuerst `/login` ausführen.
+  - `Anmeldung ungültig oder abgelaufen. Bitte neu anmelden` – Token abgelaufen oder verfälscht → neu einloggen.
+  - Andere Meldung – das Token ist nicht lesbar.
+
+  ### Gut zu wissen
+  - **So liest du die Rechte:** Ein Endpunkt ist erlaubt, wenn `rollen` leer ist (dann gibt es keine Einschränkung), `supervisor` enthält, den Endpunkt genau nennt (`/adressen/getadressen`) oder per Sternchen abdeckt (`/adressen/*`). Sonst antwortet der Endpunkt mit 403 „Keine Berechtigung für diesen Endpunkt.“
+  - **Rechte stehen fest im Token.** Ändert jemand die Rechte des Benutzers, siehst du das hier erst nach einem neuen Login.
+  - **Gültigkeit:** standardmäßig 900 Minuten (15 Stunden) ab Login, je nach Server-Konfiguration auch anders.
+  - **Token lieber nicht in die URL schreiben:** Adressen landen oft in Protokollen von Server und Proxy – dort wäre das Token dann lesbar.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Umsetzung: WebAction (nicht über den FRouter) – `TWebModule1.WebModule1WebActionItem2Action` → `DoVerifyToken` in `Shared/WebModuleUnit1.pas`, WebActionItem `verifytokenAction` in `WebModuleUnit1.dfm`; keine Rollenprüfung
+  - Keine Tabelle – es wird nur das Token ausgewertet (`TJWTUtils.VerifyToken`).
+  - Rechteprüfung der übrigen Routen: `HasRouteAccess` in `Shared/webUtils.pas`, gilt für alle Routen mit `Auth=true` und `LocalOnly=false`.
+  - Gültigkeit aus `[security] minutes_valid`, Default 900 Minuten.
+  - Die Antwort wird per `Format` zusammengesetzt; `user` wird nicht JSON-maskiert (ein Benutzername mit `"` ergäbe ungültiges JSON).
+
+  </details>

@@ -7,5 +7,17 @@ request:
   auth: inherit
 
 docs:
-  content: "Touristik-Controller (Reisebuero-Vorgaenge, Positionen, Ticketdaten, Leistungstraeger, Leistungen, Katalogreisen, Reisen, Reiseleistungen, Termine, Fahrtauftraege, Kalender). Basiert auf TDataModulTableBase und nutzt die generischen CRUD-Methoden DoSelect / DoSelectFilteredDynamic / DoSelectOne / DoInsert / DoUpdate / DoDelete der Basisklasse; Key-Endpunkte (`...key`) liefern den naechsten Generatorwert. **Auth:** alle Endpunkte erfordern einen gueltigen Bearer-Token ({{jwttoken}}), LocalOnly=false. **Antwortformat Lesezugriffe:** `{ \"header\": {...}, \"data\": [...] }` (SerializeQuery), mit `limit` zusaetzlich `total/limit/offset`. Tabellen: T_VORGANG (Reise-/Buchungsvorgaenge, CRUD), T_POSITIONEN (Vorgangspositionen, nur lesend), T_TICKETDATEN (Ticketdaten, nur lesend), T_LTRAEGER (Leistungstraeger, CRUD), T_LEISTUNG (Leistungsstamm, CRUD), T_KATALOGREISE (Katalogreisen, ohne Delete), T_REISE (Reisen, ohne Delete), T_REISELEISTUNGEN (Leistungen je Katalogreise, CRUD), T_TERMINE (Reisetermine, CRUD), T_REISEDETAIL (Reisedetails/Bezeichnungen je Reise und Sprache, CRUD), F_FAHRTAUFTRAG (Fahrtauftraege, CRUD), T_KALENDER (Kalender-/Termineintraege, CRUD)."
+  content: |-
+    Hier verwaltest du die **Touristik-Daten**: Buchungsvorgänge, Reisen und alles, was dazugehört.
+
+    - **Vorgänge** (Buchungen) – mit lesendem Zugriff auf ihre **Positionen** und **Ticketdaten**.
+    - **Katalogreisen**, **Reisen**, **Reisedetails** (Bezeichnungen je Sprache), **Reiseleistungen** und **Termine**.
+    - **Leistungsträger** (z.B. Hotels, Busunternehmen) und **Leistungen**.
+    - **Fahrtaufträge** und **Kalendereinträge**.
+
+    Je Bereich gibt es in der Regel: auflisten, suchen, einzeln abrufen, nächste freie Nummer holen (`…key`), anlegen, ändern, löschen. Ausnahmen: Positionen und Ticketdaten nur lesen; Katalogreisen und Reisen nicht löschen. Dazu kommt der Testendpunkt `demo`.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`) und die passende Berechtigung in den Rollen des Benutzers (sonst Fehler 401 bzw. 403).
+
+    Technik: Controller `TDataModulToupac` (`Shared/DataModuls/DataModulToupacClass.pas`), generische Methoden der Basisklasse `TDataModulTableBase`; Tabellen `T_VORGANG`, `T_POSITIONEN`, `T_TICKETDATEN`, `T_KATALOGREISE`, `T_REISE`, `T_REISEDETAIL`, `T_REISELEISTUNGEN`, `T_TERMINE`, `T_LTRAEGER`, `T_LEISTUNG`, `F_FAHRTAUFTRAG`, `T_KALENDER`.
   type: text/markdown

@@ -5,10 +5,10 @@ info:
 
 http:
   method: POST
-  url: "{{baseURL}}/teilnehmerfromcsv?vorgangnr=4711"
+  url: "{{baseURL}}/teilnehmerfromcsv?vorgangnr=1001"
   params:
     - name: vorgangnr
-      value: "4711"
+      value: "1001"
       type: query
   body:
     type: multipart-form
@@ -28,25 +28,71 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Importiert Teilnehmer aus einer hochgeladenen CSV-Datei (`multipart/form-data`, UTF-8, Trennzeichen `;`) in T_TEILNEHMER. Zweiphasig: erst wird die GESAMTE Datei validiert, nur bei fehlerfreier Datei folgt der Import (eine Transaktion, `nr` per Generator `T_TEILNEHMER_NR_GEN`).
+  **Teilnehmer aus einer CSV-Reservierungsliste importieren.** Du lädst eine CSV-Datei mit Reservierungsnummer, Gruppe und Name hoch. Der Server prüft zuerst die ganze Datei; nur wenn sie fehlerfrei ist, werden die Teilnehmer dem angegebenen Vorgang hinzugefügt.
 
-  **Query-Parameter:** `vorgangnr` (Pflicht, Integer; fehlt/0 → Exception).
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/teilnehmerfromcsv?vorgangnr=1001` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Datei (`Request.Files[0]`, Pflicht):** Erste nicht-leere Zeile = Header mit den Pflichtspalten `Reservierungsnr`, `Gruppe`, `Name`. Datenzeilen: gleiche Feldanzahl wie Header, `Reservierungsnr` und `Gruppe` ganzzahlig, `Name` im Format "Nachname, Vorname" (Komma Pflicht) → name2 / name1, `name` = "Nachname Vorname".
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `vorgangnr` | Ganzzahl, in der URL (`?vorgangnr=1001`) | ja | Vorgang, zu dem die Teilnehmer gehören sollen. |
+  | Datei | als Datei-Upload (Formular, `multipart/form-data`) | ja | Die CSV-Datei. Der Name des Formularfelds ist egal; verarbeitet wird nur die **erste** Datei. |
 
-  Beispiel:
+  In Bruno: im Body beim Feld `file` eine Datei auswählen.
+
+  **So muss die Datei aussehen:**
+  - Zeichensatz UTF-8, Trennzeichen Semikolon (`;`). Leere Zeilen werden übersprungen.
+  - Die erste Zeile ist die Überschrift und muss die Spalten `Reservierungsnr`, `Gruppe` und `Name` enthalten – genau so geschrieben. Die Reihenfolge ist egal, weitere Spalten sind erlaubt.
+  - Jede Zeile braucht genauso viele Spalten wie die Überschrift.
+  - `Reservierungsnr` und `Gruppe` sind ganze Zahlen, `Name` steht als „Nachname, Vorname“ (das Komma ist Pflicht).
+
   ```
   Reservierungsnr;Gruppe;Name
   1001;1;Mustermann, Max
   1002;1;Musterfrau, Erika
   ```
 
-  **Duplikate:** Zeilen mit bereits vorhandener `vorgangnr` + `reservierungsnr` werden übersprungen.
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "imported": 2, "skipped": 0}
+  ```
+  `imported` = neu angelegte Teilnehmer, `skipped` = übersprungen, weil die Reservierungsnummer im Vorgang schon vorkommt.
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was schiefgehen kann
+  - **400 mit Fehlerliste** – die Datei ist nicht in Ordnung. Es wird nichts gespeichert, und du bekommst alle gefundenen Fehler auf einmal:
+    ```json
+    {"status":"ERROR","errors":["Zeile 3: \"Gruppe\" ist keine gültige Zahl (\"x\")","Zeile 4: \"Name\" enthält kein Komma (\"Muster\")"]}
+    ```
+    Mögliche Meldungen:
+    - `Header: Spalte "Reservierungsnr" fehlt` (ebenso für `"Gruppe"` und `"Name"`) – bei Fehlern in der Überschrift werden die übrigen Zeilen nicht mehr geprüft.
+    - `Zeile n: x Felder erwartet, y gefunden`
+    - `Zeile n: "Reservierungsnr" ist keine gültige Zahl ("...")` bzw. dasselbe für `"Gruppe"`
+    - `Zeile n: "Name" enthält kein Komma ("...")`
 
-  **LocalOnly:** false.
+    Die Zeilennummer zählt nur nicht-leere Zeilen; die Überschrift ist Zeile 1.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`): `Es wurde keine Datei hochgeladen` oder `Parameter "vorgangnr" fehlt oder ist ungültig`.
+  - **400** mit `{"status":"error",...}` – Datenbankfehler; dann wird nichts gespeichert.
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
 
-  **Antwort:** Erfolg `{"status":"OK","imported":N,"skipped":M}`; Validierungsfehler HTTP 400 `{"status":"ERROR","errors":["Zeile 3: ...", ...]}`.
+  ### Gut zu wissen
+  - **Achtung, zwei Schreibweisen:** Fehler in der Datei kommen als `"status": "ERROR"` mit Liste `errors`, sonstige Fehler als `"status": "error"` mit `message`.
+  - **Was gespeichert wird:** Reservierungsnummer, Gruppe, Nachname (Teil vor dem ersten Komma), Vorname (Teil danach) und der Name als „Nachname Vorname“. Leerzeichen am Rand werden entfernt.
+  - **Doppelte werden übersprungen:** Gibt es im Vorgang schon einen Teilnehmer mit derselben Reservierungsnummer, wird die Zeile nicht noch einmal angelegt. Steht eine Reservierungsnummer mehrfach in der Datei, zählt nur das erste Vorkommen.
+  - **Alles oder nichts:** Scheitert ein Teilnehmer beim Speichern, wird keiner gespeichert.
+  - **Nur Überschrift, keine Daten** ergibt `{"status":"OK","imported":0,"skipped":0}`.
+  - **Der Vorgang wird nicht geprüft:** Gibt es die `vorgangnr` nicht, werden die Teilnehmer trotzdem angelegt.
 
-  **Hinweis:** Der Handler heißt im Code `teilnehmerformcsv` (Tippfehler), die Route `/teilnehmerfromcsv`.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAddOn.teilnehmerformcsv` in `Shared/DataModuls/DataModulAddOnClass.pas` (Tippfehler im Methodennamen, Route `/teilnehmerfromcsv`)
+  - Tabelle: `T_TEILNEHMER`; `nr` aus Generator `T_TEILNEHMER_NR_GEN` (kein Trigger), geschrieben werden `nr`, `vorgangnr`, `reservierungsnr`, `gruppe`, `name2`, `name1`, `name`
+  - Zwei Phasen: erst Validierung aller Zeilen, dann Import in einer Transaktion
+  - Duplikatprüfung: `VORGANGNR` + `RESERVIERUNGSNR`, innerhalb derselben Transaktion
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

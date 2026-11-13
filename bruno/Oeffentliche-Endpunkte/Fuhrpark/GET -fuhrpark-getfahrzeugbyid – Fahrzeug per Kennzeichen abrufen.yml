@@ -25,12 +25,92 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz der Tabelle FAHRZEUG anhand des Primärschlüssels `kennzeichen` (Aufruf: `DoSelectOne('FAHRZEUG', ALLOWED, 'kennzeichen')`).
+  **Fahrzeug per Kennzeichen abrufen.** Liefert genau einen Eintrag aus `FAHRZEUG`, gesucht über `kennzeichen`.
 
-  **Erlaubte Felder (ALLOWED):** kennzeichen, bezeichnung, hersteller, typ, fahrzeugart, baujahr, leistung, hubraum, fahrgestellnr, motornr, briefnr, scheinnr, standort, angeschaft, abgeschaft, status, treibstoff, sitzplatz, achsen, text, bild, sitznummern, sitzgesperrt, personen, gesperrt, zusatzfeld1, zusatzfeld2, kmsatz, sortierung, reihen, betrieb, profil, zuschlag1, zuschlag2, zuschlagarten, pin, telematikdevice, xkoord, ykoord, standort_aktuell, sv_fahrzeugprofil, din_norm, hinweise, km, lift, rueckfahrkamera, stammfahrer1, stammfahrer2, telematik_gelesen_am
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fuhrpark/getfahrzeugbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `{ "kennzeichen": "<wert>", "fields": [...] | "*" }`
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `kennzeichen` | Text (max. 15 Zeichen) | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `kennzeichen` | Text (max. 15 Zeichen) |
+  | `bezeichnung` | Text (max. 40 Zeichen) |
+  | `hersteller` | Text (max. 40 Zeichen) |
+  | `typ` | Text (max. 40 Zeichen) |
+  | `fahrzeugart` | Text (max. 40 Zeichen) |
+  | `baujahr` | Ganzzahl |
+  | `leistung` | Text (max. 20 Zeichen) |
+  | `hubraum` | Text (max. 20 Zeichen) |
+  | `fahrgestellnr` | Text (max. 20 Zeichen) |
+  | `motornr` | Text (max. 20 Zeichen) |
+  | `briefnr` | Text (max. 20 Zeichen) |
+  | `scheinnr` | Text (max. 20 Zeichen) |
+  | `standort` | Text (max. 40 Zeichen) |
+  | `angeschaft` | Datum/Uhrzeit |
+  | `abgeschaft` | Datum/Uhrzeit |
+  | `status` | Text (max. 1 Zeichen) |
+  | `treibstoff` | Text (max. 40 Zeichen) |
+  | `sitzplatz` | Text (max. 20 Zeichen) |
+  | `achsen` | Ganzzahl |
+  | `text` | Langtext |
+  | `bild` | Langtext/Datei |
+  | `sitznummern` | Text (max. 2100 Zeichen) |
+  | `sitzgesperrt` | Text (max. 140 Zeichen) |
+  | `personen` | Ganzzahl |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `zusatzfeld1` | Text (max. 30 Zeichen) |
+  | `zusatzfeld2` | Text (max. 30 Zeichen) |
+  | `kmsatz` | Kommazahl |
+  | `sortierung` | Ganzzahl |
+  | `reihen` | Text (max. 80 Zeichen) |
+  | `betrieb` | Text (max. 8 Zeichen) |
+  | `profil` | Text (max. 40 Zeichen) |
+  | `zuschlag1` | Kommazahl |
+  | `zuschlag2` | Kommazahl |
+  | `zuschlagarten` | Text (max. 20 Zeichen) |
+  | `pin` | Text (max. 30 Zeichen) |
+  | `telematikdevice` | Text (max. 50 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `standort_aktuell` | Text (max. 120 Zeichen) |
+  | `sv_fahrzeugprofil` | Text (max. 40 Zeichen) |
+  | `din_norm` | Text (max. 30 Zeichen) |
+  | `hinweise` | Text (max. 255 Zeichen) |
+  | `km` | Ganzzahl |
+  | `lift` | Text (max. 4 Zeichen) |
+  | `rueckfahrkamera` | Text (max. 4 Zeichen) |
+  | `stammfahrer1` | Text (max. 30 Zeichen) |
+  | `stammfahrer2` | Text (max. 30 Zeichen) |
+  | `telematik_gelesen_am` | Datum/Uhrzeit |
 
-  **Antwort:** `{"header":{...},"data":[{...}]}` (SerializeQuery; `data` enthaelt den gefundenen Datensatz bzw. ist leer, wenn der Schluessel nicht existiert).
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"kennzeichen": "Text", "bezeichnung": "Text", "hersteller": "Text", ...} ]}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`kennzeichen` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFuhrpark.getFahrzeugById` in `Shared/DataModuls/DataModulFuhrparkClass.pas`
+  - Tabelle: `FAHRZEUG`, Schlüssel `kennzeichen`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

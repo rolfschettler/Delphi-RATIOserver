@@ -7,5 +7,12 @@ request:
   auth: inherit
 
 docs:
-  content: "Fuhrpark-Controller (Quelle: Shared/DataModuls/DataModulFuhrparkClass.pas). Deckt die Fuhrpark-Verwaltung ab: Fahrtenbuch (Tabelle FAHRTENBUCH – Einzelfahrten mit Kilometer-, Umsatz- und Steuerangaben), Reparaturvorgänge (Tabelle REPVORGANG), Tankungen (Tabelle TANKUNG), Auslandsfahrten (Tabelle AUSLANDFAHRT), Fahrzeugstammdaten (Tabelle FAHRZEUG) sowie Länder-Stammdaten (Tabelle LAND). Alle Endpunkte erfordern Authentifizierung per Bearer Token ({{jwttoken}}), keiner ist LocalOnly. Besonderheiten: `getFahrzeug*` besitzt KEINEN insert- und KEINEN Key-Endpunkt (Primärschlüssel ist das Kennzeichen selbst, das beim Anlegen bereits bekannt ist – vermutlich werden Fahrzeuge nicht über einen generischen Insert-Endpunkt angelegt); `getLand*` ist ein reiner Read-Only-Stammdaten-Endpunkt ganz ohne Insert/Update/Delete/Key. Die BLOB-Felder `text` und `bild` (Tabelle FAHRZEUG) sind in ALLOWED enthalten, aber bewusst nicht in den Filter-Bedingungen von `getFahrzeugFiltered`, da InterBase Gleichheitsvergleiche auf BLOB-Feldern nicht unterstützt. Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /fuhrpark/*), sonst HTTP 403 \"Keine Berechtigung fuer diesen Endpunkt.\"."
+  content: |-
+    **Fuhrpark verwalten:** Fahrzeuge, Tankungen, Fahrtenbuch, Reparaturvorgänge und Auslandsfahrten. Für Tankungen, Fahrtenbuch, Reparaturen und Auslandsfahrten gibt es jeweils Endpunkte zum Auflisten, gefilterten Suchen, Abrufen eines Eintrags, Anlegen, Ändern und Löschen sowie zum Holen einer neuen Nummer.
+
+    Fahrzeuge lassen sich auflisten, suchen, ändern und löschen, aber hier nicht anlegen – ihr Schlüssel ist das Kennzeichen. Die Länderliste ist nur lesbar. Dazu kommt ein Demo-Endpunkt zum Testen von Anmeldung und Berechtigungen.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`), und der Benutzer muss den jeweiligen Endpunkt in seinen Rollen haben (sonst Fehler 403).
+
+    Technik: Controller `TDataModulFuhrpark` (`Shared/DataModuls/DataModulFuhrparkClass.pas`), Tabellen `FAHRZEUG`, `TANKUNG`, `FAHRTENBUCH`, `REPVORGANG`, `AUSLANDFAHRT`, `LAND`.
   type: text/markdown

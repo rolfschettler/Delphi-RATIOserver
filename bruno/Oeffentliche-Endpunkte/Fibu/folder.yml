@@ -7,5 +7,12 @@ request:
   auth: inherit
 
 docs:
-  content: "Controller fuer den Finanzbuchhaltungs-Bereich (DataModulFibuClass.pas). Deckt sechs Entitaeten ab: Bruttolohn (Lohnabrechnungspositionen der Monteure), Gutschein (Gutschein-Vorgaenge mit automatischer FIBU-Verbuchung ueber die Stored Procedure BUILDGSFIBU), Devisenkasse (Fremdwaehrungskasse), Lohnart (Lohnarten-Stammdaten, nur lesend), Fibu (allgemeine FIBU-Buchungssaetze) und Konten (Kontenstamm, nur lesend). Alle Endpunkte erfordern Authentifizierung per Bearer Token (JWT); keiner ist LocalOnly. Fuer Bruttolohn, Gutschein, Devisenkasse und Fibu existieren jeweils die vollen CRUD-Endpunkte (get/getFiltered/getById/getKey/insert/update/delete); Lohnart und Konten sind bewusst reine Stammdaten-Endpunkte ohne Key/Insert/Update/Delete. Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /fibu/*), sonst HTTP 403 \"Keine Berechtigung fuer diesen Endpunkt.\"."
+  content: |-
+    Hier arbeitest du mit der **Finanzbuchhaltung (Fibu)**: Buchungssätze, **Gutscheine**, die Devisenkasse (Kasse für Fremdwährungen) und Bruttolöhne. Kontenstamm und Lohnarten kannst du nur lesen.
+
+    Für Buchungssätze, Gutscheine, Devisenkasse und Bruttolöhne gibt es: auflisten, gefiltert suchen, einzeln abrufen, neue Nummer holen, anlegen, ändern und löschen. **Besonderheit Gutscheine:** Beim Anlegen vergibt der Server Nummer und Vorgangsnummer selbst, und nach jedem Anlegen, Ändern oder Löschen wird der Gutschein automatisch in der Fibu (neu) gebucht. `/fibu/demo` dient zum Testen.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`) und die Berechtigung für den jeweiligen Endpunkt in den Rollen des Benutzers (sonst Fehler 403).
+
+    Technik: Controller `TDataModulFibu` in `Shared/DataModuls/DataModulFibuClass.pas`, Tabellen `FIBU`, `GUTSCHEIN`, `DEVISENKASSE`, `BRUTTOLOHN`, `KONTEN`, `LOHNART`.
   type: text/markdown

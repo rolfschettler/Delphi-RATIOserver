@@ -34,18 +34,79 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen TRANSFEHR-Datensatz an (generisches `DoInsert`).
+  **Transfer-Projekt anlegen.** Legt einen neuen Eintrag in `TRANSFEHR` an.
 
-  **Tabelle:** TRANSFEHR
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/anmiet/inserttransfehr` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** kunde, ansprechpartner, hinfahrt, hinfahrtende, rueckfahrt, rueckfahrtende, abfahrthin, ankunfthin, abfahrtrueck, ankunftrueck, zeit1h, zeit2h, zeit1r, zeit2r, text1, text2, text3, text4, text5, text6, datum1, datum2, kurztext, text, bearbeiter, erstellt, perszahl, personen, status, symbol, projektart, angebot_gedruckt, auftrag_gedruckt, optionsdatum, filiale, kontaktentstehung, bearbeiter2, vertretung, reiseart – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Hinweis:** Der Primärschlüssel `nr` ist NICHT in ALLOWED und wird ignoriert – die Vergabe muss datenbankseitig (Generator TRANSFEHR_NR_GEN/Trigger) erfolgen; `/anmiet/gettransfehrkey` liefert nur den nächsten Generatorwert. `text` (BLOB) wird als einfacher Parameterwert geschrieben (kein Base64-Decoding).
+  | Feld | Typ |
+  |---|---|
+  | `kunde` | Ganzzahl |
+  | `ansprechpartner` | Ganzzahl |
+  | `hinfahrt` | Datum/Uhrzeit |
+  | `hinfahrtende` | Datum/Uhrzeit |
+  | `rueckfahrt` | Datum/Uhrzeit |
+  | `rueckfahrtende` | Datum/Uhrzeit |
+  | `abfahrthin` | Text (max. 40 Zeichen) |
+  | `ankunfthin` | Text (max. 40 Zeichen) |
+  | `abfahrtrueck` | Text (max. 40 Zeichen) |
+  | `ankunftrueck` | Text (max. 40 Zeichen) |
+  | `zeit1h` | Text (max. 5 Zeichen) |
+  | `zeit2h` | Text (max. 5 Zeichen) |
+  | `zeit1r` | Text (max. 5 Zeichen) |
+  | `zeit2r` | Text (max. 5 Zeichen) |
+  | `text1` | Text (max. 40 Zeichen) |
+  | `text2` | Text (max. 40 Zeichen) |
+  | `text3` | Text (max. 40 Zeichen) |
+  | `text4` | Text (max. 40 Zeichen) |
+  | `text5` | Text (max. 40 Zeichen) |
+  | `text6` | Text (max. 40 Zeichen) |
+  | `datum1` | Datum/Uhrzeit |
+  | `datum2` | Datum/Uhrzeit |
+  | `kurztext` | Text (max. 600 Zeichen) |
+  | `text` | Langtext/Datei |
+  | `bearbeiter` | Text (max. 30 Zeichen) |
+  | `erstellt` | Datum/Uhrzeit |
+  | `perszahl` | Text (max. 25 Zeichen) |
+  | `personen` | Ganzzahl |
+  | `status` | Ganzzahl |
+  | `symbol` | Ganzzahl |
+  | `projektart` | Text (max. 40 Zeichen) |
+  | `angebot_gedruckt` | Text (max. 4 Zeichen) |
+  | `auftrag_gedruckt` | Text (max. 4 Zeichen) |
+  | `optionsdatum` | Datum/Uhrzeit |
+  | `filiale` | Text (max. 10 Zeichen) |
+  | `kontaktentstehung` | Text (max. 8 Zeichen) |
+  | `bearbeiter2` | Text (max. 30 Zeichen) |
+  | `vertretung` | Text (max. 30 Zeichen) |
+  | `reiseart` | Text (max. 8 Zeichen) |
 
-  **Body:** `{ "kunde": <wert>, "hinfahrt": "...", "rueckfahrt": "...", "kurztext": "...", ... }`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) vergibt die Datenbank automatisch** – mitschicken geht nicht, sie würde ignoriert. Die Antwort enthält die neue Nummer nicht; wer sie braucht, sucht den Eintrag danach (z.B. über den `…filtered`-Endpunkt).
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAnmiet.insertTransfehr` in `Shared/DataModuls/DataModulAnmietClass.pas`
+  - Tabelle: `TRANSFEHR`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

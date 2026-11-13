@@ -25,10 +25,81 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensätze aus der Tabelle FIS_LOG (`DoSelect('FIS_LOG', ALLOWED)`) ohne Filter. Body optional: `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}`.
+  **FIS-Log auflisten.** Liefert alle Einträge aus `FIS_LOG` – auf Wunsch sortiert und seitenweise.
 
-  **Erlaubte Felder (ALLOWED, 30):** nr, datum, xkoord, ykoord, status, einsatznr, taetigkeit, herkunft, fahrer, fahrzeug, zusatzfeld1, zusatzfeld2, kmstand, distance, dauer, fremdnr, text, standort, zeitpunkt, sortierung, loginname, art, textfeld1, textfeld2, textfeld3, datumfeld1, datumfeld2, datumfeld3, wert, erledigt_am.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/getfis_log` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Was du mitschickst
+  Alles ist optional – ein leerer Body `{}` liefert alles.
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
+
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `datum` | Datum/Uhrzeit |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `status` | Text (max. 4 Zeichen) |
+  | `einsatznr` | Ganzzahl |
+  | `taetigkeit` | Ganzzahl |
+  | `herkunft` | Text (max. 20 Zeichen) |
+  | `fahrer` | Text (max. 30 Zeichen) |
+  | `fahrzeug` | Text (max. 30 Zeichen) |
+  | `zusatzfeld1` | Text (max. 60 Zeichen) |
+  | `zusatzfeld2` | Text (max. 60 Zeichen) |
+  | `kmstand` | Ganzzahl |
+  | `distance` | Ganzzahl |
+  | `dauer` | Ganzzahl |
+  | `fremdnr` | Ganzzahl |
+  | `text` | Text (max. 500 Zeichen) |
+  | `standort` | Text (max. 255 Zeichen) |
+  | `zeitpunkt` | Datum/Uhrzeit |
+  | `sortierung` | Ganzzahl |
+  | `loginname` | Text (max. 20 Zeichen) |
+  | `art` | Text (max. 3 Zeichen) |
+  | `textfeld1` | Text (max. 255 Zeichen) |
+  | `textfeld2` | Text (max. 255 Zeichen) |
+  | `textfeld3` | Text (max. 255 Zeichen) |
+  | `datumfeld1` | Datum/Uhrzeit |
+  | `datumfeld2` | Datum/Uhrzeit |
+  | `datumfeld3` | Datum/Uhrzeit |
+  | `wert` | Text (max. 3200 Zeichen) |
+  | `erledigt_am` | Datum/Uhrzeit |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "datum": "2026-09-01 08:00:00", "xkoord": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Ohne `limit` kommt die komplette Tabelle** – bei vielen Einträgen besser seitenweise abrufen.
+  - **Zum Suchen** den passenden `…filtered`-Endpunkt verwenden, für einen einzelnen Eintrag `…byid`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getFis_Log` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `FIS_LOG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

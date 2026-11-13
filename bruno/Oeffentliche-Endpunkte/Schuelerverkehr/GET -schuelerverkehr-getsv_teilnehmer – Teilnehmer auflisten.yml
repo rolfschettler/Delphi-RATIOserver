@@ -25,14 +25,111 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensätze aus der Tabelle SV_TEILNEHMER ohne Filter. Implementierung: `DoSelect('SV_TEILNEHMER', ALLOWED)`.
+  **Teilnehmer auflisten.** Liefert alle Einträge aus `SV_TEILNEHMER` – auf Wunsch sortiert und seitenweise.
 
-  **Erlaubte Felder (ALLOWED, 60):** nr, persnr, los, einrichtungnr_fk, kennziffer_fk, kostentraeger_fk, tourbereich, berufsverkehr, anrede, vorname, nachname, strasse, land, plz, ort, ortsteil, bezirk, email, xkoord, ykoord, haltepunktnr_fk, ansprech1, ansprech1_tel, ansprech2, ansprech2_tel, hinweis, importhinweis1, rolli, einzelbefoerderung, begleitperson, begleitpersonname, hilfsmittel, hilfsmittelhinweis, sv_fahrzeugprofil, abrechnungstarif_fk, gruppe, geburtstag, geprueft, inaktiv, erfasstvon, erfasstam, geaendertvon, geaendertam, ansprech1_email, ansprech1_vorname, ansprech1_nachname, ansprech2_email, ansprech2_vorname, ansprech2_nachname, pushid, pwd, datumfeld1, datumfeld2, datumfeld3, datumfeld4, textfeld1, textfeld2, textfeld3, textfeld4, textfeld5.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/schuelerverkehr/getsv_teilnehmer` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Hinweis:** `pwd` ist in ALLOWED enthalten – bei `"fields":"*"` bzw. ohne `fields` wird das Feld mit ausgeliefert. Im Beispiel daher eine explizite Feldliste.
+  ### Was du mitschickst
+  Alles ist optional – ein leerer Body `{}` liefert alles.
 
-  **Body (optional):** `{"fields":[...]|"*","orderby":"feld","limit":10,"offset":0}` – `orderby` muss ein ALLOWED-Feld sein.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `persnr` | Text (max. 30 Zeichen) |
+  | `los` | Text (max. 30 Zeichen) |
+  | `einrichtungnr_fk` | Ganzzahl |
+  | `kennziffer_fk` | Ganzzahl |
+  | `kostentraeger_fk` | Ganzzahl |
+  | `tourbereich` | Text (max. 30 Zeichen) |
+  | `berufsverkehr` | Text (max. 4 Zeichen) |
+  | `anrede` | Text (max. 20 Zeichen) |
+  | `vorname` | Text (max. 30 Zeichen) |
+  | `nachname` | Text (max. 30 Zeichen) |
+  | `strasse` | Text (max. 50 Zeichen) |
+  | `land` | Text (max. 15 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 30 Zeichen) |
+  | `ortsteil` | Text (max. 60 Zeichen) |
+  | `bezirk` | Text (max. 30 Zeichen) |
+  | `email` | Text (max. 60 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `haltepunktnr_fk` | Ganzzahl |
+  | `ansprech1` | Text (max. 50 Zeichen) |
+  | `ansprech1_tel` | Text (max. 30 Zeichen) |
+  | `ansprech2` | Text (max. 50 Zeichen) |
+  | `ansprech2_tel` | Text (max. 30 Zeichen) |
+  | `hinweis` | Text (max. 200 Zeichen) |
+  | `importhinweis1` | Text (max. 2000 Zeichen) |
+  | `rolli` | Text (max. 4 Zeichen) |
+  | `einzelbefoerderung` | Text (max. 4 Zeichen) |
+  | `begleitperson` | Text (max. 4 Zeichen) |
+  | `begleitpersonname` | Text (max. 50 Zeichen) |
+  | `hilfsmittel` | Text (max. 4 Zeichen) |
+  | `hilfsmittelhinweis` | Text (max. 200 Zeichen) |
+  | `sv_fahrzeugprofil` | Text (max. 40 Zeichen) |
+  | `abrechnungstarif_fk` | Text (max. 10 Zeichen) |
+  | `gruppe` | Text (max. 10 Zeichen) |
+  | `geburtstag` | Datum/Uhrzeit |
+  | `geprueft` | Text (max. 4 Zeichen) |
+  | `inaktiv` | Text (max. 4 Zeichen) |
+  | `erfasstvon` | Text (max. 20 Zeichen) |
+  | `erfasstam` | Datum/Uhrzeit |
+  | `geaendertvon` | Text (max. 20 Zeichen) |
+  | `geaendertam` | Datum/Uhrzeit |
+  | `ansprech1_email` | Text (max. 60 Zeichen) |
+  | `ansprech1_vorname` | Text (max. 30 Zeichen) |
+  | `ansprech1_nachname` | Text (max. 30 Zeichen) |
+  | `ansprech2_email` | Text (max. 60 Zeichen) |
+  | `ansprech2_vorname` | Text (max. 30 Zeichen) |
+  | `ansprech2_nachname` | Text (max. 30 Zeichen) |
+  | `pushid` | Text (max. 255 Zeichen) |
+  | `pwd` | Text (max. 255 Zeichen) |
+  | `datumfeld1` | Datum/Uhrzeit |
+  | `datumfeld2` | Datum/Uhrzeit |
+  | `datumfeld3` | Datum/Uhrzeit |
+  | `datumfeld4` | Datum/Uhrzeit |
+  | `textfeld1` | Text (max. 50 Zeichen) |
+  | `textfeld2` | Text (max. 50 Zeichen) |
+  | `textfeld3` | Text (max. 50 Zeichen) |
+  | `textfeld4` | Text (max. 50 Zeichen) |
+  | `textfeld5` | Text (max. 50 Zeichen) |
 
-  **Antwort:** ohne `limit` `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery, Feldnamen klein); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "persnr": "Text", "los": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Ohne `limit` kommt die komplette Tabelle** – bei vielen Einträgen besser seitenweise abrufen.
+  - **Zum Suchen** den passenden `…filtered`-Endpunkt verwenden, für einen einzelnen Eintrag `…byid`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulSchuelerverkehr.getSV_Teilnehmer` in `Shared/DataModuls/DataModulSchuelerverkehrClass.pas`
+  - Tabelle: `SV_TEILNEHMER`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

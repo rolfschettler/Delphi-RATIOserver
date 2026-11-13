@@ -7,5 +7,15 @@ request:
   auth: inherit
 
 docs:
-  content: Controller für Dokumentvorlagen (VORLAGEN, inkl. Datei-Upload per multipart/form-data) und Bildtexte (T_BILDTEXT, mit Base64-codierten Bild-/Text-BLOBs, inkl. JPEG-Signaturprüfung für Bilder) sowie lesender Zugriff auf die Alt-Tabelle BILDTEXT (getbildtextfiltered / getbildtextbyid). Alle Endpunkte erfordern Authentifizierung (Bearer Token, JWT).
+  content: |-
+    Hier verwaltest du **Dokumentvorlagen** (z.B. Briefe, PDFs, Formulare) und **Bildtexte** – Bilder und Texte, die zu anderen Datensätzen gehören, etwa das Titelbild einer Anmietung.
+
+    - **Dokumentvorlagen:** auflisten, suchen, einzeln abrufen, anlegen, ändern, löschen – und Dateien direkt hochladen (`uploaddokument`, je Datei eine Vorlage).
+    - **Bildtexte:** auflisten, suchen, einzeln abrufen, anlegen, ändern, löschen. Bilder (nur JPEG) und Texte werden dabei als Base64-Text übertragen.
+    - **Alte Bildtexte:** nur lesen (`getbildtextfiltered`, `getbildtextbyid`).
+    - `demo`: Testendpunkt, gibt die mitgeschickten Werte zurück.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`) und die passende Berechtigung in den Rollen des Benutzers (sonst Fehler 401 bzw. 403).
+
+    Technik: Controller `TDataModulDokumente` (`Shared/DataModuls/DataModulDokumenteClass.pas`), Tabellen `VORLAGEN`, `T_BILDTEXT`, `BILDTEXT`.
   type: text/markdown

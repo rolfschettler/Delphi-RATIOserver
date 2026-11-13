@@ -1,0 +1,68 @@
+info:
+  name: POST /fragebogen/deleteproperty – Feld löschen
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/deleteproperty"
+  body:
+    type: json
+    data: |-
+      {
+        "id": {{propertyid}}
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Feld löschen.** Löscht ein Feld (eine Frage) aus einer Kartei endgültig – zusammen mit allen Antworten, die dazu schon gespeichert wurden.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fragebogen/deleteproperty` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `id` | Ganzzahl über 0 | **ja** | Nummer des Feldes, das gelöscht wird. |
+
+  In Bruno steht hier `{{propertyid}}`. Diese Variable füllt Bruno automatisch, sobald du „Feld anlegen“ ausgeführt hast – sie enthält dann die Nummer des neuen Feldes. Für ein anderes Feld trägst du die Zahl einfach direkt ein.
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt (Meldung `Keine Berechtigung für diesen Endpunkt.`).
+  - **403** mit `{"status":"ERROR","message":"Systemfeld - geschützt."}` – das Feld ist ein Systemfeld und darf nicht gelöscht werden.
+  - **400** mit `{"status":"ERROR","message":"\"id\" fehlt oder ist keine Zahl."}` – `id` fehlt, ist keine ganze Zahl oder nicht größer als 0.
+  - **404** mit `{"status":"ERROR","message":"Feld nicht gefunden."}` – es gibt kein Feld mit dieser Nummer, z.B. weil es schon gelöscht wurde.
+  - **400** mit `{"status":"error","message":"..."}` – Fehler in der Datenbank.
+
+  ### Gut zu wissen
+  - **Endgültig, ohne Rückfrage:** Es gibt keinen Papierkorb und kein Rückgängig.
+  - **Gespeicherte Antworten gehen mit verloren.** Wie viele das sind, zeigt vorher das Feld `inuse` in „Felder einer Kartei auflisten“.
+  - **Systemfelder sind hier geschützt.** Beim Löschen der ganzen Kartei werden sie dagegen mitgelöscht.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.deleteProperty` in `Shared/DataModuls/DataModulFragebogenClass.pas`
+  - Tabelle: `FORM_PAT_PROPERTY`, Schlüssel `id`; vorher Prüfung auf Existenz und `system` = 1
+  - Antworten in `FORM_KARTEI_CONTENT` löscht die Datenbank mit (Fremdschlüssel `FK_FORM_KARTEI_CONTENT_PROPERTY`, `ON DELETE CASCADE` – in der Datenbank geprüft)
+  - DELETE in eigener Transaktion
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

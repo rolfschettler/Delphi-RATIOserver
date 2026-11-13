@@ -35,12 +35,52 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in der Tabelle AUSLANDFAHRT an (Aufruf: `DoInsert('AUSLANDFAHRT', ALLOWED)`). Nur die in ALLOWED gelisteten Felder werden aus dem Body übernommen; der Primärschlüssel `nr` ist NICHT enthalten (vorher per `getauslandfahrtkey` beziehen).
+  **Auslandsfahrt anlegen.** Legt einen neuen Eintrag in `AUSLANDFAHRT` an.
 
-  **Erlaubte Felder (ALLOWED, ohne nr):** fahrtnr, landkennung, kmausland, transit, betrag, steuer, grenzeintritt, grenzaustritt, kmleer, grenzeintritt_am, grenzaustritt_am, datum
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fuhrpark/insertauslandfahrt` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `{ "fahrtnr": <wert>, ... }`
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Auth:** erforderlich (Bearer Token)
+  | Feld | Typ |
+  |---|---|
+  | `fahrtnr` | Ganzzahl |
+  | `landkennung` | Text (max. 4 Zeichen) |
+  | `kmausland` | Ganzzahl |
+  | `transit` | Text (max. 4 Zeichen) |
+  | `betrag` | Kommazahl |
+  | `steuer` | Kommazahl |
+  | `grenzeintritt` | Ganzzahl |
+  | `grenzaustritt` | Ganzzahl |
+  | `kmleer` | Ganzzahl |
+  | `grenzeintritt_am` | Datum/Uhrzeit |
+  | `grenzaustritt_am` | Datum/Uhrzeit |
+  | `datum` | Datum/Uhrzeit |
 
-  **Antwort:** `{ "status": "OK" }`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) vergibt die Datenbank automatisch** – mitschicken geht nicht, sie würde ignoriert. Die Antwort enthält die neue Nummer nicht; wer sie braucht, sucht den Eintrag danach (z.B. über den `…filtered`-Endpunkt).
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFuhrpark.insertAuslandfahrt` in `Shared/DataModuls/DataModulFuhrparkClass.pas`
+  - Tabelle: `AUSLANDFAHRT`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

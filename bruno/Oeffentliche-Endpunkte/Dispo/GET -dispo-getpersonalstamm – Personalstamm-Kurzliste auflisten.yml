@@ -18,8 +18,47 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Nicht-generischer Endpunkt mit fest verdrahtetem SQL (kein Body, keine Parameter, keine Filter-/ById-/Insert-/Key-Varianten vorhanden): `Select nr, name1, name2, zeichen from PERSONALSTAMM order by name2`.
+  **Personalstamm-Kurzliste.** Liefert alle Mitarbeiter mit Nummer, Vorname, Nachname und Kürzel, sortiert nach Nachname.
 
-  **Antwort:** `{"header":{...},"data":[...]}` (SerializeQuery, Feldnamen klein), z. B. `{"header":{...},"data":[{"nr":55,"name1":"Hans","name2":"Mustermann","zeichen":"MU"}, ...]}`.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/getpersonalstamm` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Was du mitschickst
+  Nichts – ein Body wird nicht benötigt (und ignoriert).
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", "name1": "ftstring 30", "name2": "ftstring 30", "zeichen": "ftstring 15"},
+    "data": [ {"nr": 55, "name1": "Hans", "name2": "Mustermann", "zeichen": "MU"} ]
+  }
+  ```
+  Die Mitarbeiter stehen in `data`, je Person diese Felder:
+
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `nr` | Ganzzahl | Personalnummer |
+  | `name1` | Text (max. 30 Zeichen) | Vorname |
+  | `name2` | Text (max. 30 Zeichen) | Nachname |
+  | `zeichen` | Text (max. 15 Zeichen) | Personalkürzel |
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **Es kommen immer alle Mitarbeiter – auch gesperrte.** Einen Filter gibt es hier nicht; `fields`, `orderby`, `limit` und `offset` haben keine Wirkung.
+  - **Mehr Felder oder Suche:** dafür `/dispo/getpersonalstammfiltered` verwenden.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getpersonalstamm` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `PERSONALSTAMM` (nur lesend)
+  - Festes SQL: `SELECT nr, name1, name2, zeichen FROM PERSONALSTAMM ORDER BY name2`, kein Filter auf `gesperrt`.
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

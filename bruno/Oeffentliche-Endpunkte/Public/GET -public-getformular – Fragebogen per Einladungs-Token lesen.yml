@@ -1,0 +1,99 @@
+info:
+  name: GET /public/getformular – Fragebogen per Einladungs-Token lesen
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{baseURL}}/public/getformular?token={{einladungstoken}}"
+  params:
+    - name: token
+      value: "{{einladungstoken}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Fragebogen per Einladungs-Token lesen.** Der Gast öffnet den Link aus seiner Fragebogen-Mail; die Seite holt damit Titel, Empfänger und alle Fragen samt bereits gespeicherter Antworten – ohne Login.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/public/getformular?token={{einladungstoken}}` |
+  | **Anmeldung** | kein Login – stattdessen Fragebogen-Token in der URL oder im Body |
+
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `token` | Text, im Body oder in der URL (`?token=…`) | ja | Der Token aus der Fragebogen-Mail. Steht er in beiden, gilt der im Body. Muss ein **Fragebogen-Token** sein – Adress- oder Passwort-Einladungen werden mit 403 abgewiesen. |
+
+  Welcher Fragebogen gelesen wird, legt allein der Token fest.
+
+  ### Was zurückkommt
+  ```json
+  {
+    "status": "OK",
+    "data": {
+      "karteiname": "Gesundheitsfragebogen",
+      "beschreibung": "Bitte vor Reiseantritt ausfüllen",
+      "expires": "2026-12-31 23:59:00",
+      "recipient_email": "max@example.com",
+      "empfaenger": {"anrede":"Herr","titel":null,"name1":"Max","name2":"Mustermann","strasse":"Musterstraße 1","plz":"88487","ort":"Mietingen"},
+      "felder": [
+        {"property_id":12,"label":"Allergien","proptyp":"TXT","options":null,"bereich":"Gesundheit","sortierung":1,"content":"keine"},
+        {"property_id":13,"label":"Verpflegung","proptyp":"SEL","options":"Vollkost,Vegetarisch,Vegan","bereich":null,"sortierung":2,"content":null}
+      ]
+    }
+  }
+  ```
+
+  | Feld | Bedeutung |
+  |---|---|
+  | `karteiname` | Titel des Fragebogens. |
+  | `beschreibung` | Beschreibungstext oder `null`. |
+  | `expires` | Bis wann der Fragebogen ausgefüllt sein soll (`"2026-12-31 23:59:00"`) oder `null`. Nur zur Anzeige – siehe „Gut zu wissen“. |
+  | `recipient_email` | E-Mail-Adresse, an die die Einladung ging. |
+  | `empfaenger` | Name und Anschrift des Empfängers – nur, wenn der Fragebogen an eine gespeicherte Adresse ging. Sonst `null`. Leere Angaben kommen als `null`. |
+  | `felder` | Alle Fragen, sortiert nach `sortierung`. `property_id` brauchst du zum Speichern, `label` ist der Fragetext, `bereich` eine optionale Überschrift, `content` die bisher gespeicherte Antwort oder `null`. |
+
+  **Fragetypen (`proptyp`) und Antwortformat in `content`:**
+
+  | `proptyp` | Art | Format der Antwort |
+  |---|---|---|
+  | `TXT` | Textfeld | beliebiger Text |
+  | `NUM` | Zahl | Punkt als Dezimaltrenner, z.B. `3.5` |
+  | `DAT` | Datum | `JJJJ-MM-TT` |
+  | `CHK` | Ankreuzfeld | `1` oder `0` |
+  | `RDO`, `SEL` | Auswahl (eine Antwort) | genau eine der Möglichkeiten |
+  | `MUL` | Mehrfachauswahl | mehrere Möglichkeiten kommagetrennt, in der Reihenfolge der Liste |
+
+  `options` enthält bei Auswahlfeldern die Möglichkeiten, kommagetrennt.
+
+  ### Was schiefgehen kann
+  Fehler kommen als `{"status":"ERROR","message":"..."}`:
+  - **401** – Probleme mit dem Token: `Kein Token uebergeben.`, `Token unbekannt.`, `Token wurde widerrufen.`, `Sie haben diesen Vorgang bereits abgeschlossen.`, `Token ist abgelaufen.`, `Token wurde bereits verwendet.`
+  - **403** `Token gehoert nicht zu diesem Vorgang.` – falscher Token-Typ.
+  - **404** `Formular nicht gefunden.` – den Fragebogen gibt es nicht mehr.
+  - **400** `{"status":"error","message":"..."}` – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **Lesen verbraucht den Link nicht.** Die Seite kann beliebig oft geöffnet werden, auch Mail-Scanner machen den Link nicht unbrauchbar.
+  - **Maßgeblich ist die Gültigkeit des Tokens, nicht `expires`.** `expires` wird nur angezeigt; gesperrt wird der Fragebogen erst, wenn der Token selbst abläuft.
+  - **Empfängerdaten gibt es nur bei Adressen.** Ging der Fragebogen nicht an eine gespeicherte Adresse, ist `empfaenger` `null`.
+  - **Pro Frage höchstens eine Antwort:** Sollten in der Datenbank mehrere Antworten zu einer Frage stehen, kommt nur die erste.
+  - **Token in der URL landet in Protokollen** von Server und Proxy – wo es geht, lieber im Body schicken.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulPublic.getFormularByToken` in `Shared/DataModuls/DataModulPublicClass.pas`; Token-Prüfung `ValidatePublicToken`
+  - Tabellen: `ACCESS_TOKENS` (`REFERENCE_TYPE` = `FORM_KARTEI_HISTORY`, `PURPOSE` = `formular`), `FORM_KARTEI_HISTORY` (Instanz, `ID` = `REFERENCE_ID`), `FORM_KARTEI` (`KARTEINAME`, `BESCHREIBUNG`), `FORM_PAT_PROPERTY` (Felder, sortiert nach `sortierung`, dann `property_id`), `FORM_KARTEI_CONTENT` (Werte), `ADRESSEN` (Empfänger, wenn `REFTABLE = 'ADRESSEN'` und `REFNR` größer 0)
+  - `REFTABLE` wird nur verglichen, nie als Tabellenname verwendet.
+  - Geprüft wird nur `ACCESS_TOKENS.EXPIRES_AT`; `FORM_KARTEI_HISTORY.EXPIRES` wird lediglich ausgegeben.
+  - Route mit `Auth=false`, `LocalOnly=false`; kein JWT, keine Rollenprüfung.
+
+  </details>

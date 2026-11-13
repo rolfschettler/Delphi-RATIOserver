@@ -1,0 +1,80 @@
+info:
+  name: GET /fragebogen/demo – Demo-/Testendpunkt
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseURL}}/fragebogen/demo?id=42&filter=Mueller"
+  params:
+    - name: id
+      value: "42"
+      type: query
+    - name: filter
+      value: Mueller
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Helga",
+        "menge": 5
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Demo-/Testendpunkt.** Schickt dir die übergebenen Werte einfach zurück – zwei aus der URL, zwei aus dem Body. Damit prüfst du, ob Anmeldung und Berechtigung klappen und wie deine Werte beim Server ankommen. Es wird nichts gelesen und nichts gespeichert.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fragebogen/demo?id=42&filter=Mueller` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  Alles ist freiwillig und beliebig kombinierbar: nur URL, nur Body, beides oder gar nichts.
+
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `id` | Ganzzahl, in der URL (`?id=42`) | nein | Beispielzahl. |
+  | `filter` | Text, in der URL (`&filter=Mueller`) | nein | Beispieltext. Leerzeichen am Anfang und Ende werden entfernt. |
+  | `name` | Text, im Body | nein | Beispieltext. |
+  | `menge` | Ganzzahl, im Body | nein | Beispielzahl. Darf auch als Text kommen (`"5"`). |
+
+  ### Was zurückkommt
+  ```json
+  {"url": {"id": 42, "filter": "Mueller"}, "body": {"name": "Helga", "menge": 5}}
+  ```
+  Unter `url` stehen die Werte aus der URL, unter `body` die aus dem Body. Was du nicht mitgeschickt hast, kommt als `null` zurück – ganz ohne Angaben also `{"url": {"id": null, "filter": null}, "body": {"name": null, "menge": null}}`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt (Meldung `Keine Berechtigung für diesen Endpunkt.`).
+  - Sonst nichts: Fehlende oder unpassende Werte führen hier nie zu einer Fehlermeldung.
+
+  ### Gut zu wissen
+  - **Keine ganze Zahl wird zu 0.** `?id=abc` liefert `"id": 0`, ebenso `"menge": "abc"` oder `"menge": 5.5`. Fehlt `id` oder ist es leer, kommt `null`.
+  - **Ein leerer `filter` zählt als nicht mitgeschickt** – auch wenn er nur aus Leerzeichen besteht. Er kommt dann als `null` zurück.
+  - **Im Body ist das anders:** Ein leerer Text (`"name": ""`) gilt als mitgeschickt und kommt als `""` zurück. Nur `null` gilt als nicht mitgeschickt.
+  - **Groß-/Kleinschreibung der Namen im Body ist egal** – `Name` wird genauso erkannt wie `name`.
+  - **Kein Body oder kaputtes JSON ist kein Problem.** Es gibt keinen Fehler, die Body-Werte sind dann einfach alle `null`.
+  - **Diesen Endpunkt gibt es in jedem Bereich mit genau demselben Verhalten.** Er dient auch als Vorlage für neue Endpunkte.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.Demo` in `Shared/DataModuls/DataModulFragebogenClass.pas`
+  - Keine Tabelle, kein Datenbankzugriff
+  - Code in allen Controllern identisch, Vorlage `ClaudeCodePatterns/DataModulDemoClass.pas`
+  - URL-Werte über `Request.QueryFields` (getrimmt), Body-Werte über `isParamFromBody`/`getParamFromBody`, Zahlen per `StrToIntDef(…, 0)`; Antwort über `JsonOrNull` und `SendJson`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

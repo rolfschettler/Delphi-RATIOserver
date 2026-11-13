@@ -7,5 +7,10 @@ request:
   auth: inherit
 
 docs:
-  content: "Schülerverkehr-Controller (Teilnehmer der Schülerbeförderung). Quelle: DataModulSchuelerverkehrClass.pas, basiert auf TDataModulTableBase und nutzt die generischen Lese-Methoden DoSelect / DoSelectFilteredDynamic / DoSelectOne der Basisklasse; zusätzlich ein Demo-Endpunkt für Parameterquellen. Derzeit nur lesende Routen (kein insert/update/delete/key). **Auth:** alle Endpunkte erfordern einen gültigen Bearer-Token ({{jwttoken}}), LocalOnly=false. Tabellen: SV_TEILNEHMER (Schülerverkehr-Teilnehmer)."
+  content: |-
+    Hier liest du die **Teilnehmer der Schülerbeförderung** – alle auflisten, gezielt suchen oder einzeln per Nummer abrufen. Anlegen, Ändern und Löschen gibt es in diesem Bereich (noch) nicht. Dazu kommt der Testendpunkt `demo`, der die mitgeschickten Werte zurückgibt.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`) und die passende Berechtigung in den Rollen des Benutzers (sonst Fehler 401 bzw. 403).
+
+    Technik: Controller `TDataModulSchuelerverkehr` (`Shared/DataModuls/DataModulSchuelerverkehrClass.pas`), Tabelle `SV_TEILNEHMER`.
   type: text/markdown

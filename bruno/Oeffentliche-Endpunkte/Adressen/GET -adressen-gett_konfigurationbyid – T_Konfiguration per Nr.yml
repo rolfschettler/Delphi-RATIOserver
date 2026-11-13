@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 1,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,18 +25,52 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_KONFIGURATION anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **T_Konfiguration per Nr.** Liefert genau einen Eintrag aus `T_KONFIGURATION`, gesucht über `nr`.
 
-  **Tabelle:** T_KONFIGURATION
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/adressen/gett_konfigurationbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, bezeichnung, wert, werttyp, kategorie, bereich, vorgabe, bereich2, beschreibung
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `bezeichnung` | Text (max. 80 Zeichen) |
+  | `wert` | Text (max. 80 Zeichen) |
+  | `werttyp` | Text (max. 1 Zeichen) |
+  | `kategorie` | Text (max. 80 Zeichen) |
+  | `bereich` | Text (max. 80 Zeichen) |
+  | `vorgabe` | Text (max. 80 Zeichen) |
+  | `bereich2` | Text (max. 80 Zeichen) |
+  | `beschreibung` | Text (max. 600 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "bezeichnung": "Text", "wert": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.getT_KonfigurationById` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `T_KONFIGURATION`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

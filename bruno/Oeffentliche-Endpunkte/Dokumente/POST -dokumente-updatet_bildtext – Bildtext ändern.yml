@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 55,
+        "nr": 42,
         "kategorie": "titelbild",
         "versteckt": "N",
         "bild": "<Base64-codierte-JPEG-Bilddaten>"
@@ -27,12 +27,73 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Ändert einen bestehenden T_BILDTEXT-Datensatz. Kein generisches CRUD, sondern eigens implementiert: `nr` ist im Body zwingend erforderlich und dient als Schlüssel der WHERE-Bedingung (`WHERE nr = :nr`), wird selbst aber nicht mitgeschrieben. Es wird DYNAMISCH nur für jedes im Body tatsächlich vorhandene Feld eine `feld = :feld`-Klausel gesetzt (mindestens 1 Feld/Blob erforderlich, sonst Exception "Keine gueltigen Felder uebergeben.").
+  **Bildtext ändern.** Ändert einen vorhandenen Bild-/Text-Eintrag. Du gibst die Nummer an und nur die Felder, die sich ändern sollen.
 
-  **Erlaubte Felder (ALLOWED):** reftable, refnr, bildindex, bildmodifed, textmodified, kategorie, lastlock, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, erfasst_am, versteckt, bildformat, textformat, bereich.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/dokumente/updatet_bildtext` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Zusätzliche BLOB-Felder (BLOB_ALLOWED):** `bild`, `text` – Base64-codiert, optional; JSON `null` setzt den Blob auf NULL; ansonsten Base64-Syntaxprüfung und für `bild` zusätzlich JPEG-Signaturprüfung (siehe `insertt_bildtext`).
+  ### Was du mitschickst
+  `nr` plus mindestens ein weiteres Feld. Nicht mitgeschickte Felder bleiben, wie sie sind.
 
-  **Auth:** erforderlich (Bearer Token).
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. Die Nummer selbst ändert sich nicht. |
+  | `bild` | Bild als Base64-Text | nein | Neues JPEG-Bild (Datei als Text umgewandelt). `null` löscht das Bild. |
+  | `text` | Langtext als Base64-Text | nein | Neuer Text, ebenfalls Base64-umgewandelt. `null` löscht den Text. |
+  | `reftable` | Text (max. 80 Zeichen) | nein | Bereich, zu dem der Eintrag gehört, z.B. `"ANMIET"`. |
+  | `refnr` | Ganzzahl | nein | Nummer des Datensatzes in diesem Bereich. |
+  | `bildindex` | Ganzzahl | nein | Reihenfolge des Bildes. |
+  | `kategorie` | Text (max. 60 Zeichen) | nein | z.B. `"titelbild"`. |
+  | `sprache` | Text (max. 3 Zeichen) | nein | z.B. `"de"`. |
+  | `internet` | Text (max. 4 Zeichen) | nein | z.B. `"J"` oder `"N"`. |
+  | `versteckt` | Text (max. 4 Zeichen) | nein | z.B. `"J"` oder `"N"`. |
+  | `app` | Text (max. 4 Zeichen) | nein | |
+  | `copr` | Text (max. 120 Zeichen) | nein | Copyright-Vermerk. |
+  | `urheber` | Text (max. 60 Zeichen) | nein | |
+  | `nutzungsrecht_bis` | Datum/Uhrzeit | nein | |
+  | `erfasst_am` | Datum/Uhrzeit | nein | |
+  | `externe_id` | Text (max. 60 Zeichen) | nein | |
+  | `bildformat` | Text (max. 4 Zeichen) | nein | |
+  | `textformat` | Text (max. 4 Zeichen) | nein | |
+  | `bereich` | Text (max. 120 Zeichen) | nein | |
+  | `bildmodifed` | Ganzzahl | nein | Genau so geschrieben (ohne „i“). |
+  | `textmodified` | Ganzzahl | nein | |
+  | `lastlock` | Datum/Uhrzeit | nein | |
 
-  **Antwort:** `{"status":"OK"}`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `Feld "nr" fehlt.` – `nr` fehlt oder ist `null`.
+    - `Keine gueltigen Felder uebergeben.` – außer `nr` war kein änderbares Feld dabei.
+    - `Feld "bild": kein gueltiger Base64-Wert.` bzw. dasselbe für `"text"` – unerlaubte Zeichen oder falsche Länge.
+    - `Feld "…": Base64-Dekodierung fehlgeschlagen (...)`.
+    - `Feld "bild": keine gueltige JPEG-Bilddatei (Signatur ungueltig).` – die Datei ist kein JPEG.
+
+  ### Gut zu wissen
+  - **Keine Meldung, wenn es die Nummer nicht gibt:** Dann wird nichts geändert, die Antwort ist trotzdem `{"status": "OK"}`. Eine `nr`, die keine Zahl ist, wird zu 0 und trifft deshalb normalerweise nichts.
+  - **Normale Felder lassen sich hier nicht leeren.** `null` wirkt bei ihnen wie „nicht mitgeschickt“ – der alte Wert bleibt. Nur bei `bild` und `text` löscht `null` den Inhalt.
+  - **Nur JPEG-Bilder.** Andere Formate werden abgelehnt.
+  - **Zeilenumbrüche und Leerzeichen im Base64-Text sind erlaubt** und werden ignoriert.
+  - **Leerer Text `""` bei `bild`/`text`** speichert ein leeres Bild bzw. einen leeren Text (nicht dasselbe wie `null`). Die JPEG-Prüfung entfällt dann.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Groß-/Kleinschreibung der Feldnamen ist egal.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDokumente.updateT_Bildtext` in `Shared/DataModuls/DataModulDokumenteClass.pas` – eigene Umsetzung, nicht das generische `DoUpdate`
+  - Tabelle: `T_BILDTEXT`, Schlüssel `nr`
+  - Normale Felder nur bei `isParamFromBody` (JSON-`null` = weglassen); `bild`/`text` bei `isKeyInBody` (JSON-`null` = Blob NULL)
+  - Prüfung wie beim Anlegen: `IsValidBase64Value`, `IsValidJpegSignature` (`FF D8 FF` … `FF D9`)
+  - UPDATE in eigener Transaktion mit Rollback; kein Prüfen der Trefferzahl
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

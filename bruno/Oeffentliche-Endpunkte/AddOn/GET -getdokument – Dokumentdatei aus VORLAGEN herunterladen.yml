@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{baseURL}}/getdokument?nr=10"
+  url: "{{baseURL}}/getdokument?nr=42"
   params:
     - name: nr
-      value: "10"
+      value: "42"
       type: query
   auth:
     type: bearer
@@ -22,14 +22,49 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert den Dateiinhalt (BLOB `haupttext`) eines VORLAGEN-Datensatzes als Binärdatei aus, z.B. eine per `/dokumente/uploaddokument` hochgeladene Datei. Kein Body.
+  **Dokument herunterladen.** Liefert eine gespeicherte Dokumentvorlage als Datei – zum Beispiel ein PDF oder Word-Dokument, das vorher über `/dokumente/uploaddokument` hochgeladen wurde.
 
-  **Query-Parameter:** `nr` (Pflicht, Integer; fehlt/0 → Exception "Parameter 'nr' fehlt").
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/getdokument?nr=42` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl, in der URL (`?nr=42`) | ja | Nummer der Dokumentvorlage. |
 
-  **LocalOnly:** false.
+  Ein Body wird nicht ausgewertet.
 
-  **Antwort:** Binärdaten mit `Content-Disposition: inline; filename="<name>"`. Content-Type nach `art` (Dateiendung): `.pdf` → application/pdf, `.docx`/`.doc` → Word, `.xlsx`/`.xls` → Excel, `.png` → image/png, `.jpg`/`.jpeg` → image/jpeg, sonst application/octet-stream. Fehler, wenn kein Datensatz gefunden oder der BLOB leer ist.
+  ### Was zurückkommt
+  Die Datei selbst – kein JSON. Bruno zeigt sie direkt an (z.B. ein PDF) oder bietet sie zum Speichern an.
 
-  **Hinweis:** Der Kommentar im Code nennt `/addon/getdokument` – registriert ist die Route jedoch ohne Präfix als `/getdokument`.
+  - **Dateityp:** richtet sich nach der gespeicherten Dateiendung: `.pdf`, `.docx`, `.doc`, `.xlsx`, `.xls`, `.png`, `.jpg`/`.jpeg` werden passend gekennzeichnet (Groß-/Kleinschreibung egal). Alles andere kommt als allgemeine Binärdatei (`application/octet-stream`).
+  - **Dateiname:** der gespeicherte Name der Vorlage. Ist keiner hinterlegt, heißt die Datei `dokument` plus Endung, z.B. `dokument.pdf`.
+  - Die Datei wird zum Anzeigen im Browser geschickt (`inline`), nicht als erzwungener Download.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb bei einer JSON-Antwort immer auf `"status": "error"` prüfen:
+    - `getdokument: Parameter 'nr' fehlt` – `nr` fehlt, ist `0` oder keine Zahl.
+    - `getdokument: Kein Datensatz gefunden` – es gibt keine Vorlage mit dieser Nummer.
+    - `getdokument: Kein Dateiinhalt vorhanden` bzw. `getdokument: BLOB-Feld ist leer` – die Vorlage existiert, enthält aber keine Datei.
+  - **400** – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **Nur lesen:** Der Aufruf ändert nichts.
+  - **Jede Vorlage ist abrufbar,** egal zu welchem Bereich oder Dokumenttyp sie gehört – es gibt keine weitere Einschränkung als die Berechtigung für diesen Endpunkt.
+  - **Die Adresse hat kein Präfix:** Der Endpunkt heißt `/getdokument`, nicht `/addon/getdokument`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAddOn.getdokument` in `Shared/DataModuls/DataModulAddOnClass.pas`
+  - Tabelle: `VORLAGEN`, Schlüssel `nr`; Dateiinhalt aus dem Blob `haupttext`, MIME-Typ aus `art`, Dateiname aus `name`
+  - Antwort: `Content-Type` nach `art`, `Content-Disposition: inline; filename="<name>"`
+  - Der Dateiname wird ungeprüft in den `Content-Disposition`-Header übernommen.
+  - Der Code-Kommentar nennt die Route `/addon/getdokument` – registriert ist sie ohne Präfix.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

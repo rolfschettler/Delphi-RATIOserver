@@ -27,10 +27,130 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Implementierung: `DoSelectFilteredDynamic('FAHRTABLAUF', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Alle 70 ALLOWED-Felder sind zugleich Filterparameter (jeweils `feld = :feld`); jeder im Body gesetzte Parameter erzeugt automatisch eine AND-verknüpfte WHERE-Bedingung, alle sind optional.
+  **Fahrtabläufe filtern.** Sucht Einträge in `FAHRTABLAUF` – du gibst die Suchkriterien als Felder im Body mit.
 
-  **Filter-/ALLOWED-Felder (70):** nr, datum, von_soll, von_ist, bis_soll, bis_ist, bereich, art, xkoord, ykoord, sortierung, disponr, zeichen, kennzeichen, eart, dienstelementnr, dienstelementart, bemerkung, zusatzfeld1, zusatzfeld2, zusatzfeld3, datumfeld1, datumfeld2, datumfeld3, zustiege_soll, zustiege_ist, ausstiege_soll, ausstiege_ist, reftable, refnr, hinweis, typ, einsatznr, haltnr, bezeichnung, sv_tournummer, sv_fahrtnummer, sv_abrechnungsstatus, geprueft, einsatznr_ist, disponr_ist, tag, von_kalk, bis_kalk, strasse, plz, ort, ortsteil, region, land, meter_soll, meter_ist, meter_kalk, sekunden_soll, sekunden_ist, sekunden_kalk, fahrzeugprofil, anzahl_fahrer, kosten, leerfahrt, wochenende, feiertag, dienstnr, umlaufnr, sv_teilnehmernr, sv_typ, sv_abrechenbar, sv_streckenpreis, freigabe, umlauf.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/getfahrtablauffiltered` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Suchkriterien (Filter)
+  **Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.**
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  So funktioniert die Suche:
+  - Jedes mitgeschickte Feld ist ein Kriterium, z.B. `{"ort": "Berlin"}`.
+  - **Mehrere Kriterien müssen alle zutreffen** (UND): `{"ort": "Berlin", "plz": "10115"}`.
+  - **Der Wert muss genau stimmen** – keine Teilsuche, Groß-/Kleinschreibung zählt („berlin“ findet nicht „Berlin“).
+  - Datum als `"2026-09-01"` oder mit Uhrzeit `"2026-09-01 08:00:00"`. Bei Feldern mit Uhrzeit findet ein reines Datum nur Einträge um 00:00 Uhr.
+  - Ohne Kriterien kommen alle Einträge.
+
+  ### Weitere Angaben (optional)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
+
+  ### Verfügbare Felder (für `fields` und `orderby`)
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `datum` | Datum/Uhrzeit |
+  | `von_soll` | Datum/Uhrzeit |
+  | `von_ist` | Datum/Uhrzeit |
+  | `bis_soll` | Datum/Uhrzeit |
+  | `bis_ist` | Datum/Uhrzeit |
+  | `bereich` | Text (max. 60 Zeichen) |
+  | `art` | Text (max. 12 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `sortierung` | Ganzzahl |
+  | `disponr` | Ganzzahl |
+  | `zeichen` | Text (max. 15 Zeichen) |
+  | `kennzeichen` | Text (max. 15 Zeichen) |
+  | `eart` | Text (max. 1 Zeichen) |
+  | `dienstelementnr` | Ganzzahl |
+  | `dienstelementart` | Text (max. 2 Zeichen) |
+  | `bemerkung` | Text (max. 255 Zeichen) |
+  | `zusatzfeld1` | Text (max. 120 Zeichen) |
+  | `zusatzfeld2` | Text (max. 120 Zeichen) |
+  | `zusatzfeld3` | Text (max. 120 Zeichen) |
+  | `datumfeld1` | Datum/Uhrzeit |
+  | `datumfeld2` | Datum/Uhrzeit |
+  | `datumfeld3` | Datum/Uhrzeit |
+  | `zustiege_soll` | Ganzzahl |
+  | `zustiege_ist` | Ganzzahl |
+  | `ausstiege_soll` | Ganzzahl |
+  | `ausstiege_ist` | Ganzzahl |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
+  | `hinweis` | Text (max. 255 Zeichen) |
+  | `typ` | Text (max. 2 Zeichen) |
+  | `einsatznr` | Ganzzahl |
+  | `haltnr` | Ganzzahl |
+  | `bezeichnung` | Text (max. 255 Zeichen) |
+  | `sv_tournummer` | Text (max. 30 Zeichen) |
+  | `sv_fahrtnummer` | Text (max. 30 Zeichen) |
+  | `sv_abrechnungsstatus` | Text (max. 30 Zeichen) |
+  | `geprueft` | Datum/Uhrzeit |
+  | `einsatznr_ist` | Ganzzahl |
+  | `disponr_ist` | Ganzzahl |
+  | `tag` | Ganzzahl |
+  | `von_kalk` | Datum/Uhrzeit |
+  | `bis_kalk` | Datum/Uhrzeit |
+  | `strasse` | Text (max. 110 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 110 Zeichen) |
+  | `ortsteil` | Text (max. 80 Zeichen) |
+  | `region` | Text (max. 20 Zeichen) |
+  | `land` | Text (max. 5 Zeichen) |
+  | `meter_soll` | Ganzzahl |
+  | `meter_ist` | Ganzzahl |
+  | `meter_kalk` | Ganzzahl |
+  | `sekunden_soll` | Ganzzahl |
+  | `sekunden_ist` | Ganzzahl |
+  | `sekunden_kalk` | Ganzzahl |
+  | `fahrzeugprofil` | Text (max. 40 Zeichen) |
+  | `anzahl_fahrer` | Ganzzahl |
+  | `kosten` | Kommazahl |
+  | `leerfahrt` | Text (max. 4 Zeichen) |
+  | `wochenende` | Text (max. 4 Zeichen) |
+  | `feiertag` | Text (max. 4 Zeichen) |
+  | `dienstnr` | Text (max. 10 Zeichen) |
+  | `umlaufnr` | Text (max. 10 Zeichen) |
+  | `sv_teilnehmernr` | Ganzzahl |
+  | `sv_typ` | Text (max. 40 Zeichen) |
+  | `sv_abrechenbar` | Text (max. 4 Zeichen) |
+  | `sv_streckenpreis` | Kommazahl |
+  | `freigabe` | Ganzzahl |
+  | `umlauf` | Text (max. 30 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "datum": "2026-09-01 08:00:00", "von_soll": "2026-09-01 08:00:00", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Achtung bei Tippfehlern:** Ein falsch geschriebener Feldname wird einfach ignoriert – dann kommen *alle* Einträge statt der gesuchten.
+  - Der Body muss mindestens `{}` sein, sonst kommt ein Fehler.
+  - **Nicht abrufbar** (aber teils filterbar): `fa_knoten`, `fa_knotenhaltnr`, `fa_zfahrzeugnr`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getFahrtablaufFiltered` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `FAHRTABLAUF`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectFilteredDynamic` der Basisklasse `TDataModulTableBase`; Filter über `CONDITIONS`/`FILTER_PARAMS`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

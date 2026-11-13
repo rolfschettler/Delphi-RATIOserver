@@ -7,5 +7,10 @@ request:
   auth: inherit
 
 docs:
-  content: "Controller für den Aufruf von InterBase Stored Procedures. Quelle: DataModulStoredProceduresClass.pas (basiert auf TDataModulTableBase). Selectable Procedures werden per `SELECT * FROM <SP>(...)` aufgerufen, Parameter kommen über `isParamFromBody`/`getParamFromBody` aus dem JSON-Body; zusätzlich ein Demo-Endpunkt für Parameterquellen. **Auth:** alle Endpunkte erfordern einen gültigen Bearer-Token ({{jwttoken}}), LocalOnly=false. Stored Procedures: SP_ZAHLUNGEN (Zahlungen zu einem Vorgang/Beleg aus der FIBU)."
+  content: |-
+    Hier rufst du fertige **Auswertungen aus der Datenbank** ab. Zurzeit gibt es eine: `sp_zahlungen` ermittelt die in der Finanzbuchhaltung gebuchten Zahlungen zu einer Rechnung – einzeln oder als Summe. Dazu kommt der Testendpunkt `demo`, der die mitgeschickten Werte zurückgibt. Es wird nur gelesen, nichts geändert.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`) und die passende Berechtigung in den Rollen des Benutzers (sonst Fehler 401 bzw. 403).
+
+    Technik: Controller `TDataModulStoredProcedures` (`Shared/DataModuls/DataModulStoredProceduresClass.pas`), ruft Stored Procedures per `SELECT * FROM <Prozedur>(...)` auf.
   type: text/markdown

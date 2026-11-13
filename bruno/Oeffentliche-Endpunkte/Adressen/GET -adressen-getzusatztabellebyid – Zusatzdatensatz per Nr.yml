@@ -25,18 +25,77 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus ZUSATZTABELLE anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Zusatzdatensatz per Nr.** Liefert genau einen Eintrag aus `ZUSATZTABELLE`, gesucht über `nr`.
 
-  **Tabelle:** ZUSATZTABELLE
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/adressen/getzusatztabellebyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, reftable, refnr, modul, bereich, zusatzfeld1–zusatzfeld10, zusatzdatum1–zusatzdatum3, zusatzzahl1–zusatzzahl3, zusatznum1–zusatznum3, zusatzblob1–zusatzblob3, erstellt, geaendert, erfasstvon, geaendertvon, kennziffer, sortierung, bemerkung
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
+  | `modul` | Text (max. 80 Zeichen) |
+  | `bereich` | Text (max. 80 Zeichen) |
+  | `zusatzfeld1` | Text (max. 255 Zeichen) |
+  | `zusatzfeld2` | Text (max. 255 Zeichen) |
+  | `zusatzfeld3` | Text (max. 255 Zeichen) |
+  | `zusatzfeld4` | Text (max. 255 Zeichen) |
+  | `zusatzfeld5` | Text (max. 255 Zeichen) |
+  | `zusatzfeld6` | Text (max. 255 Zeichen) |
+  | `zusatzfeld7` | Text (max. 255 Zeichen) |
+  | `zusatzfeld8` | Text (max. 255 Zeichen) |
+  | `zusatzfeld9` | Text (max. 255 Zeichen) |
+  | `zusatzfeld10` | Text (max. 255 Zeichen) |
+  | `zusatzdatum1` | Datum/Uhrzeit |
+  | `zusatzdatum2` | Datum/Uhrzeit |
+  | `zusatzdatum3` | Datum/Uhrzeit |
+  | `zusatzzahl1` | Ganzzahl |
+  | `zusatzzahl2` | Ganzzahl |
+  | `zusatzzahl3` | Ganzzahl |
+  | `zusatznum1` | Kommazahl |
+  | `zusatznum2` | Kommazahl |
+  | `zusatznum3` | Kommazahl |
+  | `zusatzblob1` | Langtext/Datei |
+  | `zusatzblob2` | Langtext/Datei |
+  | `zusatzblob3` | Langtext/Datei |
+  | `erstellt` | Datum/Uhrzeit |
+  | `geaendert` | Datum/Uhrzeit |
+  | `erfasstvon` | Text (max. 80 Zeichen) |
+  | `geaendertvon` | Text (max. 80 Zeichen) |
+  | `kennziffer` | Ganzzahl |
+  | `sortierung` | Ganzzahl |
+  | `bemerkung` | Text (max. 255 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "reftable": "Text", "refnr": 42, ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.getZusatztabelleById` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ZUSATZTABELLE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

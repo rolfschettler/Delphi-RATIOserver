@@ -25,18 +25,60 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_HALTESTELLE anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Haltestelle per Nr.** Liefert genau einen Eintrag aus `T_HALTESTELLE`, gesucht über `nr`.
 
-  **Tabelle:** T_HALTESTELLE
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fahrtenplanung/gett_haltestellebyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, land, plz, ort, strasse, gesperrt, xkoord, ykoord, code, zuschlag, bezeichnung, hausabholung, sortierung, externenr1, externenr2, internet, exportierbar
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `land` | Text (max. 2 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 60 Zeichen) |
+  | `strasse` | Text (max. 60 Zeichen) |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `code` | Text (max. 20 Zeichen) |
+  | `zuschlag` | Kommazahl |
+  | `bezeichnung` | Text (max. 200 Zeichen) |
+  | `hausabholung` | Text (max. 4 Zeichen) |
+  | `sortierung` | Ganzzahl |
+  | `externenr1` | Text (max. 255 Zeichen) |
+  | `externenr2` | Text (max. 255 Zeichen) |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `exportierbar` | Text (max. 4 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "land": "Text", "plz": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFahrtenplanung.getT_HaltestelleById` in `Shared/DataModuls/DataModulFahrtenplanungClass.pas`
+  - Tabelle: `T_HALTESTELLE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

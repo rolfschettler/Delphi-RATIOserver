@@ -25,18 +25,90 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_KATALOGREISE anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_KATALOGREISE', ALLOWED, 'nr')` auf.
+  **Katalogreise per nr.** Liefert genau einen Eintrag aus `T_KATALOGREISE`, gesucht über `nr`.
 
-  **Tabelle:** T_KATALOGREISE
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/gett_katalogreisebyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, reisenr, reisethema, code, katalognr, terminschema, internet, befkategorie, sachkonto, sachkontostorno, sachkontoprov, kostelle1, kostelle2, kostelle1storno, kostelle2storno, kostelle1prov, kostelle2prov, erstelltam, fbrabatt, fbbis, angebot, status, url1, url2, url3, url4, xkoord, ykoord, maximumpers, minimumpers, bemerkung, kategorie, anzahlungsbetrag, anzahlungsart, nrkreis, stornostaffel, zusatzinfo, katalogseite, veranstalter, hauptkategorie, pauschalierungsfaktor, versicherungsart, geaendertam, geaendertvon, erstelltvon, untertitel, mandant
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `reisenr` | Ganzzahl |
+  | `reisethema` | Text (max. 200 Zeichen) |
+  | `code` | Text (max. 20 Zeichen) |
+  | `katalognr` | Ganzzahl |
+  | `terminschema` | Ganzzahl |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `befkategorie` | Text (max. 60 Zeichen) |
+  | `sachkonto` | Text (max. 12 Zeichen) |
+  | `sachkontostorno` | Text (max. 12 Zeichen) |
+  | `sachkontoprov` | Text (max. 12 Zeichen) |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `kostelle2` | Text (max. 12 Zeichen) |
+  | `kostelle1storno` | Text (max. 12 Zeichen) |
+  | `kostelle2storno` | Text (max. 12 Zeichen) |
+  | `kostelle1prov` | Text (max. 12 Zeichen) |
+  | `kostelle2prov` | Text (max. 12 Zeichen) |
+  | `erstelltam` | Datum/Uhrzeit |
+  | `fbrabatt` | Kommazahl |
+  | `fbbis` | Datum/Uhrzeit |
+  | `angebot` | Text (max. 4 Zeichen) |
+  | `status` | Ganzzahl |
+  | `url1` | Text (max. 240 Zeichen) |
+  | `url2` | Text (max. 240 Zeichen) |
+  | `url3` | Text (max. 240 Zeichen) |
+  | `url4` | Text (max. 240 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `maximumpers` | Ganzzahl |
+  | `minimumpers` | Ganzzahl |
+  | `bemerkung` | Langtext/Datei |
+  | `kategorie` | Langtext/Datei |
+  | `anzahlungsbetrag` | Kommazahl |
+  | `anzahlungsart` | Text (max. 4 Zeichen) |
+  | `nrkreis` | Ganzzahl |
+  | `stornostaffel` | Ganzzahl |
+  | `zusatzinfo` | Text (max. 32000 Zeichen) |
+  | `katalogseite` | Ganzzahl |
+  | `veranstalter` | Text (max. 10 Zeichen) |
+  | `hauptkategorie` | Text (max. 60 Zeichen) |
+  | `pauschalierungsfaktor` | Kommazahl |
+  | `versicherungsart` | Text (max. 254 Zeichen) |
+  | `geaendertam` | Datum/Uhrzeit |
+  | `geaendertvon` | Text (max. 20 Zeichen) |
+  | `erstelltvon` | Text (max. 20 Zeichen) |
+  | `untertitel` | Text (max. 200 Zeichen) |
+  | `mandant` | Text (max. 30 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "reisenr": 42, "reisethema": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getT_KatalogreiseById` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_KATALOGREISE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

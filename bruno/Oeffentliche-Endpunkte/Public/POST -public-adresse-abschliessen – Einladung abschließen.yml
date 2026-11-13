@@ -12,9 +12,7 @@ http:
       {
         "token": "{{einladungstoken}}"
       }
-  auth:
-    type: bearer
-    token: "{{jwttoken}}"
+  auth: inherit
 
 settings:
   encodeUrl: true
@@ -24,14 +22,38 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  "Ich bin fertig": Der Gast schließt seinen Adress-Einladungslink selbst ab (`CloseToken`: `ACCESS_TOKENS.REVOKED = 1`, `USED_AT = CURRENT_TIMESTAMP`, `USED_FROM_IP` = RemoteAddr). Danach ist der Link unbrauchbar – weitere Aufrufe mit demselben Token liefern 401 "Sie haben diesen Vorgang bereits abgeschlossen.".
+  **Adress-Einladung abschließen.** Der Gast drückt „Ich bin fertig“. Danach ist sein Einladungslink beendet und kann nicht mehr benutzt werden.
 
-  **Body:** `token` (Pflicht; ersatzweise `?token=...`). Erwartet: REFERENCE_TYPE = `ADRESSEN`, PURPOSE = `einladung`.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/public/adresse/abschliessen` |
+  | **Anmeldung** | kein Login – stattdessen Einladungs-Token im Body |
 
-  **Auth:** Auth=false – kein JWT nötig, autorisiert allein über den Einladungs-Token (Bearer-Block schadet nicht).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `token` | Text, im JSON-Body (ersatzweise in der URL `?token=…`) | ja | Der Token aus der Einladungsmail. Muss ein **Adress-Einladungs-Token** sein. |
 
-  **LocalOnly:** false – bewusst aus dem Internet erreichbar.
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Antwort:** `{"status":"OK"}`; Token-Fehler wie bei `/public/getadresse` (401/403).
+  ### Was schiefgehen kann
+  - **401 / 403** – Probleme mit dem Token, als `{"status":"ERROR","message":"..."}`, Meldungen wie bei `/public/getadresse`: `Kein Token uebergeben.`, `Token unbekannt.`, `Token wurde widerrufen.`, `Sie haben diesen Vorgang bereits abgeschlossen.`, `Token ist abgelaufen.`, `Token wurde bereits verwendet.` (alle 401), `Token gehoert nicht zu diesem Vorgang.` (403, falscher Token-Typ).
+  - **400** `{"status":"error","message":"..."}` – Datenbankfehler.
 
-  **Achtung beim Testen:** Der Aufruf verbraucht den Token endgültig.
+  ### Gut zu wissen
+  - **Achtung beim Testen: Der Token ist danach endgültig verbraucht.** Für weitere Tests brauchst du eine neue Einladung.
+  - **Danach geht mit diesem Token nichts mehr:** Alle Public-Endpunkte antworten mit 401 „Sie haben diesen Vorgang bereits abgeschlossen.“
+  - **An der Adresse selbst ändert sich nichts.** Gespeichert wird nur, dass und wann der Gast fertig war.
+  - **Gedacht als Knopf-Aktion:** Der Abschluss soll nur durch einen bewussten Klick passieren, nicht schon durch das Öffnen des Links. Der Server prüft die Aufrufart (GET/POST) aber nicht – auch ein GET-Aufruf schließt ab.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulPublic.abschliessenByToken` in `Shared/DataModuls/DataModulPublicClass.pas`; Token-Prüfung `ValidatePublicToken`, Abschluss `CloseToken`
+  - Tabelle: `ACCESS_TOKENS` (`REFERENCE_TYPE` = `ADRESSEN`, `PURPOSE` = `einladung`)
+  - `CloseToken`: `UPDATE ACCESS_TOKENS SET REVOKED = 1, USED_AT = CURRENT_TIMESTAMP, USED_FROM_IP = <RemoteAddr> WHERE ID = <Token-ID> AND REVOKED = 0` in eigener Transaktion. Hinter dem PHP-Proxy ist `USED_FROM_IP` die Adresse des Proxys, nicht die des Gastes.
+  - Route mit `Auth=false`, `LocalOnly=false`; kein JWT, keine Rollenprüfung.
+
+  </details>

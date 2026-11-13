@@ -27,18 +27,67 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert Datensaetze aus T_REISE, optional gefiltert. Jeder im Body gesetzte (nicht-null) Filter-Parameter erzeugt eine AND-verknuepfte WHERE-Bedingung `feld = :feld`; ohne Filter werden alle Datensaetze geliefert. Ruft intern `DoSelectFilteredDynamic('T_REISE', ALLOWED, CONDITIONS, FILTER_PARAMS)` auf.
+  **Reisen gefiltert.** Sucht Einträge in `T_REISE` – du gibst die Suchkriterien als Felder im Body mit.
 
-  **Tabelle:** T_REISE
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/gett_reisefiltered` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, bezeichnung, code, land, region, suchbegriff, gesperrt, kategorie
+  ### Suchkriterien (Filter)
+  **Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.** Hier nicht filterbar: `kategorie`.
 
-  **Filter (FILTER_PARAMS, alle optional):** nr, bezeichnung, code, land, region, suchbegriff, gesperrt (nicht filterbar: kategorie)
+  So funktioniert die Suche:
+  - Jedes mitgeschickte Feld ist ein Kriterium, z.B. `{"ort": "Berlin"}`.
+  - **Mehrere Kriterien müssen alle zutreffen** (UND): `{"ort": "Berlin", "plz": "10115"}`.
+  - **Der Wert muss genau stimmen** – keine Teilsuche, Groß-/Kleinschreibung zählt („berlin“ findet nicht „Berlin“).
+  - Datum als `"2026-09-01"` oder mit Uhrzeit `"2026-09-01 08:00:00"`. Bei Feldern mit Uhrzeit findet ein reines Datum nur Einträge um 00:00 Uhr.
+  - Ohne Kriterien kommen alle Einträge.
 
-  **Body:** `{ "fields": [...] | "*", "<filterfeld>": <wert>, ..., "orderby": "<feld aus ALLOWED>", "limit": 10, "offset": 0 }` -- ein gueltiges JSON-Objekt im Body ist Pflicht (sonst Fehler "Kein gueltiges JSON im Request-Body").
+  ### Weitere Angaben (optional)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Verfügbare Felder (für `fields` und `orderby`)
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `bezeichnung` | Text (max. 60 Zeichen) |
+  | `code` | Text (max. 20 Zeichen) |
+  | `land` | Text (max. 60 Zeichen) |
+  | `region` | Text (max. 60 Zeichen) |
+  | `suchbegriff` | Text (max. 200 Zeichen) |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `kategorie` | Langtext/Datei |
 
-  **LocalOnly:** nein
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "bezeichnung": "Text", "code": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
 
-  **Antwort:** ohne `limit` `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ... }, ... ] }` (Serialisierung per `SerializeQuery`, Feldnamen klein geschrieben); mit `limit` `{ "total":N, "limit":N, "offset":N, "data": { "header": {...}, "data": [...] } }`.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Achtung bei Tippfehlern:** Ein falsch geschriebener Feldname wird einfach ignoriert – dann kommen *alle* Einträge statt der gesuchten.
+  - Der Body muss mindestens `{}` sein, sonst kommt ein Fehler.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getT_ReiseFiltered` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_REISE`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectFilteredDynamic` der Basisklasse `TDataModulTableBase`; Filter über `CONDITIONS`/`FILTER_PARAMS`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

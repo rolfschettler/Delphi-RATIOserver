@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 501
+        "nr": 42
       }
   auth:
     type: bearer
@@ -24,10 +24,47 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Eigenimplementierung, KEIN generisches `DoDelete`. `nr` muss im Body vorhanden und eine gueltige Zahl sein (sonst Exception "nr fehlt." bzw. "nr ist keine gueltige Zahl"). Loescht die Zeile aus GUTSCHEIN und fuehrt anschliessend in derselben Transaktion `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` aus, um die zugehoerige FIBU-Verbuchung neu aufzubauen. Bei Fehler wird die Transaktion zurueckgerollt (Rollback) und die Exception weitergereicht.
+  **Gutschein löschen.** Löscht einen Gutschein endgültig und korrigiert danach die zugehörigen Buchungen in der Finanzbuchhaltung (Fibu).
 
-  **Body:** `{ "nr": <wert> }` — Pflicht.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fibu/deletegutschein` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Nummer des Gutscheins, der gelöscht werden soll |
 
-  **Antwort:** `{ "status": "OK", "nr": <wert> }`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "nr": 42}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – Datenbankfehler, z.B. wenn die Korrektur der Fibu-Buchungen fehlschlägt.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `"nr" fehlt.` – `nr` nicht mitgeschickt, `null`, oder kein gültiger JSON-Body.
+    - `"nr" ist keine gueltige Zahl: <wert>` – `nr` ist keine ganze Zahl.
+  - Bei jedem Fehler bleibt der Gutschein erhalten und an den Buchungen ändert sich nichts.
+
+  ### Gut zu wissen
+  - **Endgültig gelöscht – kein Storno.** Der Gutschein ist danach weg. Wer ihn nur stornieren will, setzt stattdessen über `/fibu/updategutschein` `"storniert": "JA"`.
+  - **Kein Fehler bei unbekannter Nummer:** Gibt es den Gutschein nicht, wird nichts gelöscht, die Fibu-Korrektur läuft trotzdem und die Antwort lautet `"status": "OK"`.
+  - **Was mit den Buchungen passiert** (nur wenn die Finanzbuchhaltung in den Firmenstammdaten eingeschaltet ist): Noch nicht übertragene Buchungen dieses Gutscheins werden entfernt, bereits übertragene durch eine Gegenbuchung ausgeglichen.
+  - **Die Groß-/Kleinschreibung von `nr` ist egal.**
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFibu.deleteGutschein` in `Shared/DataModuls/DataModulFibuClass.pas`
+  - Tabelle: `GUTSCHEIN`, Schlüssel `nr`
+  - Ablauf in einer Transaktion: `DELETE FROM GUTSCHEIN WHERE nr=:nr` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` → Commit, sonst Rollback.
+  - `BUILDGSFIBU` → `GEGENBUCHEN(nr,'GS',...)`: offene `FIBU`-Zeilen (`ART='GS'`, `RECHNUNGNR=nr`, `GEBUCHT` nicht `JA`) löschen, übertragene gegenbuchen. Nichts davon, wenn `FIRMENSTAMM.FIBUAKTIV` nicht `JA`.
+  - Auffälligkeit: Nach dem DELETE findet `BUILDGSFIBU` den Gutschein nicht mehr, fügt aber trotzdem eine neue `FIBU`-Zeile mit leeren Werten ein (`BETRAG`/Konten NULL, `ART='GS'`, `RECHNUNGNR=nr`) – nur `FIBU.NR` ist Pflicht, die Datenbank lehnt das also nicht ab.
+  - **Auffälligkeit (bitte prüfen):** `BUILDGSFIBU` hat zwei Eingabeparameter (`GSNR`, `BUCHTEXT`), der Server übergibt nur einen – InterBase kennt keine Default-Werte, Fehler „Input parameter mismatch“ zu erwarten (nicht live getestet, da schreibend).
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

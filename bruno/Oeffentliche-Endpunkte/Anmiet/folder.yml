@@ -7,5 +7,12 @@ request:
   auth: inherit
 
 docs:
-  content: "Controller für Anmietungen (ANMIET – Fahrzeugvermietungs-/Reisevorgänge), Fundsachen (FUNDSACHEN, inkl. Foto-/Unterschrift-Upload als Base64-Blobs) und Transfer-Projekte (TRANSFEHR – Fahrtprojekte mit Hin-/Rückfahrt, vollständiges CRUD inkl. Key-Generator). Alle Endpunkte erfordern Authentifizierung (Bearer Token, JWT) und sind nicht auf lokale Aufrufe beschränkt (Auth=true, LocalOnly=false)."
+  content: |-
+    Hier verwaltest du **Anmietungen** (Busanmietungen – Angebote, Aufträge und Fahrtaufträge mit Kunde, Termin, Fahrzeug und Fahrer), **Fundsachen** (verlorene Gegenstände, auch mit Foto und Abhol-Unterschrift) und **Transfer-Projekte** (Fahrtprojekte mit Hin- und Rückfahrt).
+
+    Für alle drei Bereiche gibt es dieselben Endpunkte: auflisten, gefiltert suchen, einzeln abrufen, neue Nummer holen, anlegen, ändern und löschen. Dazu kommen `/anmiet/insertfundsachenmitbildern` (Fundsache inklusive Bildern in einem Schritt) und `/anmiet/demo` zum Testen.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`) und die Berechtigung für den jeweiligen Endpunkt in den Rollen des Benutzers (sonst Fehler 403).
+
+    Technik: Controller `TDataModulAnmiet` in `Shared/DataModuls/DataModulAnmietClass.pas`, Tabellen `ANMIET`, `FUNDSACHEN`, `TRANSFEHR`.
   type: text/markdown

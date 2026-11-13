@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 10,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,10 +25,77 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen VORLAGEN-Datensatz anhand des Primärschlüssels `nr` (generisches `DoSelectOne('VORLAGEN', ALLOWED, 'nr')`).
+  **Dokumentvorlage per Nr abrufen.** Liefert genau einen Eintrag aus `VORLAGEN`, gesucht über `nr`.
 
-  **Erlaubte Felder (ALLOWED):** identisch zu `getvorlagen` (siehe dort).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dokumente/getvorlagenbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `haupttext` | Langtext/Datei |
+  | `art` | Text (max. 15 Zeichen) |
+  | `standard` | Text (max. 4 Zeichen) |
+  | `name` | Text (max. 30 Zeichen) |
+  | `text1` | Text (max. 200 Zeichen) |
+  | `text2` | Text (max. 200 Zeichen) |
+  | `drucker` | Text (max. 40 Zeichen) |
+  | `druckerwahl` | Text (max. 4 Zeichen) |
+  | `folgeformular` | Ganzzahl |
+  | `datum` | Datum/Uhrzeit |
+  | `angepasst` | Text (max. 4 Zeichen) |
+  | `bereich` | Text (max. 20 Zeichen) |
+  | `doktyp` | Text (max. 1 Zeichen) |
+  | `versteckt` | Text (max. 4 Zeichen) |
+  | `dokkategorie` | Text (max. 40 Zeichen) |
+  | `geaendertam` | Datum/Uhrzeit |
+  | `bearbeiter` | Text (max. 30 Zeichen) |
+  | `pwd` | Text (max. 40 Zeichen) |
+  | `archiv` | Text (max. 4 Zeichen) |
+  | `dms_key` | Text (max. 255 Zeichen) |
+  | `wiedervorlage` | Datum/Uhrzeit |
+  | `gueltigbis` | Datum/Uhrzeit |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
+  | `datumfeld1` | Datum/Uhrzeit |
+  | `datumfeld2` | Datum/Uhrzeit |
+  | `zusatzfeld1` | Text (max. 50 Zeichen) |
+  | `zusatzfeld2` | Text (max. 50 Zeichen) |
+  | `anmietnr` | Ganzzahl |
+  | `senderemail` | Text (max. 50 Zeichen) |
+  | `empfaengeremail` | Text (max. 50 Zeichen) |
+  | `dateiname` | Text (max. 255 Zeichen) |
+  | `mandant` | Text (max. 30 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "haupttext": "Text", "art": "Text", ...} ]}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDokumente.getVorlagenById` in `Shared/DataModuls/DataModulDokumenteClass.pas`
+  - Tabelle: `VORLAGEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

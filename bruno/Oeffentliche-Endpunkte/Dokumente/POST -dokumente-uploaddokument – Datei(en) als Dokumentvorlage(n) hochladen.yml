@@ -36,14 +36,66 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Lädt eine oder mehrere Dateien per `multipart/form-data` hoch und legt für JEDE Datei einen eigenen VORLAGEN-Datensatz an. Kein JSON-Body, keine generische CRUD-Methode.
+  **Datei(en) als Dokumentvorlage hochladen.** Lädt eine oder mehrere Dateien hoch (z.B. PDF, Word) und legt für **jede** Datei eine eigene Dokumentvorlage an.
 
-  **Formularfelder (Textfelder, aus `Request.ContentFields` gelesen):** `text1`, `text2` (jeweils auf 200 Zeichen gekürzt), `bereich` (auf 20 Zeichen gekürzt).
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/dokumente/uploaddokument` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Hinweis (Code-Auffälligkeit):** Das Feld `bearbeiter` wird im SQL-Insert referenziert, im aktuellen Code jedoch NICHT aus dem Request gelesen (keine Zuweisung aus `Request.ContentFields`) – es bleibt daher stets leer, unabhängig davon, ob es im Formular mitgeschickt wird.
+  ### Was du mitschickst
+  Kein JSON, sondern ein **Formular mit Datei-Upload** (`multipart/form-data`) – so wie ein Upload-Formular auf einer Webseite. In Bruno: Body-Typ „Multipart Form“.
 
-  **Dateifelder (`Request.Files`, beliebig viele):** Für jede Datei wird ein VORLAGEN-Datensatz angelegt mit `art` = Dateiendung (kleingeschrieben, aus dem Dateinamen), `name` = Dateiname (erste 30 Zeichen), `datum`/`geaendertam` = aktuelles Serverdatum, `doktyp` = `'D'` (fest), `haupttext` = Dateiinhalt als BLOB.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | Datei(en) | Datei, als Formularfeld vom Typ Datei | nein | Eine oder mehrere Dateien. Der Name des Formularfelds ist egal – alle hochgeladenen Dateien werden gespeichert. |
+  | `text1` | Text, als Formularfeld | nein | Beschreibung 1. Wird nach 200 Zeichen abgeschnitten. |
+  | `text2` | Text, als Formularfeld | nein | Beschreibung 2. Wird nach 200 Zeichen abgeschnitten. |
+  | `bereich` | Text, als Formularfeld | nein | Zuordnung, z.B. `Anmiet`. Wird nach 20 Zeichen abgeschnitten. |
+  | `bearbeiter` | Text, als Formularfeld | nein | **Wird zurzeit nicht gespeichert** (siehe „Gut zu wissen“). |
 
-  **Auth:** erforderlich (Bearer Token).
+  `text1`, `text2` und `bereich` gelten für alle Dateien eines Aufrufs gleich.
 
-  **Antwort:** `{"status":"OK"}`
+  ### Was gespeichert wird (je Datei)
+  | Feld | Wert |
+  |---|---|
+  | `art` | Dateiendung mit Punkt, kleingeschrieben, z.B. `.pdf` |
+  | `name` | Dateiname, nach 30 Zeichen abgeschnitten |
+  | `datum`, `geaendertam` | heutiges Datum (ohne Uhrzeit) |
+  | `doktyp` | immer `D` |
+  | `text1`, `text2`, `bereich` | aus dem Formular |
+  | `bearbeiter` | immer leer |
+  | `haupttext` | die Datei selbst |
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+  Die Nummern der neuen Vorlagen kommen **nicht** zurück. Wer sie braucht, sucht die Vorlagen danach, z.B. über `/dokumente/getvorlagenfiltered`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. weil die Dateiendung länger als 15 Zeichen ist.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) bei anderen Fehlern – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Alles oder nichts:** Scheitert eine Datei, wird keine einzige Datei des Aufrufs gespeichert.
+  - **Ohne Datei passiert nichts** – die Antwort ist trotzdem `{"status": "OK"}`.
+  - **`bearbeiter` bleibt immer leer**, auch wenn du das Formularfeld mitschickst (Fehler im Server, siehe unten).
+  - **Die Nummer (`nr`) vergibt die Datenbank automatisch.**
+  - **Keine Prüfung von Dateityp oder -größe.** Eine Datei ohne Endung bekommt ein leeres `art`.
+  - **Lange Dateinamen werden abgeschnitten** – nach 30 Zeichen, notfalls mitten in der Endung. Die Endung selbst steht aber vollständig in `art`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDokumente.uploadDokument` in `Shared/DataModuls/DataModulDokumenteClass.pas`
+  - Tabelle: `VORLAGEN`, Schlüssel `nr` (per Trigger befüllt); Datei per `LoadFromStream` in den Blob `haupttext`
+  - Alle Dateien (`Request.Files`) in einer Transaktion, bei Fehler Rollback
+  - **Code-Auffälligkeit:** Die Variable `bearbeiter` wird nie aus `Request.ContentFields` gelesen, ins INSERT geht deshalb immer ein Leerstring.
+  - Die Spalte `dateiname` (VARCHAR 255) bleibt ungenutzt; der Name landet gekürzt in `name` (CHAR 30).
+  - Der Kommentar über der Methode nennt fälschlich die Route `/dokumente/getvorlagen`.
+  - Der Server wertet die HTTP-Methode nicht aus; für den Datei-Upload ist faktisch POST mit `multipart/form-data` nötig.
+
+  </details>

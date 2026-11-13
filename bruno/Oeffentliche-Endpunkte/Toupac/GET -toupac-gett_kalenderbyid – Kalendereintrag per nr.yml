@@ -25,18 +25,63 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_KALENDER anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_KALENDER', ALLOWED, 'nr')` auf.
+  **Kalendereintrag per nr.** Liefert genau einen Eintrag aus `T_KALENDER`, gesucht über `nr`.
 
-  **Tabelle:** T_KALENDER
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/gett_kalenderbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, aufgabe, erstellt, terminam, vorlaufzeit, text, bereich, reftable, refnr, benutzer, benutzergruppe, status, von_name, an_name, suchbegriff, prio, typ, zusatzfeld1, zusatzfeld2, erstelltvon
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `aufgabe` | Text (max. 200 Zeichen) |
+  | `erstellt` | Datum/Uhrzeit |
+  | `terminam` | Datum/Uhrzeit |
+  | `vorlaufzeit` | Ganzzahl |
+  | `text` | Text (max. 1200 Zeichen) |
+  | `bereich` | Text (max. 200 Zeichen) |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
+  | `benutzer` | Text (max. 80 Zeichen) |
+  | `benutzergruppe` | Text (max. 80 Zeichen) |
+  | `status` | Ganzzahl |
+  | `von_name` | Text (max. 120 Zeichen) |
+  | `an_name` | Text (max. 120 Zeichen) |
+  | `suchbegriff` | Text (max. 120 Zeichen) |
+  | `prio` | Ganzzahl |
+  | `typ` | Text (max. 2 Zeichen) |
+  | `zusatzfeld1` | Text (max. 120 Zeichen) |
+  | `zusatzfeld2` | Text (max. 120 Zeichen) |
+  | `erstelltvon` | Text (max. 30 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "aufgabe": "Text", "erstellt": "2026-09-01 08:00:00", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getT_KalenderById` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_KALENDER`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -25,20 +25,57 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Adressdatensatz aus ADRESSEN anhand des Primärschlüssels `kennziffer` (generisches `DoSelectOne`).
+  **Adresse per Kennziffer.** Liefert genau einen Eintrag aus `ADRESSEN`, gesucht über `kennziffer`.
 
-  **Tabelle:** ADRESSEN
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/adressen/getadressenbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** kennziffer, gruppe, anrede, titel, name1, name2, strasse, plz, ort, telefon1, email
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `kennziffer` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Hinweis:** `matchcode` und `lvorgang` sind hier – anders als bei `getadressen`/`getadressenfiltered` – NICHT erlaubt.
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `kennziffer` | Ganzzahl |
+  | `gruppe` | Ganzzahl |
+  | `anrede` | Text (max. 20 Zeichen) |
+  | `titel` | Text (max. 20 Zeichen) |
+  | `name1` | Text (max. 30 Zeichen) |
+  | `name2` | Text (max. 30 Zeichen) |
+  | `name3` | Text (max. 30 Zeichen) |
+  | `namenszusatz` | Text (max. 60 Zeichen) |
+  | `strasse` | Text (max. 30 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 30 Zeichen) |
+  | `telefon1` | Text (max. 25 Zeichen) |
+  | `email` | Text (max. 60 Zeichen) |
 
-  **Key-Feld:** `kennziffer`
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"kennziffer": 42, "gruppe": 42, "anrede": "Text", ...} ]}
+  ```
 
-  **Body:** `{ "kennziffer": <wert>, "fields": [...] | "*" }` – kennziffer ist Pflicht.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`kennziffer` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+  - **Nicht abrufbar** sind hier: `code`, `land`, `ansprech`, `briefanrede`, `ntermin`, `lvorgang`, `lmailing`, `bearbeitet`, `kontostand`, `rabatt`, `skonto`, `provision1`, `provision2`, `provision3`, `zahltage`, `telefon2`, `fax`, `bemerkung`, `subadresse`, `substrasse`, `subland`, `subplz`, `subort`, `berechnung`, `mahnkennung`, `kreditlimit`, `sammelrechnung`, `kdnreigen`, `preisgruppe`, `betreuer`, `rechmpfaenger`, `skonto2`, `skonto3`, `zahltage2`, `zahltage3`, `ustid`, `ustpflichtig`, `kat1`, `kat2`, `kat3`, `kat4`, `kat5`, `kat6`, `kat7`, `kat8`, `kat9`, `kat10`, `kat11`, `kat12`, `rename`, `rename2`, `reland`, `replz`, `restrasse`, `reort`, `erfasst_am`, `datevkto`, `zahlungsart`, `zahlungper`, `matchcode`, `gebtag`, `gebmonat`, `gebjahr`, `geburtstag`, `zugriffe`, `adressenbaum`, `phonetic`, `vermittler`, `vertreter`, `status`, `gesperrt`, `bank`, `blz`, `ktonr`, `inet`, `textfeld1`, `textfeld2`, `textfeld3`, `textfeld4`, `textfeld5`, `textfeld6`, `textfeld7`, `textfeld8`, `datumfeld1`, `datumfeld2`, `hinweis`, `region`, `lzugriff`, `bearbeitetvon`, `lastlock`, `erfasst_von`, `geaendert_von`, `iban`, `swift`, `iban2`, `xkoord`, `ykoord`, `adrinfibu`, `kundenart`, `sammelkonto`, `passnummer`, `pass_gueltig_bis`, `pass_aussgestelltin`, `pass_aussgestelltam`, `pass_info`, `nation`, `uebertragung`, `kontoinhaber`, `iban3`, `strasse2`, `referenznr`, `geburtsort`, `freigabe`, `adresszeile1`, `adresszeile2`, `adresszeile3`, `ort2`, `newsletter`, `einverstaendnis__erhalten_am`, `namenszusatz2`, `dse_am`, `dse_per`, `textfeld9`, `textfeld10`, `textfeld11`, `textfeld12`, `textfeld13`, `textfeld14`, `textfeld15`, `textfeld16`, `textfeld17`, `textfeld18`, `datumfeld3`, `datumfeld4`, `anschrift`, `teilnehmerinfo1`, `teilnehmerinfo2`, `dsgvo1`, `dsgvo2`, `dsgvo3`, `dsgvo4`, `dsgvo5`, `dsgvo6`, `dsgvo_lock`, `dsgvo_letzte_pruefung`, `leitid`, `passid`, `versandart`, `kat13`, `kat14`, `kat15`, `kat16`, `kat17`, `kat18`, `kat19`, `kat20`, `kat21`, `kat22`, `kat23`, `kat24`, `haltnr`, `haltnr_tages`, `ortsteil`, `tourkuerzel_kostentraeger`, `telefon3`, `heimatort`, `pass_name1`, `pass_name2`, `steuernummer`, `mandant`, `ustid_absender`, `rechemail`, `rechnamenszusatz`, `hr_nummer`, `hr_registergericht`, `erechnung_format`.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  <details><summary>Für Entwickler</summary>
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  - Controller: `TDataModulAdressen.getAdresseById` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ADRESSEN`, Schlüssel `kennziffer`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

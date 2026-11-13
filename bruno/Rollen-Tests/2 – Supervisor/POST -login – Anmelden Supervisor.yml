@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "user": "{{user_supervisor}}",
-        "password": "{{process.env.PW_SUPERVISOR}}"
+        "password": "{{pw_supervisor}}"
       }
   auth:
     type: bearer
@@ -41,5 +41,5 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Meldet user_supervisor an (Passwort aus .env: PW_SUPERVISOR) und legt den
+  Meldet user_supervisor an (Passwort aus Variable pw_supervisor) und legt den
   Token in {{jwttoken}} ab.

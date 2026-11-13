@@ -27,20 +27,57 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aktualisiert einen bestehenden Datensatz in ADRESSEN anhand des Primärschlüssels `kennziffer` (generisches `DoUpdate`).
+  **Adresse ändern.** Ändert einen vorhandenen Eintrag in `ADRESSEN`. Gefunden wird er über `kennziffer`.
 
-  **Tabelle:** ADRESSEN
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/adressen/updateadressen` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** gruppe, anrede, titel, name1, name2, strasse, plz, ort, telefon1, email (`kennziffer` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `kennziffer` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Hinweis:** `code` kann hierüber NICHT geändert werden (nur beim Insert erlaubt).
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `gruppe` | Ganzzahl |
+  | `anrede` | Text (max. 20 Zeichen) |
+  | `titel` | Text (max. 20 Zeichen) |
+  | `name1` | Text (max. 30 Zeichen) |
+  | `name2` | Text (max. 30 Zeichen) |
+  | `strasse` | Text (max. 30 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 30 Zeichen) |
+  | `telefon1` | Text (max. 25 Zeichen) |
+  | `email` | Text (max. 60 Zeichen) |
 
-  **Key-Feld:** `kennziffer`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Body:** `{ "kennziffer": <wert>, "feld": "...", ... }` – kennziffer ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `kennziffer` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `kennziffer` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
+  - **Nicht änderbar** sind hier: `code`, `name3`, `land`, `ansprech`, `briefanrede`, `ntermin`, `lvorgang`, `lmailing`, `bearbeitet`, `kontostand`, `rabatt`, `skonto`, `provision1`, `provision2`, `provision3`, `zahltage`, `telefon2`, `fax`, `bemerkung`, `subadresse`, `substrasse`, `subland`, `subplz`, `subort`, `berechnung`, `mahnkennung`, `kreditlimit`, `sammelrechnung`, `kdnreigen`, `preisgruppe`, `betreuer`, `rechmpfaenger`, `skonto2`, `skonto3`, `zahltage2`, `zahltage3`, `ustid`, `ustpflichtig`, `kat1`, `kat2`, `kat3`, `kat4`, `kat5`, `kat6`, `kat7`, `kat8`, `kat9`, `kat10`, `kat11`, `kat12`, `rename`, `rename2`, `reland`, `replz`, `restrasse`, `reort`, `erfasst_am`, `datevkto`, `zahlungsart`, `zahlungper`, `matchcode`, `gebtag`, `gebmonat`, `gebjahr`, `geburtstag`, `zugriffe`, `adressenbaum`, `phonetic`, `vermittler`, `vertreter`, `status`, `gesperrt`, `namenszusatz`, `bank`, `blz`, `ktonr`, `inet`, `textfeld1`, `textfeld2`, `textfeld3`, `textfeld4`, `textfeld5`, `textfeld6`, `textfeld7`, `textfeld8`, `datumfeld1`, `datumfeld2`, `hinweis`, `region`, `lzugriff`, `bearbeitetvon`, `lastlock`, `erfasst_von`, `geaendert_von`, `iban`, `swift`, `iban2`, `xkoord`, `ykoord`, `adrinfibu`, `kundenart`, `sammelkonto`, `passnummer`, `pass_gueltig_bis`, `pass_aussgestelltin`, `pass_aussgestelltam`, `pass_info`, `nation`, `uebertragung`, `kontoinhaber`, `iban3`, `strasse2`, `referenznr`, `geburtsort`, `freigabe`, `adresszeile1`, `adresszeile2`, `adresszeile3`, `ort2`, `newsletter`, `einverstaendnis__erhalten_am`, `namenszusatz2`, `dse_am`, `dse_per`, `textfeld9`, `textfeld10`, `textfeld11`, `textfeld12`, `textfeld13`, `textfeld14`, `textfeld15`, `textfeld16`, `textfeld17`, `textfeld18`, `datumfeld3`, `datumfeld4`, `anschrift`, `teilnehmerinfo1`, `teilnehmerinfo2`, `dsgvo1`, `dsgvo2`, `dsgvo3`, `dsgvo4`, `dsgvo5`, `dsgvo6`, `dsgvo_lock`, `dsgvo_letzte_pruefung`, `leitid`, `passid`, `versandart`, `kat13`, `kat14`, `kat15`, `kat16`, `kat17`, `kat18`, `kat19`, `kat20`, `kat21`, `kat22`, `kat23`, `kat24`, `haltnr`, `haltnr_tages`, `ortsteil`, `tourkuerzel_kostentraeger`, `telefon3`, `heimatort`, `pass_name1`, `pass_name2`, `steuernummer`, `mandant`, `ustid_absender`, `rechemail`, `rechnamenszusatz`, `hr_nummer`, `hr_registergericht`, `erechnung_format`.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  <details><summary>Für Entwickler</summary>
 
-  **Antwort:** `{"status":"OK"}`
+  - Controller: `TDataModulAdressen.updateAdresse` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ADRESSEN`, Schlüssel `kennziffer`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

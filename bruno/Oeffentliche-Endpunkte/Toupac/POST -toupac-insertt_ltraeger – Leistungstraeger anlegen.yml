@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "nr": 42,
-        "kennziffer": 10042,
+        "kennziffer": 42,
         "code": "HOTPAL",
         "bezeichnung": "Hotel Palma Playa",
         "land": "Spanien",
@@ -33,18 +33,58 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in T_LTRAEGER an. Ruft intern `DoInsert('T_LTRAEGER', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_ltraegerkey` ermittelt werden.
+  **Leistungstraeger anlegen.** Legt einen neuen Eintrag in `T_LTRAEGER` an.
 
-  **Tabelle:** T_LTRAEGER
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/toupac/insertt_ltraeger` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, kennziffer, code, bezeichnung, land, ort, typ, sachkonto, kostelle1, kostelle2, optionstage, klasse, stornostaffel, suchbegriff, kategorie, waehrung, gesperrt, bemerkung_intern
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+  | Feld | Typ | Pflicht laut Datenbank |
+  |---|---|---|
+  | `nr` | Ganzzahl | ja |
+  | `kennziffer` | Ganzzahl |  |
+  | `code` | Text (max. 20 Zeichen) |  |
+  | `bezeichnung` | Text (max. 40 Zeichen) |  |
+  | `land` | Text (max. 60 Zeichen) |  |
+  | `ort` | Text (max. 120 Zeichen) |  |
+  | `typ` | Ganzzahl |  |
+  | `sachkonto` | Text (max. 12 Zeichen) |  |
+  | `kostelle1` | Text (max. 12 Zeichen) |  |
+  | `kostelle2` | Text (max. 12 Zeichen) |  |
+  | `optionstage` | Ganzzahl |  |
+  | `klasse` | Text (max. 60 Zeichen) |  |
+  | `stornostaffel` | Ganzzahl |  |
+  | `suchbegriff` | Text (max. 400 Zeichen) |  |
+  | `kategorie` | Langtext/Datei |  |
+  | `waehrung` | Text (max. 5 Zeichen) |  |
+  | `gesperrt` | Text (max. 4 Zeichen) |  |
+  | `bemerkung_intern` | Text (max. 32000 Zeichen) |  |
 
-  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) kannst du mitschicken** – eine freie Nummer liefert vorher der passende `…key`-Endpunkt. Lässt du sie weg, vergibt die Datenbank automatisch eine. Die Antwort enthält keine Nummer.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.insertT_Ltraeger` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_LTRAEGER`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

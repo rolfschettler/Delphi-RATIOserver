@@ -25,14 +25,51 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert den nächsten Wert eines beliebigen InterBase-Generators, gleichbedeutend mit `GEN_ID(<generator>, <increment>)`. Der Generatorname wird in Großbuchstaben gewandelt und vorab gegen `RDB$GENERATORS` geprüft (muss existieren) – erst dann in die SQL eingesetzt (Schutz gegen SQL-Injection).
+  **Nächste Nummer aus einem Nummernzähler holen.** Die Datenbank hat für viele Tabellen einen eigenen Nummernzähler (Generator). Dieser Endpunkt zählt einen beliebigen davon weiter und liefert die neue Nummer.
 
-  **Body:** `generator` (Pflicht, string; fehlt → "Parameter \"generator\" fehlt."), `increment` (optional, Integer, Default 1).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/getgeneratorvalue` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was du mitschickst
+  Im JSON-Body:
 
-  **LocalOnly:** false.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `generator` | Text, z.B. `"T_BILDTEXT_NR_GEN"` | ja | Name des Nummernzählers. Groß-/Kleinschreibung egal, Leerzeichen am Rand werden entfernt. |
+  | `increment` | Ganzzahl | nein | Um wie viel weitergezählt wird. Standard `1`. Ist der Wert keine Zahl, gilt ebenfalls `1`. |
 
-  **Antwort:** `{"generator":"T_BILDTEXT_NR_GEN","value":123}`; unbekannter Generator → Exception "Generator \"X\" existiert nicht.".
+  Die Parameternamen dürfen beliebig groß/klein geschrieben sein.
 
-  **Besonderheit:** Der Aufruf VERÄNDERT den Generator (kein reines Lesen). `increment` ist nicht begrenzt – auch `0` (aktuellen Wert lesen) oder negative Werte (Zurücksetzen!) sind möglich, und zwar für jeden Generator der Datenbank.
+  ### Was zurückkommt
+  ```json
+  {"generator": "T_BILDTEXT_NR_GEN", "value": 123}
+  ```
+  `value` ist die neue Nummer, `generator` der Name in Großbuchstaben.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `Parameter "generator" fehlt.` – `generator` fehlt oder ist `null`.
+    - `Generator "NAME" existiert nicht.` – Tippfehler im Namen oder diesen Zähler gibt es nicht.
+  - **400** – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **Jeder Aufruf verbraucht Nummern.** Der Zähler wird sofort weitergezählt und nie zurückgesetzt – auch wenn du die Nummer danach gar nicht verwendest. Lücken in der Nummerierung sind deshalb normal.
+  - **Mit `increment` 0 liest du nur:** Dann kommt der aktuelle Stand, ohne dass etwas verbraucht wird.
+  - **Vorsicht mit negativen Werten:** Ein negatives `increment` zählt den Zähler zurück – bei jedem Zähler der Datenbank. Danach können Nummern doppelt vergeben werden und das Anlegen in anderen Tabellen scheitert. Nur verwenden, wenn du genau weißt, was du tust.
+  - **Für einzelne Tabellen gibt es meist eigene Endpunkte** (`…key` bzw. `…nextnr`), die den passenden Zähler bereits kennen.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAddOn.getGeneratorValue` in `Shared/DataModuls/DataModulAddOnClass.pas`
+  - Entspricht `SELECT GEN_ID(<generator>, <increment>) FROM RDB$DATABASE`; `GEN_ID` ist nicht transaktional.
+  - Schutz gegen SQL-Injection: `GEN_ID` akzeptiert den Namen nicht als Bind-Parameter. Der Name wird deshalb erst gegen `RDB$GENERATORS` geprüft und nur bei Existenz in die SQL eingesetzt.
+  - `increment` ist nicht begrenzt (auch negativ möglich).
+  - Der Wert wird per `AsInteger` gelesen – bei Generatorwerten jenseits des 32-Bit-Bereichs würde er abgeschnitten.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

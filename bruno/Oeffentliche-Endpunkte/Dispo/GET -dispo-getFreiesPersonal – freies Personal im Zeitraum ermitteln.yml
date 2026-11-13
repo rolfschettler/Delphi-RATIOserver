@@ -25,10 +25,59 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Nicht-generischer Endpunkt mit fest verdrahtetem SQL. Liefert alle Personen aus PERSONALSTAMM, deren `zeichen` in keinem DISPO-Datensatz vorkommt, der sich mit dem angefragten Zeitraum überschneidet (Bedingung: `D.BIS > :von AND D.VON < :bis`, JOIN DISPO/PERSONALSTAMM über `d.objekt = p.zeichen`).
+  **Freies Personal im Zeitraum ermitteln.** Liefert alle Mitarbeiter, die im angegebenen Zeitraum nicht verplant sind – sortiert nach Nachname und Vorname.
 
-  `von`/`bis` sind im JSON-Body optional; fehlen sie, werden `von='1900-01-01 00:00:00'` und `bis='1900-02-01 00:00:00'` als Default verwendet (liefert dann faktisch alle nicht in diesem historischen Zeitraum verplanten Personen).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/getFreiesPersonal` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** `{"header":{...},"data":[...]}` (SerializeQuery) mit den Feldern nr, zeichen, anrede, name1, name2 (sortiert nach name2, name1).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `von` | Datum/Uhrzeit, im JSON-Body | nein, aber sinnvoll | Beginn des Zeitraums, z.B. `"2026-09-01 00:00:00"` |
+  | `bis` | Datum/Uhrzeit, im JSON-Body | nein, aber sinnvoll | Ende des Zeitraums, z.B. `"2026-09-01 23:59:59"` |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", "zeichen": "ftstring 15", "anrede": "ftstring 20", "name1": "ftstring 30", "name2": "ftstring 30"},
+    "data": [ {"nr": 55, "zeichen": "MU", "anrede": "Herr", "name1": "Hans", "name2": "Mustermann"} ]
+  }
+  ```
+  Die freien Mitarbeiter stehen in `data`, je Person diese Felder:
+
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `nr` | Ganzzahl | Personalnummer |
+  | `zeichen` | Text (max. 15 Zeichen) | Personalkürzel |
+  | `anrede` | Text (max. 20 Zeichen) | Anrede |
+  | `name1` | Text (max. 30 Zeichen) | Vorname |
+  | `name2` | Text (max. 30 Zeichen) | Nachname |
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank kann `von` oder `bis` nicht als Datum lesen.
+
+  ### Gut zu wissen
+  - **Als verplant gilt, wer im Zeitraum einen Dispo-Eintrag hat.** Zugeordnet wird über das Personalkürzel (`zeichen` = `objekt` im Dispo-Eintrag). Die Art des Eintrags spielt keine Rolle. Einsätze ohne Dispo-Eintrag werden nicht berücksichtigt.
+  - **Nur echte Überschneidungen zählen:** Ein Dispo-Eintrag, der genau zum Beginn deines Zeitraums endet oder genau zu dessen Ende beginnt, macht die Person nicht „belegt“.
+  - **Ohne `von`/`bis` gibt es keinen Fehler,** sondern es wird der Zeitraum 01.01.1900 bis 01.02.1900 genommen – das liefert praktisch das gesamte Personal. Dasselbe gilt, wenn der Body fehlt oder kein gültiges JSON ist.
+  - **Gesperrtes Personal wird mitgeliefert** – es gibt keinen Filter darauf.
+  - **Personen ohne Personalkürzel** erscheinen nur, wenn im Zeitraum überhaupt niemand verplant ist.
+  - **Die Feldnamen `von` und `bis` klein schreiben** – sonst werden sie nicht erkannt. Die Schreibweise der Adresse selbst ist egal (`/dispo/getfreiespersonal` funktioniert auch).
+  - **Es kommen immer alle passenden Personen mit genau diesen Feldern.** `fields`, `orderby`, `limit` und `offset` haben keine Wirkung.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getFreiesPersonal` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabellen: `PERSONALSTAMM`, `DISPO` (nur lesend)
+  - Festes SQL: `SELECT pe.nr, pe.zeichen, pe.anrede, pe.name1, pe.name2 FROM personalstamm pe WHERE pe.zeichen NOT IN (SELECT DISTINCT d.objekt FROM dispo d JOIN personalstamm p ON d.objekt = p.zeichen WHERE d.bis > :von AND d.von < :bis) ORDER BY pe.name2, pe.name1`
+  - Defaults ohne Body-Werte: `von` = `1900-01-01 00:00:00`, `bis` = `1900-02-01 00:00:00`. Body-Keys case-sensitiv (`Body.GetValue`).
+  - `EINSATZ` und `DISPO.art` werden nicht ausgewertet; Personen mit `zeichen` NULL fallen wegen `NOT IN` heraus, sobald die Unterabfrage Zeilen liefert.
+  - Routen-Vergleich im Router ist case-insensitiv (`SameText` in `Shared/router.pas`).
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

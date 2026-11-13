@@ -25,12 +25,95 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensaetze der Tabelle FIBU ueber `DoSelect('FIBU', ALLOWED)`.
+  **Fibu-Buchungssaetze auflisten.** Liefert alle Einträge aus `FIBU` – auf Wunsch sortiert und seitenweise.
 
-  **Erlaubte Felder (ALLOWED):** nr, betrag, soll, haben, belegfeld1, belegfeld2, belegdatum, kostelle1, kostelle2, skonto, text, gebucht, art, rechnungnr, stschl, ustbetrag, steuerkonto, stkontotyp, stsatz, stapel, opos, journalnr, erfasstdurch, vorlaufnr, archiv, text2, freigabe, uebertragung, fwbetrag, waehrung, kurs, zugeordnetzu, erfasst_am, laufnummer, belegart, journalisierungsnr, stand, fortlaufnr_provorgang, pkguid, leistungsdatum, iban, swift, kontoinhaber, mandant.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fibu/getfibu` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body (optional):** `{ "fields": [...] | "*", "orderby": "feld", "limit": 10, "offset": 0 }`
+  ### Was du mitschickst
+  Alles ist optional – ein leerer Body `{}` liefert alles.
 
-  **Auth:** erforderlich (Bearer Token)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Antwort:** ohne `limit` `{"header":{"<feld>":"<typ>",...},"data":[{...},...]}` (SerializeQuery: `header` = Feldname -> Typ, `data` = Datensaetze); mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `betrag` | Kommazahl |
+  | `soll` | Text (max. 12 Zeichen) |
+  | `haben` | Text (max. 12 Zeichen) |
+  | `belegfeld1` | Text (max. 20 Zeichen) |
+  | `belegfeld2` | Datum/Uhrzeit |
+  | `belegdatum` | Datum/Uhrzeit |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `kostelle2` | Text (max. 12 Zeichen) |
+  | `skonto` | Kommazahl |
+  | `text` | Text (max. 40 Zeichen) |
+  | `gebucht` | Text (max. 4 Zeichen) |
+  | `art` | Text (max. 2 Zeichen) |
+  | `rechnungnr` | Ganzzahl |
+  | `stschl` | Text (max. 2 Zeichen) |
+  | `ustbetrag` | Kommazahl |
+  | `steuerkonto` | Text (max. 12 Zeichen) |
+  | `stkontotyp` | Text (max. 1 Zeichen) |
+  | `stsatz` | Kommazahl |
+  | `stapel` | Ganzzahl |
+  | `opos` | Text (max. 2 Zeichen) |
+  | `journalnr` | Ganzzahl |
+  | `erfasstdurch` | Text (max. 20 Zeichen) |
+  | `vorlaufnr` | Ganzzahl |
+  | `archiv` | Text (max. 4 Zeichen) |
+  | `text2` | Text (max. 40 Zeichen) |
+  | `freigabe` | Ganzzahl |
+  | `uebertragung` | Ganzzahl |
+  | `fwbetrag` | Kommazahl |
+  | `waehrung` | Text (max. 3 Zeichen) |
+  | `kurs` | Kommazahl |
+  | `zugeordnetzu` | Text (max. 30 Zeichen) |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `laufnummer` | Ganzzahl |
+  | `belegart` | Text (max. 3 Zeichen) |
+  | `journalisierungsnr` | Ganzzahl |
+  | `stand` | Ganzzahl |
+  | `fortlaufnr_provorgang` | Ganzzahl |
+  | `pkguid` | Text (max. 40 Zeichen) |
+  | `leistungsdatum` | Datum/Uhrzeit |
+  | `iban` | Text (max. 34 Zeichen) |
+  | `swift` | Text (max. 20 Zeichen) |
+  | `kontoinhaber` | Text (max. 90 Zeichen) |
+  | `mandant` | Text (max. 30 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "betrag": 12.5, "soll": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Ohne `limit` kommt die komplette Tabelle** – bei vielen Einträgen besser seitenweise abrufen.
+  - **Zum Suchen** den passenden `…filtered`-Endpunkt verwenden, für einen einzelnen Eintrag `…byid`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFibu.getFibu` in `Shared/DataModuls/DataModulFibuClass.pas`
+  - Tabelle: `FIBU`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

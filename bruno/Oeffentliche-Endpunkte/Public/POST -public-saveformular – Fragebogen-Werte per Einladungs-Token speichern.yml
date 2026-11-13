@@ -1,0 +1,96 @@
+info:
+  name: POST /public/saveformular – Fragebogen-Werte per Einladungs-Token speichern
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseURL}}/public/saveformular"
+  body:
+    type: json
+    data: |-
+      {
+        "token": "{{einladungstoken}}",
+        "werte": {
+          "1": "Beispieltext"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Fragebogen-Antworten speichern.** Der Gast speichert Antworten in seinem Fragebogen – beliebig oft, jeweils nur die mitgeschickten Fragen. Ohne Login.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/public/saveformular` |
+  | **Anmeldung** | kein Login – stattdessen Fragebogen-Token im Body |
+
+  ### Was du mitschickst
+  Im JSON-Body:
+
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `token` | Text | ja | Der Token aus der Fragebogen-Mail (ersatzweise in der URL `?token=…`). Muss ein **Fragebogen-Token** sein. |
+  | `werte` | Objekt | ja | Die Antworten als `{ "property_id": antwort, ... }`. Die `property_id` jeder Frage liefert `/public/getformular`. Eine Antwort ist Text, Zahl oder `null`. |
+
+  Beispiel: `"werte": {"12": "keine", "13": "Vegetarisch"}`
+
+  **Erlaubte Antworten je Fragetyp** (Leerzeichen am Rand werden entfernt, höchstens 255 Zeichen):
+
+  | `proptyp` | Erlaubt | Gespeichert als |
+  |---|---|---|
+  | `TXT` | beliebiger Text | unverändert |
+  | `NUM` | Zahl, mit Komma oder Punkt | mit Punkt (`3,5` wird `3.5`) |
+  | `DAT` | gültiges Datum als `JJJJ-MM-TT` | unverändert |
+  | `CHK` | `1` oder `0` | unverändert |
+  | `RDO`, `SEL` | genau eine der angebotenen Möglichkeiten – exakt so geschrieben, auch Groß-/Kleinschreibung | unverändert |
+  | `MUL` | mehrere Möglichkeiten kommagetrennt, jede aus der Liste | in der Reihenfolge der Liste, ohne Doppelte |
+
+  **Eine leere Antwort (`""`, nur Leerzeichen oder `null`) löscht die gespeicherte Antwort.**
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  Fehler kommen als `{"status":"ERROR","message":"..."}`. **Bei jedem Fehler wird gar nichts gespeichert.**
+
+  | Status | Meldung | Bedeutung |
+  |---|---|---|
+  | 400 | `Keine Werte übergeben.` | `werte` fehlt oder ist kein Objekt. |
+  | 400 | `Feld gehört nicht zu diesem Formular.` | Eine `property_id` gehört nicht zu diesem Fragebogen (oder ist keine Zahl). |
+  | 400 | `Ungültiger Wert übergeben.` | Eine Antwort ist weder Text, Zahl noch `null` (z.B. `true`, Liste, Objekt). |
+  | 400 | `Die Eingabe ist zu lang (höchstens 255 Zeichen).` | |
+  | 400 | `Bitte eine Zahl eingeben.` | bei `NUM` |
+  | 400 | `Bitte ein gültiges Datum eingeben.` | bei `DAT` |
+  | 400 | `Ungültiger Wert für ein Ankreuzfeld.` | bei `CHK` |
+  | 400 | `Bitte eine der angebotenen Möglichkeiten wählen.` | bei `RDO`/`SEL` |
+  | 400 | `Bitte nur die angebotenen Möglichkeiten wählen.` | bei `MUL` |
+  | 400 | `Unbekannte Art des Feldes.` | Die Frage hat einen unbekannten Typ – Fehler in der Fragebogen-Vorlage. |
+  | 401/403 | Token-Fehler | wie bei `/public/getformular` |
+
+  Datenbankfehler kommen als `{"status":"error","message":"..."}` mit Status 400.
+
+  ### Gut zu wissen
+  - **Erst wird alles geprüft, dann alles gespeichert.** Eine einzige ungültige Antwort verhindert das Speichern komplett – es gibt keinen Teilerfolg.
+  - **Nicht mitgeschickte Fragen bleiben unverändert.** `"werte": {}` ist erlaubt und ändert nichts.
+  - **Speichern verbraucht den Link nicht** – beliebig oft möglich, bis der Gast mit `/public/formular/abschliessen` abschließt.
+  - **Pflichtfragen werden nicht geprüft.** Ob alles ausgefüllt ist, muss die Seite selbst kontrollieren.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulPublic.saveFormularByToken` in `Shared/DataModuls/DataModulPublicClass.pas`; Token-Prüfung `ValidatePublicToken`, Wertprüfung `FormularWertPruefen`
+  - Tabellen: `ACCESS_TOKENS` (`REFERENCE_TYPE` = `FORM_KARTEI_HISTORY`, `PURPOSE` = `formular`), `FORM_KARTEI_HISTORY` + `FORM_PAT_PROPERTY` (erlaubte Felder), `FORM_KARTEI_CONTENT` (wird geschrieben)
+  - Je Feld: leerer Wert → `DELETE`; sonst `UPDATE … SET CONTENT`, und wenn keine Zeile getroffen wurde, `INSERT` (`KARTEI_HISTORY_ID`, `KARTEI_PROPERTY_ID`, `CONTENT`) – alles in einer Transaktion.
+  - Der Schlüssel `werte` ist nicht case-sensitiv.
+  - Route mit `Auth=false`, `LocalOnly=false`; kein JWT, keine Rollenprüfung.
+
+  </details>

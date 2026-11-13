@@ -26,19 +26,87 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Ruft die selectable Stored Procedure SP_ZAHLUNGEN auf: `SELECT * FROM SP_ZAHLUNGEN(:vorgang, :bereich, :selart)` (kein EXECUTE PROCEDURE, keine Transaktion – reiner Lesezugriff). Funktioniert mit GET oder POST.
+  **Zahlungen zu einer Rechnung ermitteln.** Sucht in der Finanzbuchhaltung alle Zahlungen, die zu einer Rechnungsnummer gebucht wurden – als einzelne Buchungen oder als Summe. Es wird nur gelesen, nichts geändert.
 
-  **Stored Procedure:** SP_ZAHLUNGEN(VORGANG CHAR(20), BEREICH CHAR(20), SELART INTEGER)
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/storedprocedures/sp_zahlungen` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body-Parameter:**
-  - `vorgang` (String, **Pflicht**) – Rechnungsnummer = Belegfeld1 der FIBU. Fehlt der Parameter (oder ist `null`), Fehler `Parameter "vorgang" fehlt`. Bei `bereich`="TOUPAC" vergleicht die Prozedur intern gegen T_VORGANG.RECHNUNGSNR (numerisch) – ein nicht-numerischer Wert (z. B. "GS18576") führt zu einem InterBase-Konversionsfehler (HTTP 400). Gutschein-Belege gehören nach `bereich`="GUTSCHEIN".
-  - `bereich` (String, optional, Default leer) – ausgewertet werden "TOUPAC", "TPSAMMEL" und "GUTSCHEIN". Bei anderen Werten bleibt das Debitor-/Kreditorkonto unbestimmt, `selart` 0 und 3 liefern dann ein leeres Ergebnis.
-  - `selart` (Integer, optional, Default 0; nicht-numerisch → 0):
-    - 0 = nur Zahlungen des Debitors
-    - 1 = alle Zahlungen
-    - 2 = Summe aller Zahlungen (eine Zeile)
-    - 3 = Summe aller Zahlungen des Debitors (eine Zeile)
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `vorgang` | Text (max. 20 Zeichen), darf auch als Zahl kommen | **ja** | Die Rechnungsnummer, so wie sie in der Buchhaltung im Belegfeld 1 steht. |
+  | `bereich` | Text (max. 20 Zeichen) | nein | Woher die Rechnung stammt: `"TOUPAC"`, `"TPSAMMEL"` oder `"GUTSCHEIN"` (siehe unten). Standard: leer. |
+  | `selart` | Ganzzahl `0` bis `3` | nein | Was du haben willst (siehe unten). Standard `0`. |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  **`bereich`** – bestimmt, welches Kundenkonto zur Rechnung gehört (wichtig für `selart` 0 und 3):
+  | Wert | Bedeutung |
+  |---|---|
+  | `TOUPAC` | Rechnung zu einem Reisevorgang. Das Kundenkonto kommt aus dem Vorgang mit dieser Rechnungsnummer: bei Direktinkasso „NEIN“ das Konto der Agentur, sonst das Konto des Kunden. Ist in der Konfiguration die Buchungsart `FBUCHUNGSART` = `J` eingestellt, gilt stattdessen das Sachkonto der Reise. |
+  | `TPSAMMEL` | Sammelrechnung. Das Kundenkonto ist das DATEV-Konto der Adresse, an die die Sammelrechnung ging. |
+  | `GUTSCHEIN` | Gutschein-Beleg. Hier wird nie nach Kundenkonto unterschieden. |
+  | anderer Wert / leer | Kein Kundenkonto bekannt – dann funktionieren nur `selart` 1 und 2 sinnvoll. |
 
-  **Antwort:** `{"header":{feld:typ,...},"data":[...]}` (SerializeQuery) mit 14 Spalten: betrag, belegdatum, konto, text, debitor, erfasstdurch, erfasst_am, bezeichnung, kostelle1, kostelle2, vorlaufnr, journalisierungsnr, uebertragung, nr. Bei `selart` 2 und 3 ist nur `betrag` gefüllt, die übrigen Spalten sind `null`. Fehler: `{"status":"error","message":"..."}`.
+  **`selart`** – was zurückkommt:
+  | Wert | Ergebnis |
+  |---|---|
+  | `0` | Einzelne Zahlungen, nur die vom bzw. an das Kundenkonto |
+  | `1` | Alle einzelnen Zahlungen zu dieser Rechnung |
+  | `2` | Summe aller Zahlungen (genau eine Zeile) |
+  | `3` | Summe der Zahlungen vom bzw. an das Kundenkonto (genau eine Zeile) |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"betrag": "ftfloat", "belegdatum": "ftdatetime", "konto": "ftstring 12", ...},
+    "data": [ {"betrag": 150.0, "belegdatum": "2026-03-01 00:00:00", "konto": "1200", "text": "Anzahlung", "debitor": "10042", ...} ]
+  }
+  ```
+  `data` enthält die Zahlungen (nach Belegdatum sortiert), `header` nennt zu jedem Feld den technischen Typ.
+
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `betrag` | Kommazahl | Zahlungsbetrag. Positiv = Geld eingegangen, negativ = Geld zurückgezahlt. |
+  | `belegdatum` | Datum/Uhrzeit | Datum der Buchung |
+  | `konto` | Text (max. 12 Zeichen) | Zahlungskonto (z.B. Bank, Kasse) |
+  | `bezeichnung` | Text (max. 30 Zeichen) | Name des Zahlungskontos |
+  | `debitor` | Text (max. 12 Zeichen) | Gegenkonto der Buchung – bei `selart` 0 also das Kundenkonto |
+  | `text` | Text (max. 40 Zeichen) | Buchungstext |
+  | `erfasstdurch` | Text (max. 20 Zeichen) | Wer gebucht hat |
+  | `erfasst_am` | Datum/Uhrzeit | Wann gebucht wurde |
+  | `kostelle1`, `kostelle2` | Text (max. 12 Zeichen) | Kostenstellen |
+  | `vorlaufnr`, `journalisierungsnr`, `uebertragung` | Ganzzahl | Verwaltungsangaben der Buchhaltung |
+  | `nr` | Ganzzahl | Nummer der Buchung in der Buchhaltung |
+
+  Bei `selart` 2 und 3 ist nur `betrag` gefüllt (die Summe), alle anderen Felder sind `null`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung mit Status 200**: `{"status":"error","message":"Parameter \"vorgang\" fehlt"}` – `vorgang` fehlt oder ist `null`. Deshalb immer auf `"status": "error"` prüfen.
+  - **400** mit Fehlermeldung – Fehler in der Datenbank. Typischer Fall: `bereich` ist `"TOUPAC"`, aber `vorgang` ist keine reine Zahl (z.B. `"GS18576"`). Bei Reisevorgängen ist die Rechnungsnummer immer eine Zahl; Gutschein-Belege gehören zu `"GUTSCHEIN"`.
+
+  ### Gut zu wissen
+  - **Als Zahlung zählt jede Buchung auf einem Zahlungskonto** – also auf einem Konto, das in der Buchhaltung als Zahlungs- oder Gutscheinkonto gekennzeichnet ist (Kontengruppe 1).
+  - **Nicht mitgezählt** werden Buchungen der Arten `GS` und `SG` sowie `ST`, wenn dort eine Rechnungsnummer eingetragen ist. Bei `"GUTSCHEIN"` zusätzlich die Art `GE`.
+  - **Keine Treffer** ergeben bei `selart` 0 und 1 `"data": []`, bei `selart` 2 und 3 eine Zeile mit `"betrag": 0`.
+  - **Leere Rechnungsnummer (`""`)** wird angenommen, liefert aber immer `"data": []` – auch bei `selart` 2 und 3.
+  - **Andere `selart`-Werte** (z.B. `5`) liefern `"data": []`. Ist `selart` keine Zahl, wird ohne Meldung `0` daraus.
+  - **Ohne passenden `bereich`** gibt es kein Kundenkonto: `selart` 0 liefert dann nichts, `selart` 3 immer `0`.
+  - **`bereich` genau so schreiben wie oben** – in Großbuchstaben. `"toupac"` wird nicht erkannt und gilt wie ein unbekannter Bereich.
+  - **Kein Blättern:** `limit` und `offset` gibt es hier nicht.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulStoredProcedures.SP_Zahlungen` in `Shared/DataModuls/DataModulStoredProceduresClass.pas`
+  - Aufruf: `SELECT * FROM SP_ZAHLUNGEN(:vorgang, :bereich, :selart)`, Antwort per `SerializeQuery`, keine Transaktion
+  - Prozedur `SP_ZAHLUNGEN` (Quelle aus `RDB$PROCEDURES` gelesen): Eingaben `VORGANG CHAR(20)`, `BEREICH CHAR(20)`, `SELART INTEGER`; Ausgabe `BETRAG NUMERIC(15,2)` u.a.
+    - Kundenkonto (`DEBKREDKONTO`): `TOUPAC` aus `T_VORGANG` über `RECHNUNGSNR` (Ganzzahl-Spalte → Konvertierungsfehler bei Text), `DIREKTINKASSO`, `T_KONFIGURATION.BEREICH='FBUCHUNGSART'`; `TPSAMMEL` aus `T_BUSAMMEL` + `ADRESSEN.DATEVKTO`
+    - Zahlungen: `FIBU` gegen `KONTEN` (`ZAHLUNG=1` oder `GUTSCHEINKONTO='JA'`, `KONTENGRUPPE=1`), `BELEGFELD1 = VORGANG`; Soll-Seite positiv, Haben-Seite mit `-1`, `UNION ALL`, `ORDER BY` Belegdatum
+    - Gesamter Rumpf steht in `IF (VORGANG<>'')`
+  - **Auffälligkeit:** Bei `GUTSCHEIN` wird `DEBKREDKONTO` nie gesetzt. `selart` 0 hat dafür einen eigenen Zweig ohne Kontofilter (= wie `selart` 1), `selart` 3 filtert dagegen auf das leere Konto und liefert deshalb immer 0.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

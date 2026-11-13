@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 55,
+        "nr": 42,
         "telefon1": "0721-1234567",
         "bemerkung": "Führerschein verlängert bis 2028"
       }
@@ -26,10 +26,111 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aktualisiert einen bestehenden Datensatz in PERSONALSTAMM anhand des Primärschlüssels. Implementierung: `DoUpdate('PERSONALSTAMM', ALLOWED, 'nr')`. Body: `{"nr":<Personal-Nr>,"feld1":"wert1",...}` – nur ALLOWED-Felder werden übernommen.
+  **Personalstamm ändern.** Ändert einen vorhandenen Eintrag in `PERSONALSTAMM`. Gefunden wird er über `nr`.
 
-  **Erlaubte Felder (ALLOWED, 65):** identisch zu `/dispo/getpersonalstammfiltered` (siehe dort).
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/dispo/updatepersonalstamm` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** `{"status":"OK"}`
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `anrede` | Text (max. 20 Zeichen) |
+  | `name1` | Text (max. 30 Zeichen) |
+  | `name2` | Text (max. 30 Zeichen) |
+  | `zeichen` | Text (max. 15 Zeichen) |
+  | `strasse` | Text (max. 30 Zeichen) |
+  | `land` | Text (max. 15 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 30 Zeichen) |
+  | `telefon1` | Text (max. 25 Zeichen) |
+  | `telefon2` | Text (max. 25 Zeichen) |
+  | `fsnummer` | Text (max. 25 Zeichen) |
+  | `pbs_gueltig_bis` | Datum/Uhrzeit |
+  | `verwendung` | Text (max. 25 Zeichen) |
+  | `geburtstag` | Datum/Uhrzeit |
+  | `bemerkung` | Text (max. 1200 Zeichen) |
+  | `angestellt_seit` | Datum/Uhrzeit |
+  | `urlaubgesamt` | Ganzzahl |
+  | `resturlaub` | Ganzzahl |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `fahrzeug` | Text (max. 15 Zeichen) |
+  | `sortierung` | Ganzzahl |
+  | `stundenlohn` | Kommazahl |
+  | `stundenlohn2` | Kommazahl |
+  | `zuschlag` | Kommazahl |
+  | `kostenstelle` | Ganzzahl |
+  | `urlaubsjahr` | Ganzzahl |
+  | `alterurlaub` | Ganzzahl |
+  | `altefreietage` | Ganzzahl |
+  | `freietagegesamt` | Ganzzahl |
+  | `restfreietage` | Ganzzahl |
+  | `betrieb` | Text (max. 8 Zeichen) |
+  | `profil` | Text (max. 40 Zeichen) |
+  | `feiertagsberechtigt` | Text (max. 4 Zeichen) |
+  | `zulageberechtigt` | Text (max. 4 Zeichen) |
+  | `mindestregelungsberechtigt` | Text (max. 4 Zeichen) |
+  | `arbeitsvertragsart` | Text (max. 40 Zeichen) |
+  | `urlaubsstunden` | Kommazahl |
+  | `krankheitsstunden` | Kommazahl |
+  | `durchschnittsstunden` | Kommazahl |
+  | `ausgeschieden_am` | Datum/Uhrzeit |
+  | `sprache` | Text (max. 30 Zeichen) |
+  | `versicherungsnummer` | Text (max. 60 Zeichen) |
+  | `zusatzinfo` | Text (max. 60 Zeichen) |
+  | `kennziffer` | Ganzzahl |
+  | `versuche` | Ganzzahl |
+  | `zeitsperre` | Datum/Uhrzeit |
+  | `freistunden` | Kommazahl |
+  | `pushid` | Text (max. 255 Zeichen) |
+  | `wochenende` | Text (max. 4 Zeichen) |
+  | `abteilung` | Text (max. 255 Zeichen) |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `personalnummer` | Text (max. 100 Zeichen) |
+  | `urlaubsgruppe` | Text (max. 255 Zeichen) |
+  | `vertretung` | Text (max. 15 Zeichen) |
+  | `resturlaub_aktuell` | Kommazahl |
+  | `altefreietage2` | Kommazahl |
+  | `alterurlaub2` | Kommazahl |
+  | `nation` | Text (max. 30 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `koords_erfasst_am` | Datum/Uhrzeit |
+  | `pushid_fis` | Text (max. 255 Zeichen) |
+  | `pushid_dispo` | Text (max. 255 Zeichen) |
+  | `pushid_tickets` | Text (max. 255 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
+  - **Nicht änderbar** sind hier: `passwort`, `passwort2`, `apikey`, `betrag1`, `betrag2`, `betrag3`, `betrag4`, `betrag5`, `betrag6`, `betrag7`, `betrag8`, `betrag9`, `betrag10`, `text1`, `text2`, `text3`, `text4`, `text5`, `text6`, `text7`, `text8`, `text9`, `text10`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.updatepersonalstamm` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `PERSONALSTAMM`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

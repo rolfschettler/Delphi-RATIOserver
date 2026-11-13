@@ -246,7 +246,7 @@ const
     'vk_waehrung','mandant'
   );
   // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder bemerkung, unterschrift.
-  CONDITIONS: array[0..78] of string = (
+  CONDITIONS: array[0..93] of string = (
     'agenturnr = :agenturnr',
     'ansprechpartner = :ansprechpartner',
     'buchender = :buchender',
@@ -325,9 +325,24 @@ const
     'rechnungsart = :rechnungsart',
     'stornotermin = :stornotermin',
     'vk_waehrung = :vk_waehrung',
-    'mandant = :mandant'
+    'mandant = :mandant',
+    'logo = :logo',
+    'anrede = :anrede',
+    'titel = :titel',
+    'name1 = :name1',
+    'name2 = :name2',
+    'namenszusatz = :namenszusatz',
+    'name3 = :name3',
+    'strasse = :strasse',
+    'land = :land',
+    'plz = :plz',
+    'ort = :ort',
+    'telefon = :telefon',
+    'email = :email',
+    'registrierung_nr = :registrierung_nr',
+    'gastbuchung = :gastbuchung'
   );
-  FILTER_PARAMS: array[0..78] of string = (
+  FILTER_PARAMS: array[0..93] of string = (
     'agenturnr','ansprechpartner','buchender','vorgangsnr','nr','erstellt',
     'geaendert','personen','datum_von','datum_bis','endpreis','status',
     'agenturcode','katalogreisenr','reisebezeichnung','optionsdatum','expedient','fibukontokunde',
@@ -341,7 +356,10 @@ const
     'lastgeaendert','fibu_archiv_am','stornodatum','aufteilung','abrechnungsart','hotelkategorie',
     'versandart','untertitel','app','festbuchung_am','schnittstelle_sendtime','sprache',
     'aktion','bank','externe_nummer','rechnungsart','stornotermin','vk_waehrung',
-    'mandant'
+    'mandant',
+    'logo', 'anrede', 'titel', 'name1', 'name2', 'namenszusatz',
+    'name3', 'strasse', 'land', 'plz', 'ort', 'telefon',
+    'email', 'registrierung_nr', 'gastbuchung'
   );
 begin
   DoSelectFilteredDynamic('T_VORGANG', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -464,7 +482,7 @@ const
     'zusatzinfo','fahrtenplan','reftable','refnr'
   );
   // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder fahrzeugprofil, fahrerprofil, zusatzinfo, fahrtenplan.
-  CONDITIONS: array[0..16] of string = (
+  CONDITIONS: array[0..17] of string = (
     'einsatznr = :einsatznr',
     'nr = :nr',
     'fahrtnr = :fahrtnr',
@@ -481,12 +499,14 @@ const
     'erstelltvon = :erstelltvon',
     'geaendertvon = :geaendertvon',
     'reftable = :reftable',
-    'refnr = :refnr'
+    'refnr = :refnr',
+    'logo = :logo'
   );
-  FILTER_PARAMS: array[0..16] of string = (
+  FILTER_PARAMS: array[0..17] of string = (
     'einsatznr','nr','fahrtnr','fahrtabrechnungsnr','fahrtenbuchnr','auftragsart',
     'personenzahl','status','filiale','gedruckt','erledigt','angelegt_am',
-    'geaendert_am','erstelltvon','geaendertvon','reftable','refnr'
+    'geaendert_am','erstelltvon','geaendertvon','reftable','refnr',
+    'logo'
   );
 begin
   DoSelectFilteredDynamic('F_FAHRTAUFTRAG', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -720,7 +740,7 @@ const
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
   // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder bemerkung.
-  CONDITIONS: array[0..99] of string = (
+  CONDITIONS: array[0..101] of string = (
     'nr = :nr',
     'masterpos = :masterpos',
     'vorgangnr = :vorgangnr',
@@ -820,9 +840,11 @@ const
     'menge_alt = :menge_alt',
     'auskatalogreise = :auskatalogreise',
     'mindestnaechte = :mindestnaechte',
-    'bezeichnung = :bezeichnung'
+    'bezeichnung = :bezeichnung',
+    'dauer = :dauer',
+    'kurs_ek = :kurs_ek'
   );
-  FILTER_PARAMS: array[0..99] of string = (
+  FILTER_PARAMS: array[0..101] of string = (
     'nr','masterpos','vorgangnr','postyp','agenturnr','leistungnr',
     'ltraeger','teilnehmernr','packagenr','katalogreisenr','status','leistungsstatus',
     'erstellt','geaendert','menge','personen','leistungscode','kontingentcode',
@@ -839,7 +861,8 @@ const
     'ek_kalk4','bezeichnung2','optionsdatum','rabatt','externenr1','externenr2',
     'buchungsdatum','stornodatum','referenz3','referenz4','gruppe','internet',
     'onlinebuchung','app','vk_preis_fremdwaehrung','kurs_vk_fremdwaehrung','waehrung_ek','lcode',
-    'menge_alt','auskatalogreise','mindestnaechte','bezeichnung'
+    'menge_alt','auskatalogreise','mindestnaechte','bezeichnung',
+    'dauer', 'kurs_ek'
   );
 begin
   DoSelectFilteredDynamic('T_POSITIONEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -1308,7 +1331,7 @@ const
     'onlinebuchung','app','termin','optionsdatum','referenz3','referenz4'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
-  CONDITIONS: array[0..46] of string = (
+  CONDITIONS: array[0..47] of string = (
     'nr = :nr',
     'katalogreisenr = :katalogreisenr',
     'leistungnr = :leistungnr',
@@ -1355,9 +1378,10 @@ const
     'termin = :termin',
     'optionsdatum = :optionsdatum',
     'referenz3 = :referenz3',
-    'referenz4 = :referenz4'
+    'referenz4 = :referenz4',
+    'dauer = :dauer'
   );
-  FILTER_PARAMS: array[0..46] of string = (
+  FILTER_PARAMS: array[0..47] of string = (
     'nr', 'katalogreisenr', 'leistungnr', 'rabatterlaubt', 'standard', 'leistungsgeber',
     'code', 'geraet', 'von', 'bis', 'internet', 'vontag', 'bistag', 'zeitvon', 'zeitbis',
     'params', 'status', 'inklusiv', 'leistungsgruppe', 'preisoption', 'marge',
@@ -1365,7 +1389,8 @@ const
     'freiplatz_lt', 'freiplatz_kunde', 'gesperrt', 'kopiertaus', 'ek_kalk1', 'ek_kalk2',
     'ek_kalk3', 'ek_kalk4', 'bezeichnung2', 'provklasse', 'referenz1', 'referenz2',
     'preis_steuerfrei', 'sachkonto_steuerfrei', 'onlinebuchung', 'app', 'termin',
-    'optionsdatum', 'referenz3', 'referenz4'
+    'optionsdatum', 'referenz3', 'referenz4',
+    'dauer'
   );
 begin
   DoSelectFilteredDynamic('T_REISELEISTUNGEN', ALLOWED, CONDITIONS, FILTER_PARAMS);
@@ -1468,7 +1493,7 @@ const
     'versicherungsart','onlinebuchung','kennziffer','app','gesperrt','bezeichnung','optionstage'
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS uebereinstimmen).
-  CONDITIONS: array[0..35] of string = (
+  CONDITIONS: array[0..36] of string = (
     'nr = :nr',
     'code = :code',
     'kontingentcode = :kontingentcode',
@@ -1504,15 +1529,17 @@ const
     'app = :app',
     'gesperrt = :gesperrt',
     'bezeichnung = :bezeichnung',
-    'optionstage = :optionstage'
+    'optionstage = :optionstage',
+    'dauer = :dauer'
   );
-  FILTER_PARAMS: array[0..35] of string = (
+  FILTER_PARAMS: array[0..36] of string = (
     'nr', 'code', 'kontingentcode', 'ltraeger', 'altervon', 'alterbis', 'preisvon',
     'preisbis', 'dauerbis', 'dauervon', 'stornierbar', 'provklasse', 'ustpflicht',
     'zahlbarsofort', 'rabatterlaubt', 'typ', 'subtyp', 'sachkonto', 'kostelle1',
     'kostelle2', 'capacity', 'maxcapacity', 'mincapacity', 'internet', 'suchbegriff',
     'stornostaffel', 'params', 'preisoption', 'tarifcode', 'versicherungsart',
-    'onlinebuchung', 'kennziffer', 'app', 'gesperrt', 'bezeichnung', 'optionstage'
+    'onlinebuchung', 'kennziffer', 'app', 'gesperrt', 'bezeichnung', 'optionstage',
+    'dauer'
   );
 begin
   DoSelectFilteredDynamic('T_LEISTUNG', ALLOWED, CONDITIONS, FILTER_PARAMS);

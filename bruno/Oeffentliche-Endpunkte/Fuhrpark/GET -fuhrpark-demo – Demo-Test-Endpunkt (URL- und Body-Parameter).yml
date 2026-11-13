@@ -32,19 +32,48 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Referenz-/Testendpunkt ohne Bezug zu einer Datenbanktabelle. Demonstriert den sicheren Zugriff auf Parameter aus zwei Quellen und den Umgang mit fehlenden Werten:
+  **Demo-Endpunkt (Fuhrpark).** Ein Test- und Beispiel-Endpunkt: Er liest zwei Werte aus der URL und zwei aus dem Body und schickt sie unverändert zurück. Praktisch, um Anmeldung und Berechtigungen zu testen – er greift nicht auf die Datenbank zu und ändert nichts.
 
-  - **URL/QueryString** (`Request.QueryFields`): `id` (numerisch; fehlt er, wird `null` geliefert, ein nicht-numerischer Wert ergibt 0), `filter` (String; fehlt er bzw. ist leer, wird `null` geliefert)
-  - **JSON-Body** (`isParamFromBody`/`getParamFromBody`): `name` (String), `menge` (Zahl, per `StrToIntDef` gewandelt)
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fuhrpark/demo?id=42&filter=Mueller` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  Fehlende Werte erzeugen keinen Fehler, sondern erscheinen im Ergebnis als JSON `null`. Body ist optional – auch ganz ohne Body oder ohne URL-Parameter lieferbar.
+  ### Was du mitschickst
+  Alles ist freiwillig und beliebig kombinierbar – nur URL, nur Body, beides oder nichts.
 
-  **Auth:** erforderlich (Bearer Token)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `id` | Ganzzahl, in der URL (`?id=42`) | nein | Beispielzahl. |
+  | `filter` | Text, in der URL (`?filter=Mueller`) | nein | Beispieltext; Leerzeichen am Rand werden entfernt. |
+  | `name` | Text, im JSON-Body | nein | Beispieltext. |
+  | `menge` | Ganzzahl, im JSON-Body | nein | Beispielzahl; darf auch als Text kommen (`"5"`). |
 
-  **Beispiel-Antwort:**
+  ### Was zurückkommt
   ```json
-  {
-    "url": { "id": 42, "filter": "Mueller" },
-    "body": { "name": "Helga", "menge": 5 }
-  }
+  {"url": {"id": 42, "filter": "Mueller"}, "body": {"name": "Helga", "menge": 5}}
   ```
+  Unter `url` stehen die Werte aus der URL, unter `body` die aus dem Body. Nicht mitgeschickte Werte kommen als `null`, ganz ohne Angaben also: `{"url":{"id":null,"filter":null},"body":{"name":null,"menge":null}}`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** `Keine Berechtigung für diesen Endpunkt.` – der Benutzer hat diesen Endpunkt nicht in seinen Rollen.
+
+  Der Endpunkt selbst meldet keine Fehler.
+
+  ### Gut zu wissen
+  - **Keine Zahl wird zu 0:** Ist `id` oder `menge` gesetzt, aber keine ganze Zahl (z.B. `?id=abc`, `"abc"` oder `5.5`), kommt `0` zurück.
+  - **Leer heißt „nicht gesetzt“:** Ein leeres `id` oder `filter` in der URL (auch nur Leerzeichen) kommt als `null` zurück.
+  - **Im Body ist es genauer:** `null` gilt als nicht gesetzt, ein leerer Text (`"name": ""`) dagegen als gesetzt und kommt als `""` zurück. Groß-/Kleinschreibung der Body-Felder ist egal (`Name` = `name`).
+  - **Kein Body oder kaputtes JSON** ist kein Fehler – die Body-Werte sind dann alle `null`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFuhrpark.Demo` in `Shared/DataModuls/DataModulFuhrparkClass.pas`
+  - Keine Tabelle.
+  - URL-Werte über `Request.QueryFields` (`StrToIntDef` für `id`), Body-Werte über `isParamFromBody`/`getParamFromBody`, Antwort über `SendJson` mit `JsonOrNull`.
+  - Der Code ist in allen Controllern identisch (Vorlage `ClaudeCodePatterns/DataModulDemoClass.pas`) und dient als Muster für neue Endpunkte.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

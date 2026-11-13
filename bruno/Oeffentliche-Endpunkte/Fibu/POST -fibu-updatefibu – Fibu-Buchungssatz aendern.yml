@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 1001,
+        "nr": 42,
         "gebucht": "J",
         "betrag": 120.00
       }
@@ -26,12 +26,89 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aendert einen Datensatz der Tabelle FIBU ueber `DoUpdate('FIBU', ALLOWED, 'nr')`.
+  **Fibu-Buchungssatz aendern.** Ändert einen vorhandenen Eintrag in `FIBU`. Gefunden wird er über `nr`.
 
-  **Erlaubte Felder (ALLOWED, ohne nr):** betrag, soll, haben, belegfeld1, belegfeld2, belegdatum, kostelle1, kostelle2, skonto, text, gebucht, art, rechnungnr, stschl, ustbetrag, steuerkonto, stkontotyp, stsatz, stapel, opos, journalnr, erfasstdurch, vorlaufnr, archiv, text2, freigabe, uebertragung, fwbetrag, waehrung, kurs, zugeordnetzu, erfasst_am, laufnummer, belegart, journalisierungsnr, stand, fortlaufnr_provorgang, pkguid, leistungsdatum, iban, swift, kontoinhaber, mandant.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fibu/updatefibu` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `{ "nr": <wert>, <zu aendernde Felder> }` — Primaerschluessel `nr` ist Pflicht.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `betrag` | Kommazahl |
+  | `soll` | Text (max. 12 Zeichen) |
+  | `haben` | Text (max. 12 Zeichen) |
+  | `belegfeld1` | Text (max. 20 Zeichen) |
+  | `belegfeld2` | Datum/Uhrzeit |
+  | `belegdatum` | Datum/Uhrzeit |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `kostelle2` | Text (max. 12 Zeichen) |
+  | `skonto` | Kommazahl |
+  | `text` | Text (max. 40 Zeichen) |
+  | `gebucht` | Text (max. 4 Zeichen) |
+  | `art` | Text (max. 2 Zeichen) |
+  | `rechnungnr` | Ganzzahl |
+  | `stschl` | Text (max. 2 Zeichen) |
+  | `ustbetrag` | Kommazahl |
+  | `steuerkonto` | Text (max. 12 Zeichen) |
+  | `stkontotyp` | Text (max. 1 Zeichen) |
+  | `stsatz` | Kommazahl |
+  | `stapel` | Ganzzahl |
+  | `opos` | Text (max. 2 Zeichen) |
+  | `journalnr` | Ganzzahl |
+  | `erfasstdurch` | Text (max. 20 Zeichen) |
+  | `vorlaufnr` | Ganzzahl |
+  | `archiv` | Text (max. 4 Zeichen) |
+  | `text2` | Text (max. 40 Zeichen) |
+  | `freigabe` | Ganzzahl |
+  | `uebertragung` | Ganzzahl |
+  | `fwbetrag` | Kommazahl |
+  | `waehrung` | Text (max. 3 Zeichen) |
+  | `kurs` | Kommazahl |
+  | `zugeordnetzu` | Text (max. 30 Zeichen) |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `laufnummer` | Ganzzahl |
+  | `belegart` | Text (max. 3 Zeichen) |
+  | `journalisierungsnr` | Ganzzahl |
+  | `stand` | Ganzzahl |
+  | `fortlaufnr_provorgang` | Ganzzahl |
+  | `pkguid` | Text (max. 40 Zeichen) |
+  | `leistungsdatum` | Datum/Uhrzeit |
+  | `iban` | Text (max. 34 Zeichen) |
+  | `swift` | Text (max. 20 Zeichen) |
+  | `kontoinhaber` | Text (max. 90 Zeichen) |
+  | `mandant` | Text (max. 30 Zeichen) |
 
-  **Antwort:** `{ "status": "OK" }`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFibu.updateFibu` in `Shared/DataModuls/DataModulFibuClass.pas`
+  - Tabelle: `FIBU`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

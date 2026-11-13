@@ -18,8 +18,39 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Eigene (nicht-generische) Query-Logik: liefert den naechsten Wert des Generators `T_TEILNEHMER_NR_GEN` (`SELECT GEN_ID(T_TEILNEHMER_NR_GEN,1) FROM RDB$DATABASE`). Kein Request-Body erforderlich.
+  **Nächste Teilnehmer-Nummer holen.** Reserviert eine neue Nummer für einen Incoming-Teilnehmer und liefert sie zurück. Diese Nummer schickst du danach beim Anlegen des Teilnehmers mit.
 
-  **Antwort (Beispiel):** `{"header":{"gen_id":"ftinteger"},"data":[{"gen_id":502}]}` (SerializeQuery). Achtung: die Query vergibt keinen Alias, das Feld heisst deshalb `gen_id` (nicht `nr` wie bei den uebrigen Key-Endpunkten).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/incoming/gett_teilnehmernextnr` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was du mitschickst
+  Nichts. URL-Parameter und Body werden nicht ausgewertet.
+
+  ### Was zurückkommt
+  ```json
+  {"header": {"gen_id": "ftinteger"}, "data": [{"gen_id": 206}]}
+  ```
+  Die neue Nummer steht in `data[0].gen_id`. Achtung: Das Feld heißt `gen_id`, nicht `nr`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **So wird's benutzt:** Nummer holen → beim Anlegen über `/incoming/insertt_teilnehmer` als `"nr"` mitschicken. Die Datenbank vergibt für Teilnehmer **keine** Nummer von selbst – ohne `nr` lässt sich kein Teilnehmer anlegen.
+  - **Jeder Aufruf verbraucht eine Nummer** – auch wenn du danach keinen Teilnehmer anlegst. Lücken in der Nummerierung sind normal. Zwei Aufrufe liefern nie dieselbe Nummer.
+  - **Dieselben Nummern nutzen auch die Teilnehmer-Importe** (`/ki_getteilnehmer`, `/teilnehmerfromcsv`).
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulIncoming.getT_TeilnehmerNextNr` in `Shared/DataModuls/DataModulIncomingClass.pas`
+  - Abfrage `SELECT GEN_ID(T_TEILNEHMER_NR_GEN,1) FROM RDB$DATABASE` – **ohne Alias**, daher heißt die Spalte `gen_id` (per Lese-Abfrage mit Inkrement 0 bestätigt; die frühere Doku nannte `nr`/`ftlargeint`).
+  - Tabelle `T_TEILNEHMER` hat keinen Trigger, der `nr` befüllt.
+  - Methodenname weicht vom Projektstandard ab (`get[Entity]Key`); die Route heißt `/incoming/gett_teilnehmernextnr`.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

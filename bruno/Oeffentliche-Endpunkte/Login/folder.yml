@@ -7,5 +7,10 @@ request:
   auth: inherit
 
 docs:
-  content: "Login-Flow: Token holen und verifizieren. Diese beiden Endpunkte werden nicht über den FRouter, sondern direkt als WebActionItems im WebModule behandelt (siehe Shared/WebModuleUnit1.pas, WebModuleUnit1.dfm). Beide laufen ausserhalb der Rollen-Pruefung des Routers. Der Login legt die Rollen des Benutzers (REGISTRIERUNG.ROLLEN, @-Blaupausen aufgeloest) als Komma-Liste unter role.rollen in den Token; /verifytoken zeigt sie an."
+  content: |-
+    **Anmelden und Token prüfen.** Hier fängst du an: `POST /login` meldet dich mit Benutzer und Passwort an und liefert das Token, das Bruno danach automatisch bei allen anderen Requests mitschickt. Mit `GET /verifytoken` siehst du, ob das Token noch gültig ist und welche Rechte es enthält.
+
+    Für den Login selbst brauchst du kein Token; Benutzer und Passwort stehen in den Collection-Variablen `loginuser` und `loginpassword`. Beide Endpunkte prüfen keine Rollen. Die Rechte des Benutzers werden beim Login ins Token geschrieben – Änderungen daran wirken erst nach einem neuen Login.
+
+    Technik: WebActions in `Shared/WebModuleUnit1.pas` (nicht über den Router).
   type: text/markdown

@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "reftable": "ANMIET",
-        "refnr": 12345,
+        "refnr": 42,
         "kategorie": "titelbild",
         "sprache": "de",
         "internet": "J",
@@ -31,12 +31,76 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen T_BILDTEXT-Datensatz an. Kein generisches CRUD, sondern eigens implementiert: `nr` wird serverseitig über den InterBase-Generator `T_BILDTEXT_NR_GEN` erzeugt (`GEN_ID(T_BILDTEXT_NR_GEN,1)`) und darf NICHT im Body angegeben werden. Es wird DYNAMISCH nur für jedes im Body tatsächlich vorhandene Feld eine Spalte in das INSERT aufgenommen.
+  **Bildtext anlegen.** Speichert ein Bild und/oder einen Text zu einem beliebigen anderen Datensatz – zum Beispiel das Titelbild einer Anmietung. Die Antwort enthält die neue Nummer.
 
-  **Erlaubte Felder (ALLOWED):** reftable, refnr, bildindex, bildmodifed, textmodified, kategorie, lastlock, copr, sprache, internet, app, externe_id, nutzungsrecht_bis, urheber, erfasst_am, versteckt, bildformat, textformat, bereich.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/dokumente/insertt_bildtext` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Zusätzliche BLOB-Felder (BLOB_ALLOWED):** `bild`, `text` – jeweils Base64-codiert, optional. Ist der Schlüssel im Body vorhanden, aber der Wert JSON `null`, bleibt der Blob NULL. Ist ein Wert gesetzt, wird er auf syntaktisch gültiges Base64 geprüft (`IsValidBase64Value`) und dekodiert; für das Feld `bild` wird zusätzlich die JPEG-Signatur geprüft (`IsValidJpegSignature`: Start FF D8 FF, Ende FF D9) – bei ungültigem Wert wird ein Fehler geworfen.
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert` im Body. Keines ist Pflicht. Nicht mitgeschickte Felder bleiben leer.
 
-  **Auth:** erforderlich (Bearer Token).
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `reftable` | Text (max. 80 Zeichen) | nein | Bereich, zu dem der Eintrag gehört, z.B. `"ANMIET"`. |
+  | `refnr` | Ganzzahl | nein | Nummer des Datensatzes in diesem Bereich. |
+  | `bild` | Bild als Base64-Text | nein | JPEG-Bild. Base64 ist die Datei als Text umgewandelt. `null` = kein Bild. |
+  | `text` | Langtext als Base64-Text | nein | Text-Inhalt, ebenfalls Base64-umgewandelt. `null` = kein Text. |
+  | `bildindex` | Ganzzahl | nein | Reihenfolge des Bildes. |
+  | `kategorie` | Text (max. 60 Zeichen) | nein | z.B. `"titelbild"`. |
+  | `sprache` | Text (max. 3 Zeichen) | nein | z.B. `"de"`. |
+  | `internet` | Text (max. 4 Zeichen) | nein | z.B. `"J"` oder `"N"`. |
+  | `versteckt` | Text (max. 4 Zeichen) | nein | z.B. `"J"` oder `"N"`. |
+  | `app` | Text (max. 4 Zeichen) | nein | |
+  | `copr` | Text (max. 120 Zeichen) | nein | Copyright-Vermerk. |
+  | `urheber` | Text (max. 60 Zeichen) | nein | |
+  | `nutzungsrecht_bis` | Datum/Uhrzeit | nein | |
+  | `erfasst_am` | Datum/Uhrzeit | nein | Wird **nicht** automatisch gesetzt – bei Bedarf selbst mitschicken. |
+  | `externe_id` | Text (max. 60 Zeichen) | nein | |
+  | `bildformat` | Text (max. 4 Zeichen) | nein | |
+  | `textformat` | Text (max. 4 Zeichen) | nein | |
+  | `bereich` | Text (max. 120 Zeichen) | nein | |
+  | `bildmodifed` | Ganzzahl | nein | Genau so geschrieben (ohne „i“). |
+  | `textmodified` | Ganzzahl | nein | |
+  | `lastlock` | Datum/Uhrzeit | nein | |
 
-  **Antwort:** `{"status":"OK","nr":<serverseitig generierte Nr>}`
+  Datum als `"2026-09-01"` oder mit Uhrzeit `"2026-09-01 08:00:00"`.
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "nr": 4711}
+  ```
+  `nr` ist die Nummer des neuen Eintrags.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder ungültiges Datum.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `Feld "bild": kein gueltiger Base64-Wert.` bzw. dasselbe für `"text"` – der Wert enthält unerlaubte Zeichen oder hat die falsche Länge (ohne Leerzeichen/Umbrüche muss die Zeichenzahl durch 4 teilbar sein).
+    - `Feld "…": Base64-Dekodierung fehlgeschlagen (...)` – der Wert ließ sich nicht zurückwandeln.
+    - `Feld "bild": keine gueltige JPEG-Bilddatei (Signatur ungueltig).` – die Datei ist kein JPEG (z.B. PNG oder abgeschnitten).
+
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) vergibt der Server.** Mitschicken bringt nichts, sie wird ignoriert.
+  - **Auch ein leerer Body legt einen Eintrag an** – dann einen leeren, der nur aus der Nummer besteht. Das gilt sogar bei kaputtem JSON.
+  - **Nur JPEG-Bilder.** Andere Bildformate werden abgelehnt. Für `text` gibt es außer Base64 keine Prüfung.
+  - **Zeilenumbrüche und Leerzeichen im Base64-Text sind erlaubt** (z.B. Umbruch alle 76 Zeichen) und werden ignoriert.
+  - **Leerer Text `""` bei `bild`/`text`** speichert ein leeres Bild bzw. einen leeren Text – das ist nicht dasselbe wie „kein Bild“ (`null`). Die JPEG-Prüfung entfällt dann.
+  - **Bei den übrigen Feldern wirkt `null` wie nicht mitgeschickt** – das Feld bleibt leer.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf. Groß-/Kleinschreibung der Feldnamen ist egal.
+  - **Ob `reftable`/`refnr` auf einen vorhandenen Datensatz zeigen, wird nicht geprüft.**
+  - **Lücken in der Nummernfolge sind normal:** Die Nummer wird vor dem Speichern reserviert. Schlägt das Anlegen fehl, ist sie trotzdem verbraucht.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDokumente.insertT_Bildtext` in `Shared/DataModuls/DataModulDokumenteClass.pas` – eigene Umsetzung, nicht das generische `DoInsert`
+  - Tabelle: `T_BILDTEXT`, Schlüssel `nr`; Nummer vorab per `GEN_ID(T_BILDTEXT_NR_GEN,1)`
+  - Normale Felder nur bei `isParamFromBody` (JSON-`null` = weglassen); `bild`/`text` bei `isKeyInBody` (JSON-`null` = Blob NULL)
+  - Prüfung: `IsValidBase64Value` (Länge mod 4, Zeichensatz), danach `IsValidJpegSignature` (`FF D8 FF` am Anfang, `FF D9` am Ende) nur für `bild` mit mehr als 0 Bytes
+  - INSERT in eigener Transaktion mit Rollback
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

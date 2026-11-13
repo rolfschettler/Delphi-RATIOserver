@@ -25,17 +25,56 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Kein generischer CRUD-Endpunkt: führt eine fest im Code hinterlegte Join-Abfrage über `DoJoinedSelect` aus:
-  `SELECT a.name1, a.name2, a.ort, a.gruppe, k.bezeichnung FROM adressen a JOIN adrkats k ON a.gruppe = k.gruppe WHERE a.name1 = :name1 AND a.gruppe = :gruppe`
+  **Adressen mit Kategoriebezeichnung.** Sucht Adressen einer bestimmten Kategorie (Gruppe) mit einem bestimmten Vornamen und liefert sie zusammen mit dem Namen der Kategorie.
 
-  **Tabelle:** ADRESSEN (Join ADRKATS)
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/adressen/getjoin` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Filterparameter:** gruppe, name1 – beide stehen fest im WHERE (AND). Fehlt ein Parameter, wird er als NULL gebunden; `= NULL` trifft nie zu, die Abfrage liefert dann keine Treffer. Praktisch sind also beide Parameter nötig.
+  ### Was du mitschickst
+  Im JSON-Body:
 
-  **Body:** `{ "gruppe": <wert>, "name1": "<wert>" }` – muss ein gültiges JSON-Objekt sein. `fields`/`orderby`/`limit`/`offset` werden nicht ausgewertet.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `gruppe` | Ganzzahl | ja | Nummer der Adress-Kategorie. |
+  | `name1` | Text | ja | Vorname – muss genau stimmen. |
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  Die Parameternamen müssen kleingeschrieben sein.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"name1": "ftstring 40", "name2": "ftstring 40", "ort": "ftstring 40", "gruppe": "ftinteger", "bezeichnung": "ftstring 40"},
+    "data": [ {"name1": "Helga", "name2": "Muster", "ort": "Ulm", "gruppe": 1, "bezeichnung": "Kunden"} ]
+  }
+  ```
+  `data` enthält die Treffer mit Vorname, Nachname, Ort, Gruppe und der Bezeichnung der Kategorie. `header` nennt zu jedem Feld den technischen Typ (die Längen im Beispiel sind beispielhaft).
 
-  **Antwort:** `{"header":{...},"data":[...]}` mit den Feldern name1, name2, ort, gruppe, bezeichnung (keine Pagination).
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung mit Status 200**: `{"status":"error","message":"Kein gueltiges JSON im Request-Body."}` – Body fehlt oder ist kein JSON-Objekt. Deshalb immer auf `"status": "error"` prüfen.
+  - **400** mit Fehlermeldung – Datenbankfehler, z.B. wenn `gruppe` keine Zahl ist.
+
+  ### Gut zu wissen
+  - **Beide Angaben müssen passen** (UND). Fehlt eine davon oder ist sie `null`, kommt kein Fehler, sondern einfach eine leere Liste (`"data": []`).
+  - **Der Vorname muss genau stimmen** – keine Teilsuche, Groß-/Kleinschreibung zählt („helga“ findet nicht „Helga“).
+  - **Keine Zusatzoptionen:** `fields`, `orderby`, `limit` und `offset` werden nicht ausgewertet; es kommen immer alle Treffer in keiner festen Reihenfolge.
+  - **Eher ein Beispiel:** Der Endpunkt zeigt, wie eine fest eingebaute Abfrage über zwei Tabellen aussieht. Für flexible Suchen eignet sich `/adressen/getadressenfiltered` besser.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.getAdressenJoinedQuery` in `Shared/DataModuls/DataModulAdressenClass.pas`, Ausführung über `DoJoinedSelect` (`DataModulTableBaseClass.pas`)
+  - Tabellen: `ADRESSEN` (Alias `a`) JOIN `ADRKATS` (Alias `k`) über `gruppe`
+  - SQL:
+    ```sql
+    SELECT a.name1, a.name2, a.ort, a.gruppe, k.bezeichnung
+    FROM adressen a JOIN adrkats k ON a.gruppe = k.gruppe
+    WHERE a.name1 = :name1 AND a.gruppe = :gruppe
+    ```
+  - Fehlende Parameter werden als NULL gebunden (`= NULL` trifft nie zu); Werte werden als String gebunden.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

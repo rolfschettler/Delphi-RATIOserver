@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{baseURL}}/print?bereich=Anmiet&art=Rechnung&formularname=Standard&nr=12345"
+  url: "{{baseURL}}/print?bereich=Anmiet&art=Rechnung&formularname=Standard&nr=42"
   params:
     - name: bereich
       value: Anmiet
@@ -17,7 +17,7 @@ http:
       value: Standard
       type: query
     - name: nr
-      value: "12345"
+      value: "42"
       type: query
   auth:
     type: bearer
@@ -31,16 +31,48 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Erzeugt ein FastReport-Formular serverseitig als PDF (`ReportForm.DoExportieren(bereich, art, formularname, 'PDF', '', stream)`) und liefert es aus. Kein Body.
+  **Formular als PDF drucken.** Erzeugt ein hinterlegtes Druckformular (z.B. eine Rechnung) auf dem Server als PDF und liefert die Datei zurück.
 
-  **Query-Parameter:**
-  - `bereich`, `art`, `formularname` – bestimmen das zu druckende Formular.
-  - ALLE Query-Parameter (inkl. der drei obigen) werden zusätzlich als externe Report-Parameter (`ExternalParamas`, Typ String) an das Formular übergeben – z.B. `nr` als Datensatz-Schlüssel. Welche Parameter ein Formular erwartet, hängt von der Formulardefinition ab (Beispielwerte oben sind Platzhalter).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/print?bereich=Anmiet&art=Rechnung&formularname=Standard&nr=42` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was du mitschickst
+  Alles in der URL:
 
-  **LocalOnly:** false (im Router explizit `true,false`; der Kommentar im Handler "LocalOnly: TODO" ist veraltet).
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `bereich` | Text, z.B. `Anmiet` | ja | Programmbereich, zu dem das Formular gehört. |
+  | `art` | Text, z.B. `Rechnung` | ja | Art des Formulars. |
+  | `formularname` | Text, z.B. `Standard` | ja | Name des Formulars innerhalb von Bereich und Art. |
+  | weitere, z.B. `nr` | Text | je nach Formular | Alle URL-Parameter (auch die drei oben) werden an das Formular weitergereicht – z.B. `nr` als Nummer des Datensatzes, der gedruckt werden soll. Welche ein Formular braucht, legt das Formular selbst fest. |
 
-  **Antwort:** PDF (`application/pdf`). Fehler → Exception "Fehler beim Erstellen des Formulars:<Meldung>".
+  Die Werte im Beispiel sind Platzhalter. Ein Body wird nicht ausgewertet.
 
-  **Besonderheit:** Aufrufe werden über einen globalen Report-Lock (`AcquireReportLock`) serialisiert, da FastReport nicht vollständig threadsicher ist – parallele Druckaufrufe warten aufeinander.
+  ### Was zurückkommt
+  Die PDF-Datei selbst – kein JSON. Bruno zeigt sie direkt an. Einen vorgeschlagenen Dateinamen schickt der Server nicht mit.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung mit Status 200**: `{"status":"error","message":"Fehler beim Erstellen des Formulars:..."}` – z.B. Formular nicht gefunden, Fehler im Formular oder in der Datenbank. Kommt JSON statt PDF zurück, steht in `message` der Grund.
+
+  ### Gut zu wissen
+  - **Druckaufträge laufen nacheinander.** Der Server erzeugt immer nur ein Formular gleichzeitig. Kommen mehrere Aufrufe zur selben Zeit, warten die späteren, bis die vorherigen fertig sind.
+  - **Der Server prüft die drei Pflichtangaben nicht vorab.** Fehlt eine oder ist sie falsch geschrieben, merkst du das erst an der Fehlermeldung „Fehler beim Erstellen des Formulars“.
+  - **Welche Daten ins PDF kommen, bestimmt das Formular** – und damit auch, welche Tabellen gelesen werden.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulPrint.Print` in `Shared/DataModuls/DataModulPrintClass.pas`
+  - Erzeugung: `ReportForm.DoExportieren(bereich, art, formularname, 'PDF', '', stream)` (Unit `Fastrep`), dort wird das Formular gesucht.
+  - Alle Query-Parameter gehen als `ExternalParamas` (Typ `ftWideString`) an den Report.
+  - Globaler Report-Lock (`AcquireReportLock`), weil FastReport nicht vollständig threadsicher ist.
+  - Jede Exception wird in `Exception('Fehler beim Erstellen des Formulars:' + …)` verpackt – dadurch auch Datenbankfehler mit HTTP 200 statt 400.
+  - Antwort: `Content-Type: application/pdf`, kein `Content-Disposition`.
+  - Der Kommentar „LocalOnly: TODO“ im Handler ist veraltet – im Router ist die Route mit `LocalOnly=false` registriert.
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

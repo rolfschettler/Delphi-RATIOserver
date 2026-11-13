@@ -8,5 +8,11 @@ request:
 
 docs:
   content: |-
-    Registrierung-Controller (DataModulRegistrierungClass.pas) – Verwaltung von Benutzerregistrierungen/Konten (Tabelle REGISTRIERUNG). Enthaelt nur die oeffentlichen, nicht-lokalen Routen (Auth=true, LocalOnly=false); die lokalen Endpunkte insertregistrierunglocal, checkusernamelocal und getuserlocal (users/getuserlocal) sind LocalOnly und nicht Teil dieser Collection. **Auth:** alle hier gelisteten Routen erfordern einen gueltigen Bearer-Token (JWT). Zusaetzlich prueft der Router bei jeder dieser Routen (Auth=true, LocalOnly=false) die Rollen des Benutzers (role.rollen im Token, aus REGISTRIERUNG.ROLLEN inkl. aufgeloester @-Blaupausen): erlaubt bei leerer Liste, Supervisor oder passendem Endpunkt (genau oder per Wildcard, z.B. /registrierung/*), sonst HTTP 403 "Keine Berechtigung fuer diesen Endpunkt.". insertregistrierung setzt nach dem Insert automatisch rollen = "@" + UPPER(typ) (z.B. @KUNDE), wenn typ und username gesetzt sind und username nicht mit "@" beginnt; rollen selbst ist ueber diese Endpunkte weder les- noch schreibbar.
+    **Benutzerkonten verwalten:** Konten (Registrierungen) auflisten, suchen, anlegen, ändern und löschen sowie die nächste freie Konto-Nummer ermitteln. Dazu kommt ein lesender Zugriff auf die Benutzerliste (Users).
+
+    Beim Anlegen eines Kontos bestimmt der Benutzertyp (`typ`) die Berechtigungen: Der Server trägt automatisch die passende Rollen-Vorlage ein (z.B. `@KUNDE` für `kunde`). Die Rollen selbst lassen sich über diese Endpunkte weder lesen noch ändern.
+
+    Alle Endpunkte brauchen eine Anmeldung (Token aus `/login`), und der Benutzer muss den jeweiligen Endpunkt in seinen Rollen haben (sonst Fehler 403).
+
+    Technik: Controller `TDataModulRegistrierung` (`Shared/DataModuls/DataModulRegistrierungClass.pas`), Tabelle `REGISTRIERUNG`; die nur lokal erreichbaren Registrierungs-Endpunkte sind nicht in dieser Collection.
   type: text/markdown

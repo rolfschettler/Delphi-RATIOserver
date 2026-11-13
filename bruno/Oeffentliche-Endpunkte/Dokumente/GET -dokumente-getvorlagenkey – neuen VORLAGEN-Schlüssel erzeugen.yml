@@ -18,8 +18,35 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert einen neuen, eindeutigen Schlüsselwert für `VORLAGEN.nr` über den InterBase-Generator `VORLAGENNR` (`SELECT GEN_ID(VORLAGENNR,1) AS nr FROM RDB$DATABASE`). Kein Body erforderlich.
+  **neuen VORLAGEN-Schlüssel erzeugen.** Reserviert die nächste freie Nummer und gibt sie zurück – typischerweise vor dem Anlegen eines neuen Eintrags.
 
-  **Auth:** erforderlich (Bearer Token).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dokumente/getvorlagenkey` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** `{"header":{"nr":"..."},"data":[{"nr":11}]}` (SerializeQuery, Feldnamen klein).
+  ### Was du mitschickst
+  Nichts – ein Body wird nicht benötigt.
+
+  ### Was zurückkommt
+  ```json
+  {"header": {"nr": "ftlargeint"}, "data": [ {"nr": 4711} ]}
+  ```
+  Die neue Nummer steht in `data[0].nr`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+
+  ### Gut zu wissen
+  - **Jeder Aufruf verbraucht eine Nummer** – auch wenn danach nichts angelegt wird. Lücken in der Nummerierung sind deshalb normal.
+  - **Die Nummer gehört dir:** Kein anderer Aufruf bekommt dieselbe Nummer.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDokumente.getVorlagenKey` in `Shared/DataModuls/DataModulDokumenteClass.pas`
+  - InterBase-Generator `VORLAGENNR` (`GEN_ID(VORLAGENNR, 1)`)
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

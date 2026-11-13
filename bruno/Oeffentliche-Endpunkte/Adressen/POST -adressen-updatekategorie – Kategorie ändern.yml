@@ -26,18 +26,73 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aktualisiert einen bestehenden Datensatz in ADRKATS anhand des Primärschlüssels `gruppe` (generisches `DoUpdate`).
+  **Kategorie ändern.** Ändert einen vorhandenen Eintrag in `ADRKATS`. Gefunden wird er über `gruppe`.
 
-  **Tabelle:** ADRKATS
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/adressen/updatekategorie` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** kat1–kat12, bezeichnung, debitkredit, symbol, kat13–kat24 (`gruppe` selbst ist nur Schlüsselfeld und kann nicht geändert werden).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `gruppe` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Key-Feld:** `gruppe`
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `kat1` | Text (max. 20 Zeichen) |
+  | `kat2` | Text (max. 20 Zeichen) |
+  | `kat3` | Text (max. 20 Zeichen) |
+  | `kat4` | Text (max. 20 Zeichen) |
+  | `kat5` | Text (max. 20 Zeichen) |
+  | `kat6` | Text (max. 20 Zeichen) |
+  | `kat7` | Text (max. 20 Zeichen) |
+  | `kat8` | Text (max. 20 Zeichen) |
+  | `kat9` | Text (max. 20 Zeichen) |
+  | `kat10` | Text (max. 20 Zeichen) |
+  | `kat11` | Text (max. 20 Zeichen) |
+  | `kat12` | Text (max. 20 Zeichen) |
+  | `bezeichnung` | Text (max. 20 Zeichen) |
+  | `debitkredit` | Text (max. 1 Zeichen) |
+  | `symbol` | Ganzzahl |
+  | `kat13` | Text (max. 20 Zeichen) |
+  | `kat14` | Text (max. 20 Zeichen) |
+  | `kat15` | Text (max. 20 Zeichen) |
+  | `kat16` | Text (max. 20 Zeichen) |
+  | `kat17` | Text (max. 20 Zeichen) |
+  | `kat18` | Text (max. 20 Zeichen) |
+  | `kat19` | Text (max. 20 Zeichen) |
+  | `kat20` | Text (max. 20 Zeichen) |
+  | `kat21` | Text (max. 20 Zeichen) |
+  | `kat22` | Text (max. 20 Zeichen) |
+  | `kat23` | Text (max. 20 Zeichen) |
+  | `kat24` | Text (max. 20 Zeichen) |
 
-  **Body:** `{ "gruppe": <wert>, "feld": "...", ... }` – gruppe ist Pflicht, alle übrigen Felder optional; nur übergebene Felder werden aktualisiert (JSON `null` setzt das Feld auf NULL).
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `gruppe` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `gruppe` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.updateKategorie` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ADRKATS`, Schlüssel `gruppe`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

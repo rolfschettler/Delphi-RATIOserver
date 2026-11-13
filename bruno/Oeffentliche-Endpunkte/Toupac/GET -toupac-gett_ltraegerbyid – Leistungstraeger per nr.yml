@@ -25,18 +25,61 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_LTRAEGER anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('T_LTRAEGER', ALLOWED, 'nr')` auf.
+  **Leistungstraeger per nr.** Liefert genau einen Eintrag aus `T_LTRAEGER`, gesucht über `nr`.
 
-  **Tabelle:** T_LTRAEGER
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/gett_ltraegerbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, kennziffer, code, bezeichnung, land, ort, typ, sachkonto, kostelle1, kostelle2, optionstage, klasse, stornostaffel, suchbegriff, kategorie, waehrung, gesperrt, bemerkung_intern
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `kennziffer` | Ganzzahl |
+  | `code` | Text (max. 20 Zeichen) |
+  | `bezeichnung` | Text (max. 40 Zeichen) |
+  | `land` | Text (max. 60 Zeichen) |
+  | `ort` | Text (max. 120 Zeichen) |
+  | `typ` | Ganzzahl |
+  | `sachkonto` | Text (max. 12 Zeichen) |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `kostelle2` | Text (max. 12 Zeichen) |
+  | `optionstage` | Ganzzahl |
+  | `klasse` | Text (max. 60 Zeichen) |
+  | `stornostaffel` | Ganzzahl |
+  | `suchbegriff` | Text (max. 400 Zeichen) |
+  | `kategorie` | Langtext/Datei |
+  | `waehrung` | Text (max. 5 Zeichen) |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `bemerkung_intern` | Text (max. 32000 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "kennziffer": 42, "code": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getT_LtraegerById` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_LTRAEGER`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

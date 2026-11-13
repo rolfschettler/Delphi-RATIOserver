@@ -61,10 +61,12 @@ Vorbild: `C:\Users\rsche\Documents\bruno\RATIOserver – Öffentliche Endpunkte`
 - Dateiname/Name: `METHODE -pfad-mit-bindestrichen – Beschreibung.yml`, z.B. `GET -adressen-getadressen – Adressen auflisten.yml`; Ordner `1 – Name`, `2 – Name` …
 - Auth: IMMER `auth: { type: bearer, token: "{{jwttoken}}" }` — NIEMALS manueller `Authorization`-Header. Einzige Ausnahme: Tests, die bewusst ohne Token laufen (`auth: inherit` + Hinweis in `docs`).
 - Variablen: `{{baseURL}}` (z.B. `http://localhost/ibapi`), `{{jwttoken}}`.
+- **Keine `.env`-Dateien, kein `{{process.env.…}}`** (seit 2026-11-13): Alle Parameter sind „super-globale“ Collection-Variablen in `opencollection.yml` (`request.variables`): Login (`loginuser`, `loginpassword`, ggf. weitere Benutzer/Passwörter), URLs und Tokens/Hashes, die man wirklich setzen muss. **Keine Beispiel-ID-Variablen** (`{{nr}}`, `{{kennziffer}}` …) – Beispielwerte stehen fest im Body (`"nr": 42`); von vorherigen Requests erzeugte IDs nur per `bru.setVar` als Laufzeitvariable. Passwörter stehen bewusst im Klartext in `opencollection.yml` (gewollt, kein Befund).
 - Login-Request setzt den Token per `bru.setVar("jwttoken", …)` (Laufzeit-Variable) — NICHT `setCollectionVar`, sonst landet der Token in `opencollection.yml`. In `opencollection.yml` steht `jwttoken` immer mit leerem Wert.
-- Passwörter/Secrets NIE in `.yml`: in `.env` neben `opencollection.yml` (per `.gitignore` ausgeschlossen, Vorlage `.env.example`), Zugriff über `{{process.env.NAME}}`.
 - Skripte unter `runtime.scripts` (`before-request` / `after-response`); Tests mit `test(...)` im `after-response`-Skript, Antwort defensiv lesen (`res.getBody()` in try/catch, Body kann String sein).
-- Jeder Request bekommt `settings` (wie Vorbild) und `docs` (Auth, Body, Antwort, Besonderheiten).
+- Jeder Request bekommt `settings` (wie Vorbild) und `docs` (Auth, Body, Antwort, Besonderheiten). Bruno dient als API-Doku → docs vollständig: Zweck, Auth/Rollen, Body-Parameter, Antwortformat, Fehlerfälle, Besonderheiten.
+- `get…filtered`-Endpunkte: docs enthalten immer „Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.“
+- `bruno/Oeffentliche-Endpunkte` enthält genau alle Routen mit LocalOnly=false aus `Shared/WebModuleUnit1.pas` (plus /login, /verifytoken).
 
 ## Postman Collections (Altbestand)
 IMMER `auth`-Block verwenden (type: bearer, value: {{jwttoken}}) — NIEMALS manueller Authorization-Header.

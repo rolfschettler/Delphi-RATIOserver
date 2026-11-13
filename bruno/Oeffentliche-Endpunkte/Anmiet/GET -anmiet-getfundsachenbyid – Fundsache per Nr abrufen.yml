@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 101,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,18 +25,62 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen FUNDSACHEN-Datensatz anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Fundsache per Nr abrufen.** Liefert genau einen Eintrag aus `FUNDSACHEN`, gesucht über `nr`.
 
-  **Tabelle:** FUNDSACHEN
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/anmiet/getfundsachenbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** identisch zu `getfundsachen` (siehe dort), inkl. `nr`
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `abgeholt_am` | Datum/Uhrzeit |
+  | `abgeholt_von` | Text (max. 120 Zeichen) |
+  | `abholort` | Text (max. 1200 Zeichen) |
+  | `bearbeitet_am` | Datum/Uhrzeit |
+  | `bearbeitet_von` | Text (max. 120 Zeichen) |
+  | `beschreibung` | Text (max. 1200 Zeichen) |
+  | `bilder` | Langtext/Datei |
+  | `bild_klein` | Langtext/Datei |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `erfasst_von` | Text (max. 120 Zeichen) |
+  | `status` | Text (max. 120 Zeichen) |
+  | `text_intern` | Text (max. 3000 Zeichen) |
+  | `unterschrift` | Langtext/Datei |
+  | `verlustdatum` | Datum/Uhrzeit |
+  | `verlustort` | Text (max. 1200 Zeichen) |
+  | `zusatzfeld1` | Text (max. 120 Zeichen) |
+  | `zusatzfeld2` | Text (max. 120 Zeichen) |
+  | `zusatzfeld3` | Text (max. 120 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "abgeholt_am": "2026-09-01 08:00:00", "abgeholt_von": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAnmiet.getFundsachenById` in `Shared/DataModuls/DataModulAnmietClass.pas`
+  - Tabelle: `FUNDSACHEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

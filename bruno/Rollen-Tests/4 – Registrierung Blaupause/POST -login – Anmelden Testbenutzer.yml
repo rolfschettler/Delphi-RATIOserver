@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "user": "{{testuser}}",
-        "password": "{{process.env.TEST_PASSWORD}}"
+        "password": "{{test_password}}"
       }
   auth:
     type: bearer

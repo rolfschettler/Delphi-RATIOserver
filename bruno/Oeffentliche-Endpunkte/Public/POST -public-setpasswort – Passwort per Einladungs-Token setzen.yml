@@ -11,11 +11,9 @@ http:
     data: |-
       {
         "token": "{{einladungstoken}}",
-        "pwd2": "$2y$10$PLATZHALTER-bcrypt-Hash-von-NeuesPasswort123!-aus-PHP-password_hash"
+        "pwd2": "{{testpasswordhash}}"
       }
-  auth:
-    type: bearer
-    token: "{{jwttoken}}"
+  auth: inherit
 
 settings:
   encodeUrl: true
@@ -25,18 +23,49 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Setzt ein neues Passwort für den Benutzer, zu dem der Passwort-Token gehört (`UPDATE REGISTRIERUNG SET PWD2 = :pwd2 WHERE NR = <aus Token>`). Danach wird dieser Token abgeschlossen (`CloseToken`) und alle ANDEREN offenen Passwort-Links desselben Benutzers widerrufen (`RevokeOtherPasswordTokens`).
+  **Passwort per Passwort-Token setzen.** Der Benutzer vergibt über den Link aus seiner Passwort-Mail ein neues Passwort. Danach ist der Link beendet.
 
-  **Body:**
-  - `token` (Pflicht; ersatzweise `?token=...`). Erwartet: REFERENCE_TYPE = `REGISTRIERUNG`, PURPOSE = `passwort` – eine Adress-Einladung wird mit 403 abgewiesen.
-  - `pwd2` (Pflicht): KEIN Klartext-Passwort, sondern der fertige bcrypt-Hash aus PHP (`password_hash`). Plausibilitätsprüfung: muss mit `$` beginnen und mindestens 20 Zeichen lang sein, sonst 400 "pwd2 ist kein gueltiger Passwort-Hash.". Der Beispielwert ist ein Platzhalter und KEIN gültiger Hash (für einen echten Test einen mit `password_hash('NeuesPasswort123!', PASSWORD_DEFAULT)` erzeugten Hash einsetzen).
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/public/setpasswort` |
+  | **Anmeldung** | kein Login – stattdessen Passwort-Token im Body |
 
-  Nur `PWD2` wird geschrieben (fest verdrahtet) – GESPERRT, VERSUCHE, ZEITSPERRE, TYP etc. sind bewusst nicht änderbar.
+  ### Was du mitschickst
+  Im JSON-Body:
 
-  **Auth:** Auth=false – kein JWT nötig, autorisiert allein über den Passwort-Token (Bearer-Block schadet nicht).
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `token` | Text | ja | Der Token aus der Passwort-Mail (ersatzweise in der URL `?token=…`). Muss ein **Passwort-Token** sein – Adress- oder Fragebogen-Einladungen werden abgewiesen. |
+  | `pwd2` | Text | ja | **Nicht das Passwort selbst, sondern sein bcrypt-Hash** (z.B. aus PHP `password_hash()`). Muss mit `$` beginnen und mindestens 20 Zeichen lang sein. |
 
-  **LocalOnly:** false – bewusst aus dem Internet erreichbar.
+  Für einen Test in Bruno einen echten bcrypt-Hash in der Variable `{{testpasswordhash}}` hinterlegen.
 
-  **Antwort:** `{"status":"OK"}`; Token-Fehler 401/403 wie bei `/public/getadresse`.
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Achtung beim Testen:** Überschreibt das Passwort und verbraucht den Token endgültig. Die drei Schritte (Passwort, CloseToken, Revoke) laufen in getrennten Transaktionen.
+  ### Was schiefgehen kann
+  - **400** `{"status":"ERROR","message":"pwd2 ist kein gueltiger Passwort-Hash."}` – `pwd2` fehlt, ist kürzer als 20 Zeichen oder beginnt nicht mit `$`.
+  - **401 / 403** – Probleme mit dem Token, Meldungen wie bei `/public/getadresse`: `Kein Token uebergeben.`, `Token unbekannt.`, `Token wurde widerrufen.`, `Sie haben diesen Vorgang bereits abgeschlossen.`, `Token ist abgelaufen.`, `Token wurde bereits verwendet.` (alle 401), `Token gehoert nicht zu diesem Vorgang.` (403, falscher Token-Typ).
+  - **400** `{"status":"error","message":"..."}` – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **Achtung beim Testen:** Der Aufruf überschreibt das Passwort des Benutzers und verbraucht den Token endgültig.
+  - **Den Hash erzeugt die aufrufende Seite,** nicht dieser Server. Steht in `pwd2` das Passwort im Klartext, wird es zwar gespeichert, aber die Anmeldung klappt danach nie. Hashes mit einem Kostenfaktor über 14 werden gespeichert, beim Login aber abgelehnt.
+  - **Nur das Passwort wird geändert.** Sperre, Fehlversuche, Benutzertyp usw. lassen sich hierüber nicht ändern; weitere Felder im Body werden ignoriert.
+  - **Andere offene Passwort-Links werden ungültig:** Hat der Benutzer noch weitere Passwort-Mails bekommen, funktionieren deren Links danach nicht mehr.
+  - **Teilerfolg möglich:** Passwort setzen, Link beenden und andere Links ungültig machen sind drei getrennte Schritte. Scheitert ein späterer Schritt, ist das Passwort trotzdem schon gesetzt.
+  - **Kein Fehler, wenn das Konto fehlt:** Gibt es das Benutzerkonto zum Token nicht mehr, wird nichts geändert – der Token wird trotzdem beendet und die Antwort ist `{"status":"OK"}`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulPublic.setPasswortByToken` in `Shared/DataModuls/DataModulPublicClass.pas`; Token-Prüfung `ValidatePublicToken`, danach `CloseToken` und `RevokeOtherPasswordTokens`
+  - Tabellen: `ACCESS_TOKENS` (`REFERENCE_TYPE` = `REGISTRIERUNG`, `PURPOSE` = `passwort`), `REGISTRIERUNG` (Schlüssel `nr` = `REFERENCE_ID`)
+  - Geschrieben wird nur `UPDATE REGISTRIERUNG SET PWD2 = :pwd2 WHERE NR = <aus Token>` (fest verdrahtet).
+  - Drei getrennte Transaktionen (Passwort, `CloseToken`: `REVOKED = 1`/`USED_AT`/`USED_FROM_IP`, Widerruf aller anderen offenen Passwort-Tokens desselben Benutzers mit `REVOKED = 1`).
+  - Kein 404, wenn das UPDATE keine Zeile trifft.
+  - Der Code-Kommentar „Delphi hat kein bcrypt, der Login prüft über PHP“ ist veraltet: `/login` prüft den Hash inzwischen direkt in Delphi (`uBCrypt`). Der Hash muss aber weiterhin vom Aufrufer kommen.
+  - Route mit `Auth=false`, `LocalOnly=false`; kein JWT, keine Rollenprüfung.
+
+  </details>

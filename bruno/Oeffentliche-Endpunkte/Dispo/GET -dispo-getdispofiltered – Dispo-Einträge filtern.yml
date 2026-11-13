@@ -28,21 +28,87 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Implementierung: `DoSelectFilteredDynamic('DISPO', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Jeder im Body gesetzte (nicht-null) Filterparameter erzeugt eine AND-verknüpfte WHERE-Bedingung.
+  **Dispo-Einträge gefiltert auflisten.** Sucht Belegungen aus der Disposition – also wer bzw. was wann verplant ist – nach Zeitraum und beliebigen weiteren Feldern.
 
-  **Filterparameter (5, alle optional):**
-  - `von` → `bis >= :von`
-  - `bis` → `von <= :bis`
-  - `objekt` → `objekt = :objekt`
-  - `einsatznr` → `einsatznr = :einsatznr`
-  - `dienstobjnr` → `dienstobjnr = :dienstobjnr`
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/getdispofiltered` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Zeitraum (Overlap):** `von` + `bis` zusammen liefern alle DISPO-Einträge, die den Zeitraum [von, bis] überschneiden. `von` und `bis` nur gemeinsam angeben – ist nur eines von beiden gesetzt, bricht der Handler mit Fehler ab.
+  ### Suchkriterien (Filter)
+  **Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.**
+  **Ausnahme in diesem Endpunkt:** `von` und `bis` suchen nicht nach genau diesem Wert, sondern bilden zusammen einen **Zeitraum**. Gefunden werden alle Einträge, die diesen Zeitraum ganz oder teilweise berühren – auch solche, die vorher beginnen oder später enden. `von` und `bis` immer gemeinsam angeben (oder beide weglassen); nur eines von beiden ergibt einen Fehler.
 
-  **Erlaubte Felder (ALLOWED, 9):** identisch zu `/dispo/getdispo` (siehe dort).
+  So funktioniert die Suche:
+  - Jedes mitgeschickte Feld ist ein Kriterium, z.B. `{"objekt": "MU"}`.
+  - **Mehrere Kriterien müssen alle zutreffen** (UND): `{"objekt": "MU", "einsatznr": 4711}`.
+  - **Der Wert muss genau stimmen** – keine Teilsuche, Groß-/Kleinschreibung zählt („mu“ findet nicht „MU“).
+  - Datum als `"2026-10-01"` oder mit Uhrzeit `"2026-10-01 08:00:00"`. Ein Datum ohne Uhrzeit bedeutet 00:00 Uhr – für einen ganzen Tag als Ende also `"2026-10-31 23:59:59"` angeben.
+  - Ohne Kriterien kommen alle Einträge.
 
-  **Body:** `{"fields":[...]|"*","von":"...","bis":"...","objekt":"...","einsatznr":N,"dienstobjnr":N,"orderby":"feld","limit":10,"offset":0}` – ein gültiges JSON-Objekt ist Pflicht (ggf. `{}`).
+  | Filter | Typ | Bedeutung |
+  |---|---|---|
+  | `von` + `bis` | Datum/Uhrzeit | Zeitraum (siehe oben) |
+  | `nr` | Ganzzahl | Nummer des Dispo-Eintrags |
+  | `objekt` | Text (max. 30 Zeichen) | wer bzw. was verplant ist, z.B. das Personalkürzel |
+  | `einsatznr` | Ganzzahl | zugehöriger Einsatz |
+  | `dienstobjnr` | Ganzzahl | zugehöriges Dienstobjekt |
+  | `art` | Text (max. 2 Zeichen) | Art der Belegung |
+  | `bemerkung` | Text (max. 400 Zeichen) | Bemerkung |
+  | `fahrtablaufnr` | Ganzzahl | zugehöriger Fahrtablauf |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Weitere Angaben (optional)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","von","bis"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Verfügbare Felder (für `fields` und `orderby`)
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `von` | Datum/Uhrzeit |
+  | `bis` | Datum/Uhrzeit |
+  | `objekt` | Text (max. 30 Zeichen) |
+  | `einsatznr` | Ganzzahl |
+  | `dienstobjnr` | Ganzzahl |
+  | `art` | Text (max. 2 Zeichen) |
+  | `bemerkung` | Text (max. 400 Zeichen) |
+  | `fahrtablaufnr` | Ganzzahl |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", "von": "ftdatetime", ...},
+    "data": [ {"nr": 1, "von": "2026-10-05 06:00:00", "bis": "2026-10-05 14:00:00", "objekt": "MU", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank kann einen Suchwert nicht verarbeiten, z.B. ein ungültiges Datum oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `Wenn ein Zeitraum gefiltert werden soll, muessen "von" und "bis" gemeinsam angegeben werden.` – nur `von` oder nur `bis` mitgeschickt.
+    - `Kein gueltiges JSON im Request-Body.` – Body fehlt oder ist kein JSON-Objekt.
+    - `Feld "x" ist nicht erlaubt.` bzw. `Sortierfeld "x" ist nicht erlaubt.` – unbekannter Feldname in `fields` oder `orderby`.
+
+  ### Gut zu wissen
+  - **Achtung bei Tippfehlern:** Ein falsch geschriebener Feldname wird einfach ignoriert – dann kommen *alle* Einträge statt der gesuchten.
+  - **Feldnamen der Suchkriterien klein schreiben.** `"Objekt"` wird nicht erkannt und deshalb ignoriert.
+  - **Der Body muss mindestens `{}` sein**, sonst kommt ein Fehler.
+  - **Randfälle zählen mit:** Ein Eintrag, der genau zum Beginn deines Zeitraums endet oder genau zu dessen Ende beginnt, wird gefunden.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getDispoFiltered` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `DISPO`, Schlüssel `nr`
+  - Umsetzung: `DoSelectFilteredDynamic` der Basisklasse `TDataModulTableBase`; Zeitraum über die Bedingungen `bis >= :von` und `von <= :bis` (Überschneidung inkl. Grenzen), alle übrigen Felder als Gleichheitsfilter. Vorab-Prüfung: nur eines von `von`/`bis` gesetzt → Exception.
+  - Filter-Parameternamen werden case-sensitiv gelesen (`Body.GetValue`).
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

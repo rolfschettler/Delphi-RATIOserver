@@ -26,14 +26,119 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Implementierung: `DoSelectFilteredDynamic('SV_TEILNEHMER', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Alle 60 ALLOWED-Felder sind zugleich Filterparameter (jeweils exakter Vergleich `feld = :feld`); jeder im Body gesetzte (nicht-null) Parameter erzeugt eine AND-verknüpfte WHERE-Bedingung, alle sind optional.
+  **Teilnehmer filtern.** Sucht Einträge in `SV_TEILNEHMER` – du gibst die Suchkriterien als Felder im Body mit.
 
-  **Filter-/ALLOWED-Felder (60):** identisch zu `/schuelerverkehr/getsv_teilnehmer` (siehe dort), z. B. `nachname`, `einrichtungnr_fk`, `kostentraeger_fk`, `tourbereich`, `inaktiv`.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/schuelerverkehr/getsv_teilnehmerfiltered` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `{"fields":[...]|"*","<feld>":<wert>,...,"orderby":"feld","limit":10,"offset":0}` – ein gültiges JSON-Objekt ist Pflicht (ggf. `{}`).
+  ### Suchkriterien (Filter)
+  **Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.** Hier nicht filterbar: `pwd`.
 
-  **Hinweis:** Auch `pwd` ist als Filterparameter zugelassen (siehe Auffälligkeit in `/schuelerverkehr/getsv_teilnehmer`).
+  So funktioniert die Suche:
+  - Jedes mitgeschickte Feld ist ein Kriterium, z.B. `{"ort": "Berlin"}`.
+  - **Mehrere Kriterien müssen alle zutreffen** (UND): `{"ort": "Berlin", "plz": "10115"}`.
+  - **Der Wert muss genau stimmen** – keine Teilsuche, Groß-/Kleinschreibung zählt („berlin“ findet nicht „Berlin“).
+  - Datum als `"2026-09-01"` oder mit Uhrzeit `"2026-09-01 08:00:00"`. Bei Feldern mit Uhrzeit findet ein reines Datum nur Einträge um 00:00 Uhr.
+  - Ohne Kriterien kommen alle Einträge.
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Weitere Angaben (optional)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Verfügbare Felder (für `fields` und `orderby`)
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `persnr` | Text (max. 30 Zeichen) |
+  | `los` | Text (max. 30 Zeichen) |
+  | `einrichtungnr_fk` | Ganzzahl |
+  | `kennziffer_fk` | Ganzzahl |
+  | `kostentraeger_fk` | Ganzzahl |
+  | `tourbereich` | Text (max. 30 Zeichen) |
+  | `berufsverkehr` | Text (max. 4 Zeichen) |
+  | `anrede` | Text (max. 20 Zeichen) |
+  | `vorname` | Text (max. 30 Zeichen) |
+  | `nachname` | Text (max. 30 Zeichen) |
+  | `strasse` | Text (max. 50 Zeichen) |
+  | `land` | Text (max. 15 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 30 Zeichen) |
+  | `ortsteil` | Text (max. 60 Zeichen) |
+  | `bezirk` | Text (max. 30 Zeichen) |
+  | `email` | Text (max. 60 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `haltepunktnr_fk` | Ganzzahl |
+  | `ansprech1` | Text (max. 50 Zeichen) |
+  | `ansprech1_tel` | Text (max. 30 Zeichen) |
+  | `ansprech2` | Text (max. 50 Zeichen) |
+  | `ansprech2_tel` | Text (max. 30 Zeichen) |
+  | `hinweis` | Text (max. 200 Zeichen) |
+  | `importhinweis1` | Text (max. 2000 Zeichen) |
+  | `rolli` | Text (max. 4 Zeichen) |
+  | `einzelbefoerderung` | Text (max. 4 Zeichen) |
+  | `begleitperson` | Text (max. 4 Zeichen) |
+  | `begleitpersonname` | Text (max. 50 Zeichen) |
+  | `hilfsmittel` | Text (max. 4 Zeichen) |
+  | `hilfsmittelhinweis` | Text (max. 200 Zeichen) |
+  | `sv_fahrzeugprofil` | Text (max. 40 Zeichen) |
+  | `abrechnungstarif_fk` | Text (max. 10 Zeichen) |
+  | `gruppe` | Text (max. 10 Zeichen) |
+  | `geburtstag` | Datum/Uhrzeit |
+  | `geprueft` | Text (max. 4 Zeichen) |
+  | `inaktiv` | Text (max. 4 Zeichen) |
+  | `erfasstvon` | Text (max. 20 Zeichen) |
+  | `erfasstam` | Datum/Uhrzeit |
+  | `geaendertvon` | Text (max. 20 Zeichen) |
+  | `geaendertam` | Datum/Uhrzeit |
+  | `ansprech1_email` | Text (max. 60 Zeichen) |
+  | `ansprech1_vorname` | Text (max. 30 Zeichen) |
+  | `ansprech1_nachname` | Text (max. 30 Zeichen) |
+  | `ansprech2_email` | Text (max. 60 Zeichen) |
+  | `ansprech2_vorname` | Text (max. 30 Zeichen) |
+  | `ansprech2_nachname` | Text (max. 30 Zeichen) |
+  | `pushid` | Text (max. 255 Zeichen) |
+  | `pwd` | Text (max. 255 Zeichen) |
+  | `datumfeld1` | Datum/Uhrzeit |
+  | `datumfeld2` | Datum/Uhrzeit |
+  | `datumfeld3` | Datum/Uhrzeit |
+  | `datumfeld4` | Datum/Uhrzeit |
+  | `textfeld1` | Text (max. 50 Zeichen) |
+  | `textfeld2` | Text (max. 50 Zeichen) |
+  | `textfeld3` | Text (max. 50 Zeichen) |
+  | `textfeld4` | Text (max. 50 Zeichen) |
+  | `textfeld5` | Text (max. 50 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "persnr": "Text", "los": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Achtung bei Tippfehlern:** Ein falsch geschriebener Feldname wird einfach ignoriert – dann kommen *alle* Einträge statt der gesuchten.
+  - Der Body muss mindestens `{}` sein, sonst kommt ein Fehler.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulSchuelerverkehr.getSV_TeilnehmerFiltered` in `Shared/DataModuls/DataModulSchuelerverkehrClass.pas`
+  - Tabelle: `SV_TEILNEHMER`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectFilteredDynamic` der Basisklasse `TDataModulTableBase`; Filter über `CONDITIONS`/`FILTER_PARAMS`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

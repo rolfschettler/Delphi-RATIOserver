@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 12345,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,18 +25,179 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen ANMIET-Datensatz anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Anmietung per Nr abrufen.** Liefert genau einen Eintrag aus `ANMIET`, gesucht über `nr`.
 
-  **Tabelle:** ANMIET
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/anmiet/getanmietbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** identisch zu `getanmiet` (siehe dort), inkl. `nr`
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `vorgang` | Text (max. 20 Zeichen) |
+  | `anrede` | Text (max. 20 Zeichen) |
+  | `name1` | Text (max. 30 Zeichen) |
+  | `name2` | Text (max. 30 Zeichen) |
+  | `name3` | Text (max. 30 Zeichen) |
+  | `land` | Text (max. 15 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 30 Zeichen) |
+  | `strasse` | Text (max. 30 Zeichen) |
+  | `telefon` | Text (max. 25 Zeichen) |
+  | `telefax` | Text (max. 25 Zeichen) |
+  | `ziel` | Text (max. 120 Zeichen) |
+  | `erstellt` | Datum/Uhrzeit |
+  | `kunde` | Ganzzahl |
+  | `preis` | Kommazahl |
+  | `status` | Ganzzahl |
+  | `von` | Datum/Uhrzeit |
+  | `bis` | Datum/Uhrzeit |
+  | `vonzeit` | Text (max. 5 Zeichen) |
+  | `biszeit` | Text (max. 5 Zeichen) |
+  | `vart` | Text (max. 15 Zeichen) |
+  | `rueckort` | Text (max. 40 Zeichen) |
+  | `stunden` | Kommazahl |
+  | `zustieg1` | Text (max. 40 Zeichen) |
+  | `zustieg2` | Text (max. 40 Zeichen) |
+  | `zustieg3` | Text (max. 40 Zeichen) |
+  | `zustieg4` | Text (max. 40 Zeichen) |
+  | `zustieg5` | Text (max. 40 Zeichen) |
+  | `zustieg6` | Text (max. 40 Zeichen) |
+  | `zustiegzeit1` | Text (max. 5 Zeichen) |
+  | `zustiegzeit2` | Text (max. 5 Zeichen) |
+  | `zustiegzeit3` | Text (max. 5 Zeichen) |
+  | `zustiegzeit4` | Text (max. 5 Zeichen) |
+  | `zustiegzeit5` | Text (max. 5 Zeichen) |
+  | `zustiegzeit6` | Text (max. 5 Zeichen) |
+  | `bearbeiter` | Text (max. 30 Zeichen) |
+  | `perszahl` | Text (max. 25 Zeichen) |
+  | `notiz` | Text (max. 1200 Zeichen) |
+  | `fahrerinfo` | Text (max. 1200 Zeichen) |
+  | `fahrtstrecke` | Text (max. 1200 Zeichen) |
+  | `optionsdatum` | Datum/Uhrzeit |
+  | `geaendert_am` | Datum/Uhrzeit |
+  | `kennzeichen` | Text (max. 15 Zeichen) |
+  | `fahrer` | Text (max. 30 Zeichen) |
+  | `fahrer2` | Text (max. 30 Zeichen) |
+  | `fahrtnr` | Ganzzahl |
+  | `kmleer` | Ganzzahl |
+  | `kmanfang` | Ganzzahl |
+  | `kmende` | Ganzzahl |
+  | `kmgesamt` | Ganzzahl |
+  | `personen` | Ganzzahl |
+  | `buchungsdatum` | Datum/Uhrzeit |
+  | `datevkto` | Text (max. 12 Zeichen) |
+  | `faellig` | Datum/Uhrzeit |
+  | `berechnung` | Text (max. 10 Zeichen) |
+  | `gedruckt` | Text (max. 4 Zeichen) |
+  | `erledigt` | Text (max. 4 Zeichen) |
+  | `fest` | Text (max. 4 Zeichen) |
+  | `uebernommen` | Text (max. 4 Zeichen) |
+  | `ausvorgang` | Text (max. 20 Zeichen) |
+  | `haupttext` | Langtext/Datei |
+  | `storniert` | Text (max. 4 Zeichen) |
+  | `kalkulation` | Langtext/Datei |
+  | `disponr` | Ganzzahl |
+  | `bereitstellung` | Text (max. 40 Zeichen) |
+  | `bereitdatum` | Datum/Uhrzeit |
+  | `bereitzeiet` | Text (max. 5 Zeichen) |
+  | `basisvorgang` | Ganzzahl |
+  | `transferfahrt` | Text (max. 4 Zeichen) |
+  | `symbol` | Ganzzahl |
+  | `eart` | Text (max. 1 Zeichen) |
+  | `rueckzeit` | Text (max. 5 Zeichen) |
+  | `abfahrtszeit` | Text (max. 5 Zeichen) |
+  | `terminnr` | Ganzzahl |
+  | `bereich` | Text (max. 1 Zeichen) |
+  | `rueckzustieg` | Text (max. 40 Zeichen) |
+  | `rueckabfahrt` | Datum/Uhrzeit |
+  | `rueckabzeit` | Text (max. 5 Zeichen) |
+  | `fusstext` | Text (max. 600 Zeichen) |
+  | `ansprechpartner` | Ganzzahl |
+  | `provsatz1` | Kommazahl |
+  | `provsatz2` | Kommazahl |
+  | `provsatz3` | Kommazahl |
+  | `provsteuer` | Kommazahl |
+  | `transfehrnr` | Ganzzahl |
+  | `abfahrtsdatum` | Datum/Uhrzeit |
+  | `feld1` | Text (max. 40 Zeichen) |
+  | `feld2` | Text (max. 40 Zeichen) |
+  | `feld3` | Text (max. 40 Zeichen) |
+  | `feld4` | Text (max. 40 Zeichen) |
+  | `feld5` | Text (max. 40 Zeichen) |
+  | `feld6` | Text (max. 40 Zeichen) |
+  | `feld7` | Text (max. 40 Zeichen) |
+  | `feld8` | Text (max. 40 Zeichen) |
+  | `datumfeld1` | Datum/Uhrzeit |
+  | `datumfeld2` | Datum/Uhrzeit |
+  | `ausstiegrueck` | Datum/Uhrzeit |
+  | `disponentinfo` | Text (max. 40 Zeichen) |
+  | `kontaktentstehung` | Text (max. 8 Zeichen) |
+  | `reiseart` | Text (max. 8 Zeichen) |
+  | `agentur` | Ganzzahl |
+  | `notiz2` | Langtext/Datei |
+  | `azbis` | Datum/Uhrzeit |
+  | `rzbis` | Datum/Uhrzeit |
+  | `azbetrag` | Kommazahl |
+  | `fahrtenplan` | Langtext/Datei |
+  | `abrechnungsart` | Text (max. 1 Zeichen) |
+  | `nrkreis` | Ganzzahl |
+  | `ankunftort` | Text (max. 40 Zeichen) |
+  | `ankunftdatum` | Datum/Uhrzeit |
+  | `ankunftzeit` | Text (max. 5 Zeichen) |
+  | `fahrzeugprofil` | Text (max. 40 Zeichen) |
+  | `fahrerprofil` | Text (max. 40 Zeichen) |
+  | `filialnr` | Text (max. 10 Zeichen) |
+  | `lzugriff` | Datum/Uhrzeit |
+  | `lzugriff_von` | Text (max. 30 Zeichen) |
+  | `stornogrund` | Text (max. 240 Zeichen) |
+  | `sammelrechnung` | Text (max. 4 Zeichen) |
+  | `anzahlung` | Kommazahl |
+  | `anzfaelligam` | Datum/Uhrzeit |
+  | `zusatzinfo` | Text (max. 32000 Zeichen) |
+  | `stand` | Ganzzahl |
+  | `bereitstellung2` | Text (max. 255 Zeichen) |
+  | `ankunftort2` | Text (max. 255 Zeichen) |
+  | `rueckort2` | Text (max. 255 Zeichen) |
+  | `rueckzustieg2` | Text (max. 255 Zeichen) |
+  | `fibu_archiv_am` | Datum/Uhrzeit |
+  | `bestellnummer` | Text (max. 255 Zeichen) |
+  | `unterschrift` | Langtext/Datei |
+  | `datumfeld3` | Datum/Uhrzeit |
+  | `datumfeld4` | Datum/Uhrzeit |
+  | `schnittstelle_sendtime` | Datum/Uhrzeit |
+  | `geaendert_von` | Text (max. 30 Zeichen) |
+  | `mandant` | Text (max. 30 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "vorgang": "Text", "anrede": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+  - **Nicht abrufbar** sind hier: `logo`.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAnmiet.getAnmietById` in `Shared/DataModuls/DataModulAnmietClass.pas`
+  - Tabelle: `ANMIET`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

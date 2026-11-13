@@ -35,18 +35,89 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in T_REISELEISTUNGEN an. Ruft intern `DoInsert('T_REISELEISTUNGEN', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_reiseleistungenkey` ermittelt werden.
+  **Reiseleistung anlegen.** Legt einen neuen Eintrag in `T_REISELEISTUNGEN` an.
 
-  **Tabelle:** T_REISELEISTUNGEN
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/toupac/insertt_reiseleistungen` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, katalogreisenr, leistungnr, rabatterlaubt, standard, leistungsgeber, code, geraet, von, bis, internet, vontag, bistag, zeitvon, zeitbis, bemerkung, params, status, inklusiv, leistungsgruppe, preisoption, marge, adresskennziffer, vontagref, rundungsoption, sortierung, ek_tats, ek_kalk, freiplatz_lt, freiplatz_kunde, gesperrt, kopiertaus, ek_kalk1, ek_kalk2, ek_kalk3, ek_kalk4, bezeichnung2, provklasse, referenz1, referenz2, preis_steuerfrei, sachkonto_steuerfrei, onlinebuchung, app, termin, optionsdatum, referenz3, referenz4
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+  | Feld | Typ | Pflicht laut Datenbank |
+  |---|---|---|
+  | `nr` | Ganzzahl | ja |
+  | `katalogreisenr` | Ganzzahl |  |
+  | `leistungnr` | Ganzzahl |  |
+  | `rabatterlaubt` | Text (max. 4 Zeichen) |  |
+  | `standard` | Text (max. 4 Zeichen) |  |
+  | `leistungsgeber` | Ganzzahl |  |
+  | `code` | Text (max. 120 Zeichen) |  |
+  | `geraet` | Ganzzahl |  |
+  | `von` | Datum/Uhrzeit |  |
+  | `bis` | Datum/Uhrzeit |  |
+  | `internet` | Text (max. 4 Zeichen) |  |
+  | `vontag` | Ganzzahl |  |
+  | `bistag` | Ganzzahl |  |
+  | `zeitvon` | Text (max. 5 Zeichen) |  |
+  | `zeitbis` | Text (max. 5 Zeichen) |  |
+  | `bemerkung` | Langtext/Datei |  |
+  | `params` | Text (max. 40 Zeichen) |  |
+  | `status` | Ganzzahl |  |
+  | `inklusiv` | Ganzzahl |  |
+  | `leistungsgruppe` | Ganzzahl |  |
+  | `preisoption` | Ganzzahl |  |
+  | `marge` | Kommazahl |  |
+  | `adresskennziffer` | Ganzzahl |  |
+  | `vontagref` | Text (max. 1 Zeichen) |  |
+  | `rundungsoption` | Ganzzahl |  |
+  | `sortierung` | Ganzzahl |  |
+  | `ek_tats` | Kommazahl |  |
+  | `ek_kalk` | Kommazahl |  |
+  | `freiplatz_lt` | Ganzzahl |  |
+  | `freiplatz_kunde` | Ganzzahl |  |
+  | `gesperrt` | Text (max. 4 Zeichen) |  |
+  | `kopiertaus` | Ganzzahl |  |
+  | `ek_kalk1` | Kommazahl |  |
+  | `ek_kalk2` | Kommazahl |  |
+  | `ek_kalk3` | Kommazahl |  |
+  | `ek_kalk4` | Kommazahl |  |
+  | `bezeichnung2` | Text (max. 200 Zeichen) |  |
+  | `provklasse` | Ganzzahl |  |
+  | `referenz1` | Text (max. 60 Zeichen) |  |
+  | `referenz2` | Text (max. 60 Zeichen) |  |
+  | `preis_steuerfrei` | Kommazahl |  |
+  | `sachkonto_steuerfrei` | Text (max. 12 Zeichen) |  |
+  | `onlinebuchung` | Text (max. 4 Zeichen) |  |
+  | `app` | Text (max. 4 Zeichen) |  |
+  | `termin` | Datum/Uhrzeit |  |
+  | `optionsdatum` | Datum/Uhrzeit |  |
+  | `referenz3` | Text (max. 60 Zeichen) |  |
+  | `referenz4` | Text (max. 60 Zeichen) |  |
 
-  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) kannst du mitschicken** – eine freie Nummer liefert vorher der passende `…key`-Endpunkt. Lässt du sie weg, vergibt die Datenbank automatisch eine. Die Antwort enthält keine Nummer.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
+  - **Nicht setzbar** sind hier: `dauer`.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.insertT_Reiseleistungen` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_REISELEISTUNGEN`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

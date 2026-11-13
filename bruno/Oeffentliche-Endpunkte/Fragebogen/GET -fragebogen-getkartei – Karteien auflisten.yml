@@ -1,0 +1,81 @@
+info:
+  name: GET /fragebogen/getkartei – Karteien auflisten
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/fragebogen/getkartei"
+  body:
+    type: json
+    data: |-
+      {
+        "fields": "*",
+        "orderby": "karteiname"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Karteien auflisten.** Liefert alle Karteien – also alle Fragebogen-Vorlagen mit Name und Beschreibung. Auf Wunsch sortiert und seitenweise.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fragebogen/getkartei` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  Alles freiwillig. Ohne Body (oder mit `{}`) kommen alle Karteien mit allen Feldern.
+
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["id","karteiname"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Karteien liefern (zum Blättern). Weglassen oder `0` = alle. |
+  | `offset` | Zahl | nein | So viele überspringen (nur zusammen mit `limit`). Beispiel: `limit` 10 und `offset` 20 = Seite 3. |
+
+  ### Verfügbare Felder (für `fields` und `orderby`)
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `id` | Ganzzahl | Nummer der Kartei |
+  | `karteiname` | Text (max. 80 Zeichen) | Name |
+  | `beschreibung` | Text (max. 255 Zeichen) | Beschreibung |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"id": "ftinteger", "karteiname": "ftstring 80", "beschreibung": "ftstring 255"},
+    "data": [ {"id": 3, "karteiname": "Anmeldung Klassenfahrt", "beschreibung": null} ]
+  }
+  ```
+  `data` enthält die Karteien, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 12, "limit": 10, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Karteien.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen. Mögliche Meldungen: `Sortierfeld "…" ist nicht erlaubt.`, `Feld "…" ist nicht erlaubt.`, `"fields" muss "*" oder ein JSON-Array sein.`, `Keine Felder angegeben.`
+  - **400** mit Fehlermeldung – Fehler in der Datenbank.
+
+  ### Gut zu wissen
+  - **Keine Suche:** Es kommen immer alle Karteien (ggf. seitenweise). Die Felder einer Kartei holst du mit „Felder einer Kartei auflisten“.
+  - **Ohne `orderby` ist die Reihenfolge nicht festgelegt** – zum Blättern immer sortieren.
+  - **Kein oder kaputter Body ist kein Problem** – er wird wie `{}` behandelt.
+  - **`fields`, `orderby`, `limit`, `offset` müssen kleingeschrieben sein.**
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.getKartei` in `Shared/DataModuls/DataModulFragebogenClass.pas`
+  - Tabelle: `FORM_KARTEI`, Schlüssel `id`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase` (Felderliste `KARTEI_LESEN`); `limit` über InterBase `ROWS`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -335,7 +335,7 @@ const
   );
   // Eine Bedingung pro Parameter (Index muss mit FILTER_PARAMS übereinstimmen).
   // Alle Tabellenspalten sind optional filterbar -- ausgenommen Blob-Felder bemerkung.
-  CONDITIONS: array[0..30] of string = (
+  CONDITIONS: array[0..31] of string = (
     'nr = :nr',
     'vorgang = :vorgang',
     'bearbeiter = :bearbeiter',
@@ -366,15 +366,17 @@ const
     'nrkreis = :nrkreis',
     'entstehung = :entstehung',
     'zahlungsart = :zahlungsart',
-    'mandant = :mandant'
+    'mandant = :mandant',
+    'logo = :logo'
   );
-  FILTER_PARAMS: array[0..30] of string = (
+  FILTER_PARAMS: array[0..31] of string = (
     'nr','vorgang','bearbeiter','geaendert_am','geaendert_von','erfasst',
     'faellig','kennziffer','gutscheinkonto','kurzbemerkung','betrag',
     'gueltig_bis','erledigt','storniert','storniert_am','stornogrund','fuerkunde',
     'zusatzfeld1','zusatzfeld2','zusatzfeld3','fibukto','kulanz','kostelle1',
     'kostelle2','code','motivnr','fibu_archiv_am','nrkreis','entstehung',
-    'zahlungsart','mandant'
+    'zahlungsart','mandant',
+    'logo'
   );
 begin
   DoSelectFilteredDynamic('GUTSCHEIN', ALLOWED, CONDITIONS, FILTER_PARAMS);

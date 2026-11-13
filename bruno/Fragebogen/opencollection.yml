@@ -24,6 +24,8 @@ request:
       value: SUPERVISOR
     - name: phpURL
       value: http://localhost/php
+    - name: login_password
+      value: "masterkey_12345678"
 
 docs:
   content: |-
@@ -39,11 +41,8 @@ docs:
     VARIABLEN (Collection):
       baseURL     z.B. http://localhost/ibapi
       jwttoken    Bearer-Token, wird vom Login gesetzt (Laufzeit-Variable, bleibt hier leer)
-      login_user  Benutzer mit Zugriff auf /fragebogen/* (oder Supervisor)
-
-    PASSWORT steht NICHT in dieser Datei, sondern in .env (neben
-    opencollection.yml, per .gitignore ausgeschlossen, Vorlage .env.example):
-      PW_LOGIN    Passwort von login_user
+      login_user      Benutzer mit Zugriff auf /fragebogen/* (oder Supervisor)
+      login_password  Passwort von login_user (bewusst im Klartext hier, keine .env)
 
     FEHLERFORMAT der Handler: HTTP 400/403/404 mit
       {"status":"ERROR","message":"..."}

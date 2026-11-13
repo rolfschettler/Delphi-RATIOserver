@@ -1,0 +1,87 @@
+info:
+  name: POST /fragebogen/insertkartei – Kartei anlegen
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/fragebogen/insertkartei"
+  body:
+    type: json
+    data: |-
+      {
+        "karteiname": "Anmeldung Klassenfahrt",
+        "beschreibung": "Fragebogen für Schüler und Eltern"
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        let body = null;
+        try { body = res.getBody(); if (typeof body === "string") body = JSON.parse(body); } catch (e) {}
+        if (res.getStatus() === 200 && body && body.id) {
+          bru.setVar("karteiid", body.id);
+        }
+        test("Kartei angelegt", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(body && body.status).to.equal("OK");
+          expect(body && body.id).to.be.a("number");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Kartei anlegen.** Legt eine neue, noch leere Kartei an – also einen Fragebogen ohne Felder. Die Felder fügst du danach mit „Feld anlegen“ hinzu. Die Antwort enthält die neue Nummer.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/fragebogen/insertkartei` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `karteiname` | Text (max. 80 Zeichen) | **ja** | Name der Kartei. |
+  | `beschreibung` | Text (max. 255 Zeichen) | nein | Beschreibung. Leer oder `null` = keine Beschreibung. |
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK", "id": 17}
+  ```
+  `id` ist die Nummer der neuen Kartei.
+
+  **Bruno merkt sich diese Nummer automatisch** in der Variablen `{{karteiid}}`. Die anderen Requests dieses Ordners („Kartei ändern“, „Kartei kopieren“, „Felder einer Kartei auflisten“, „Feld anlegen“ …) benutzen sie. Deshalb diesen Request zuerst ausführen. Die Variable gilt nur, solange Bruno läuft.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit `{"status":"ERROR","message":"Name ist ein Pflichtfeld."}` – `karteiname` fehlt, ist `null` oder leer.
+  - **400** mit `{"status":"ERROR","message":"Der Name darf höchstens 80 Zeichen lang sein."}`
+  - **400** mit `{"status":"ERROR","message":"Die Beschreibung darf höchstens 255 Zeichen lang sein."}`
+  - **400** mit `{"status":"error","message":"..."}` – Fehler in der Datenbank.
+
+  ### Gut zu wissen
+  - **Leerzeichen am Anfang und Ende werden entfernt** – bei Name und Beschreibung. Die Längengrenzen gelten für den Text danach.
+  - **Doppelte Namen werden nicht verhindert.** Wer das vermeiden will, prüft vorher mit „Karteien auflisten“.
+  - **Andere Felder im Body werden ignoriert.** Groß-/Kleinschreibung der Feldnamen ist egal.
+  - **Lücken in der Nummernfolge sind normal:** Die Nummer wird vorab reserviert. Schlägt das Anlegen fehl, ist sie trotzdem verbraucht.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.insertKartei` in `Shared/DataModuls/DataModulFragebogenClass.pas`
+  - Tabelle: `FORM_KARTEI`, Schlüssel `id`, Nummer vorab per Generator `FORM_KARTEI_ID_GEN`
+  - Werte getrimmt; leere Beschreibung wird als NULL gespeichert
+  - INSERT in eigener Transaktion; das after-response-Skript setzt `bru.setVar("karteiid", body.id)`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

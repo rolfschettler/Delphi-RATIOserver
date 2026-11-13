@@ -10,9 +10,9 @@ http:
     type: json
     data: |-
       {
-        "kennziffer": 12345,
+        "kennziffer": 42,
         "username": "mmustermann",
-        "pwd2": "<bcrypt-hash>",
+        "pwd2": "{{testpasswordhash}}",
         "typ": "kunde",
         "gesperrt": "NEIN",
         "versuche": 0,
@@ -30,14 +30,64 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in REGISTRIERUNG an (`DoInsert('REGISTRIERUNG', ALLOWED)`). Nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen; `nr` wird nicht ueber diesen Endpunkt vergeben (siehe getregistrierungkey bzw. Trigger).
+  **Benutzerkonto anlegen.** Legt ein neues Benutzerkonto (Registrierung) an. Danach bekommt das Konto automatisch die Berechtigungen, die zu seinem Benutzertyp passen.
 
-  **Erlaubte Felder (ALLOWED):** kennziffer, pwd, username, userkonfig, erstellt, geaendert, gesperrt, pwd2, versuche, zeitsperre, pushid, letzter_login, hauptregistrierung, typ. (`userkonfig` steht im Code doppelt in ALLOWED – ohne Auswirkung.) `rollen` ist NICHT in ALLOWED und kann ueber diesen Endpunkt nicht direkt gesetzt werden.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/registrierung/insertregistrierung` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **pwd2:** wird unveraendert gespeichert und muss bereits ein bcrypt-Hash sein (z.B. aus PHP `password_hash()`, Kostenfaktor max. 14) – /login vergleicht das Klartext-Passwort gegen diesen Hash. Ein Klartext-Wert in pwd2 fuehrt dazu, dass die Anmeldung immer scheitert.
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert` im JSON-Body – mindestens eins. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer. Groß-/Kleinschreibung der Feldnamen ist egal.
 
-  **Rollen-Blaupause (automatisch):** Nach dem Insert wird `rollen` automatisch auf `'@' + UPPER(typ)` gesetzt (z.B. typ `kunde` -> `@KUNDE`, `fahrer` -> `@FAHRER`, `mitarbeiter` -> `@MITARBEITER`), sofern `typ` und `username` im Body gesetzt sind und `username` nicht mit `@` beginnt (Datensaetze mit `@`-Username sind selbst Blaupausen). Technisch ein nachgelagertes `UPDATE REGISTRIERUNG SET rollen = :rollen WHERE username = :username AND rollen IS NULL`. Beim Login wird die Blaupause durch die ROLLEN des Datensatzes mit username `@KUNDE` usw. ersetzt/ergaenzt (siehe Login-Request). Ohne typ bleibt rollen leer (= keine Einschraenkung bei der Rollen-Pruefung).
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `username` | Text (max. 120 Zeichen) | Anmeldename für `/login`. Beginnt er mit `@`, ist das Konto selbst eine Rollen-Vorlage (siehe unten). |
+  | `pwd2` | Text (max. 255 Zeichen) | **Passwort als bcrypt-Hash** (z.B. aus PHP `password_hash()`), nicht im Klartext. |
+  | `typ` | Text (max. 30 Zeichen) | Benutzertyp, z.B. `kunde`, `fahrer`, `mitarbeiter`. Bestimmt die Berechtigungen – **immer angeben**. |
+  | `kennziffer` | Ganzzahl | Nummer der zugehörigen Adresse. |
+  | `gesperrt` | Text (max. 4 Zeichen) | `JA` = Konto gesperrt (Groß-/Kleinschreibung egal), alles andere = offen. |
+  | `versuche` | Ganzzahl | Anzahl Fehlversuche. |
+  | `zeitsperre` | Datum/Uhrzeit | |
+  | `hauptregistrierung` | Ganzzahl | |
+  | `email` | Text (max. 100 Zeichen) | |
+  | `personalzeichen` | Text (max. 15 Zeichen) | |
+  | `usersloginname` | Text (max. 20 Zeichen) | |
+  | `userkonfig` | Langtext | Benutzereinstellungen, als Text übergeben. |
+  | `erstellt`, `geaendert`, `letzter_login` | Datum/Uhrzeit | Als `"2026-09-01 08:00:00"`. |
+  | `pushid` | Text (max. 255 Zeichen) | |
+  | `pwd` | Text (max. 40 Zeichen) | Altes Passwortfeld – wird beim Login nicht beachtet. |
 
-  **Antwort:** `{"status":"OK"}`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** – deshalb immer auf `"status": "error"` prüfen:
+    - `{"status":"error","message":"Kein gueltiges JSON."}` – der Body ist kein gültiges JSON-Objekt.
+    - `{"status":"error","message":"Keine gueltigen Felder uebergeben."}` – kein einziges der Felder oben im Body.
+
+  ### Gut zu wissen
+  - **Die Konto-Nummer (`nr`) vergibt die Datenbank automatisch.** Nicht mitschicken – sie würde ignoriert. Die Antwort enthält die neue Nummer nicht. Wer sie braucht, sucht das Konto danach über `/registrierung/getregistrierungfiltered` mit dem `username`.
+  - **Die Berechtigungen ergeben sich aus `typ`.** Rollen lassen sich hier nicht direkt mitgeben. Nach dem Anlegen trägt der Server automatisch die passende Rollen-Vorlage ein: aus `"typ": "kunde"` wird die Vorlage `@KUNDE`. Was diese Vorlage erlaubt, ist beim Benutzerkonto mit dem Namen `@KUNDE` hinterlegt. Voraussetzung: `typ` und `username` sind angegeben.
+  - **Achtung: Ohne `typ` hat das neue Konto keinerlei Einschränkungen** – es darf dann jeden Endpunkt aufrufen. `typ` deshalb immer angeben.
+  - **Das Passwort nur als Hash schicken.** `pwd2` muss ein bcrypt-Hash sein (z.B. aus PHP `password_hash()`). Steht dort das Passwort im Klartext, kann sich der Benutzer nie anmelden. Hashes mit einem Kostenfaktor über 14 lehnt der Login ab.
+  - **Doppelte Benutzernamen werden nicht verhindert** – weder vom Server noch von der Datenbank. Vor dem Anlegen prüfen, ob es den `username` schon gibt (z.B. mit `/registrierung/getregistrierungfiltered`).
+  - **Gibt es den Benutzernamen schon, kann die Rollen-Zuweisung auch das alte Konto treffen:** Hat ein bestehendes Konto mit demselben Namen noch keine Rollen, bekommt es dieselbe Rollen-Vorlage.
+  - **Unbekannte Felder werden ohne Fehlermeldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulRegistrierung.insertRegistrierung` in `Shared/DataModuls/DataModulRegistrierungClass.pas`
+  - Tabelle: `REGISTRIERUNG`, Schlüssel `nr` (per Trigger automatisch befüllt)
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase` (`DataModulTableBaseClass.pas`)
+  - Danach, wenn `username` und `typ` gesetzt sind und `username` nicht mit `@` beginnt: `UPDATE REGISTRIERUNG SET rollen = '@' || UPPER(typ) WHERE <username case-insensitiv/umlautsicher> AND rollen IS NULL` (`CaseInsCondition`/`SetCaseInsParams`). Scheitert `DoInsert`, wird eine Exception geworfen und das UPDATE nicht mehr ausgeführt.
+  - `rollen` ist über die Registrierungs-Endpunkte weder les- noch schreibbar.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 55,
+        "nr": 42,
         "fields": "*"
       }
   auth:
@@ -25,10 +25,65 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen T_BILDTEXT-Datensatz anhand des Primärschlüssels `nr` (generisches `DoSelectOne('T_BILDTEXT', ALLOWED, 'nr')`).
+  **Bildtext per Nr abrufen.** Liefert genau einen Eintrag aus `T_BILDTEXT`, gesucht über `nr`.
 
-  **Erlaubte Felder (ALLOWED):** identisch zu `gett_bildtext` (siehe dort), inkl. `nr`.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dokumente/gett_bildtextbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
+  | `bildindex` | Ganzzahl |
+  | `bildmodifed` | Ganzzahl |
+  | `textmodified` | Ganzzahl |
+  | `kategorie` | Text (max. 60 Zeichen) |
+  | `bild` | Langtext/Datei |
+  | `text` | Langtext/Datei |
+  | `lastlock` | Datum/Uhrzeit |
+  | `copr` | Text (max. 120 Zeichen) |
+  | `sprache` | Text (max. 3 Zeichen) |
+  | `internet` | Text (max. 4 Zeichen) |
+  | `app` | Text (max. 4 Zeichen) |
+  | `externe_id` | Text (max. 60 Zeichen) |
+  | `nutzungsrecht_bis` | Datum/Uhrzeit |
+  | `urheber` | Text (max. 60 Zeichen) |
+  | `erfasst_am` | Datum/Uhrzeit |
+  | `versteckt` | Text (max. 4 Zeichen) |
+  | `bildformat` | Text (max. 4 Zeichen) |
+  | `textformat` | Text (max. 4 Zeichen) |
+  | `bereich` | Text (max. 120 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "reftable": "Text", "refnr": 42, ...} ]}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDokumente.getT_BildtextById` in `Shared/DataModuls/DataModulDokumenteClass.pas`
+  - Tabelle: `T_BILDTEXT`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

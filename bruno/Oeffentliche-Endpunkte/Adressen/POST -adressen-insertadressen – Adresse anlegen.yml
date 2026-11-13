@@ -34,18 +34,53 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in der Tabelle ADRESSEN an (generisches `DoInsert`).
+  **Adresse anlegen.** Legt einen neuen Eintrag in `ADRESSEN` an.
 
-  **Tabelle:** ADRESSEN
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/adressen/insertadressen` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** gruppe, anrede, titel, name1, name2, strasse, plz, ort, telefon1, email, code – nur diese Felder werden aus dem Body übernommen, alle anderen ignoriert (mindestens ein gültiges Feld nötig, sonst „Keine gueltigen Felder uebergeben.“).
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Hinweis:** `kennziffer` (Primärschlüssel) ist NICHT in ALLOWED und wird ignoriert – die Vergabe muss datenbankseitig erfolgen (`/adressen/getadressenkey` liefert nur den nächsten Wert).
+  | Feld | Typ | Pflicht laut Datenbank |
+  |---|---|---|
+  | `gruppe` | Ganzzahl | ja |
+  | `anrede` | Text (max. 20 Zeichen) |  |
+  | `titel` | Text (max. 20 Zeichen) |  |
+  | `name1` | Text (max. 30 Zeichen) |  |
+  | `name2` | Text (max. 30 Zeichen) |  |
+  | `strasse` | Text (max. 30 Zeichen) |  |
+  | `plz` | Text (max. 15 Zeichen) |  |
+  | `ort` | Text (max. 30 Zeichen) |  |
+  | `telefon1` | Text (max. 25 Zeichen) |  |
+  | `email` | Text (max. 60 Zeichen) |  |
+  | `code` | Text (max. 15 Zeichen) |  |
 
-  **Body:** `{ "gruppe": ..., "anrede": "...", "name1": "...", "ort": "...", ... }`
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Die Nummer (`kennziffer`) vergibt die Datenbank automatisch** – mitschicken geht nicht, sie würde ignoriert. Die Antwort enthält die neue Nummer nicht; wer sie braucht, sucht den Eintrag danach (z.B. über den `…filtered`-Endpunkt).
+  - **Pflichtfelder:** `gruppe` – ohne sie lehnt die Datenbank den Eintrag ab.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
+  - **Nicht setzbar** sind hier: `name3`, `land`, `ansprech`, `briefanrede`, `ntermin`, `lvorgang`, `lmailing`, `bearbeitet`, `kontostand`, `rabatt`, `skonto`, `provision1`, `provision2`, `provision3`, `zahltage`, `telefon2`, `fax`, `bemerkung`, `subadresse`, `substrasse`, `subland`, `subplz`, `subort`, `berechnung`, `mahnkennung`, `kreditlimit`, `sammelrechnung`, `kdnreigen`, `preisgruppe`, `betreuer`, `rechmpfaenger`, `skonto2`, `skonto3`, `zahltage2`, `zahltage3`, `ustid`, `ustpflichtig`, `kat1`, `kat2`, `kat3`, `kat4`, `kat5`, `kat6`, `kat7`, `kat8`, `kat9`, `kat10`, `kat11`, `kat12`, `rename`, `rename2`, `reland`, `replz`, `restrasse`, `reort`, `erfasst_am`, `datevkto`, `zahlungsart`, `zahlungper`, `matchcode`, `gebtag`, `gebmonat`, `gebjahr`, `geburtstag`, `zugriffe`, `adressenbaum`, `phonetic`, `vermittler`, `vertreter`, `status`, `gesperrt`, `namenszusatz`, `bank`, `blz`, `ktonr`, `inet`, `textfeld1`, `textfeld2`, `textfeld3`, `textfeld4`, `textfeld5`, `textfeld6`, `textfeld7`, `textfeld8`, `datumfeld1`, `datumfeld2`, `hinweis`, `region`, `lzugriff`, `bearbeitetvon`, `lastlock`, `erfasst_von`, `geaendert_von`, `iban`, `swift`, `iban2`, `xkoord`, `ykoord`, `adrinfibu`, `kundenart`, `sammelkonto`, `passnummer`, `pass_gueltig_bis`, `pass_aussgestelltin`, `pass_aussgestelltam`, `pass_info`, `nation`, `uebertragung`, `kontoinhaber`, `iban3`, `strasse2`, `referenznr`, `geburtsort`, `freigabe`, `adresszeile1`, `adresszeile2`, `adresszeile3`, `ort2`, `newsletter`, `einverstaendnis__erhalten_am`, `namenszusatz2`, `dse_am`, `dse_per`, `textfeld9`, `textfeld10`, `textfeld11`, `textfeld12`, `textfeld13`, `textfeld14`, `textfeld15`, `textfeld16`, `textfeld17`, `textfeld18`, `datumfeld3`, `datumfeld4`, `anschrift`, `teilnehmerinfo1`, `teilnehmerinfo2`, `dsgvo1`, `dsgvo2`, `dsgvo3`, `dsgvo4`, `dsgvo5`, `dsgvo6`, `dsgvo_lock`, `dsgvo_letzte_pruefung`, `leitid`, `passid`, `versandart`, `kat13`, `kat14`, `kat15`, `kat16`, `kat17`, `kat18`, `kat19`, `kat20`, `kat21`, `kat22`, `kat23`, `kat24`, `haltnr`, `haltnr_tages`, `ortsteil`, `tourkuerzel_kostentraeger`, `telefon3`, `heimatort`, `pass_name1`, `pass_name2`, `steuernummer`, `mandant`, `ustid_absender`, `rechemail`, `rechnamenszusatz`, `hr_nummer`, `hr_registergericht`, `erechnung_format`.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.insertAdresse` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ADRESSEN`, Schlüssel `kennziffer`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

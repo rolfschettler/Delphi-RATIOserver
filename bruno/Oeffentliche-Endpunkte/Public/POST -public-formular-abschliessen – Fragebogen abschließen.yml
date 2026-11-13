@@ -1,0 +1,64 @@
+info:
+  name: POST /public/formular/abschliessen – Fragebogen abschließen
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseURL}}/public/formular/abschliessen"
+  body:
+    type: json
+    data: |-
+      {
+        "token": "{{einladungstoken}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Fragebogen abschließen.** Der Gast drückt „Ich bin fertig“. Der Server vermerkt, wann der Fragebogen zurückgegeben wurde, und beendet den Link.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/public/formular/abschliessen` |
+  | **Anmeldung** | kein Login – stattdessen Fragebogen-Token im Body |
+
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `token` | Text, im JSON-Body (ersatzweise in der URL `?token=…`) | ja | Der Token aus der Fragebogen-Mail. Muss ein **Fragebogen-Token** sein. |
+
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401 / 403** – Probleme mit dem Token, als `{"status":"ERROR","message":"..."}`: `Kein Token uebergeben.`, `Token unbekannt.`, `Token wurde widerrufen.`, `Sie haben diesen Vorgang bereits abgeschlossen.`, `Token ist abgelaufen.`, `Token wurde bereits verwendet.` (alle 401), `Token gehoert nicht zu diesem Vorgang.` (403, falscher Token-Typ).
+  - **400** `{"status":"error","message":"..."}` – Datenbankfehler.
+
+  ### Gut zu wissen
+  - **Achtung beim Testen: Der Token ist danach endgültig verbraucht.** Für weitere Tests brauchst du eine neue Einladung.
+  - **Danach kann nichts mehr gespeichert werden:** Alle Public-Endpunkte antworten mit 401 „Sie haben diesen Vorgang bereits abgeschlossen.“
+  - **Es wird nicht geprüft, ob alles ausgefüllt ist.** Das Häkchen „geprüft“ setzt später der Innendienst, nicht dieser Endpunkt.
+  - **Teilerfolg möglich:** Eingang vermerken und Link beenden sind zwei getrennte Schritte. Scheitert das Beenden, ist der Eingang trotzdem vermerkt; der Link endet dann spätestens, wenn er abläuft.
+  - **Kein Fehler, wenn der Fragebogen fehlt:** Gibt es ihn nicht mehr, wird nichts vermerkt – der Token wird trotzdem beendet und die Antwort ist `{"status":"OK"}`.
+  - **Gedacht als Knopf-Aktion** – der Server prüft die Aufrufart (GET/POST) aber nicht, auch ein GET-Aufruf schließt ab.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulPublic.formularAbschliessenByToken` in `Shared/DataModuls/DataModulPublicClass.pas`; Token-Prüfung `ValidatePublicToken`, Abschluss `CloseToken`
+  - Tabellen: `ACCESS_TOKENS` (`REFERENCE_TYPE` = `FORM_KARTEI_HISTORY`, `PURPOSE` = `formular`), `FORM_KARTEI_HISTORY`
+  - Zwei getrennte Transaktionen:
+    1. `UPDATE FORM_KARTEI_HISTORY SET RECEIVED = CURRENT_TIMESTAMP WHERE ID = <Instanz aus Token>`
+    2. `CloseToken`: `REVOKED = 1`, `USED_AT = CURRENT_TIMESTAMP`, `USED_FROM_IP` = RemoteAddr (hinter dem PHP-Proxy die Proxy-Adresse)
+  - `GEPRUEFT` wird hier nicht gesetzt. Kein 404, wenn das UPDATE keine Zeile trifft.
+  - Route mit `Auth=false`, `LocalOnly=false`; kein JWT, keine Rollenprüfung.
+
+  </details>

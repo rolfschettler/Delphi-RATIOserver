@@ -1,0 +1,83 @@
+info:
+  name: GET /fragebogen/getpropertiesforkartei – Felder einer Kartei auflisten
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{baseURL}}/fragebogen/getpropertiesforkartei"
+  body:
+    type: json
+    data: |-
+      {
+        "kartei_id": {{karteiid}}
+      }
+  auth:
+    type: bearer
+    token: "{{jwttoken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  **Felder einer Kartei auflisten.** Liefert alle Felder (Fragen) einer Kartei in der festgelegten Reihenfolge – jeweils mit der Angabe, wie oft das Feld schon ausgefüllt wurde.
+
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fragebogen/getpropertiesforkartei` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
+
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `kartei_id` | Ganzzahl über 0 | **ja** | Nummer der Kartei. |
+
+  In Bruno steht hier `{{karteiid}}`. Diese Variable füllt Bruno automatisch, sobald du „Kartei anlegen“ ausgeführt hast – sie enthält dann die Nummer der neuen Kartei. Für eine andere Kartei trägst du die Zahl einfach direkt ein.
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"id": "ftinteger", "label": "ftstring 255", ...},
+    "data": [ {"id": 7, "label": "Lieblingsfarbe", "proptyp": "SEL", "options": "rot,grün,blau",
+               "maxwidth": 255, "bereich": null, "sortierung": 10, "system": 0, "kartei_id": 3, "inuse": 0} ]
+  }
+  ```
+  `data` enthält die Felder, `header` nennt zu jedem Feld den technischen Typ.
+
+  | Feld | Typ | Bedeutung |
+  |---|---|---|
+  | `id` | Ganzzahl | Nummer des Feldes |
+  | `label` | Text (max. 255 Zeichen) | Beschriftung, die im Fragebogen erscheint |
+  | `proptyp` | Text (max. 3 Zeichen) | Art des Feldes: `TXT` Text, `NUM` Zahl, `DAT` Datum, `CHK` Ankreuzfeld, `RDO` Optionsfeld, `SEL` Auswahlliste (eine Auswahl), `MUL` Auswahlliste (mehrere) |
+  | `options` | Langtext | Auswahlmöglichkeiten, durch Komma getrennt (nur bei `RDO`, `SEL`, `MUL`), sonst `null` |
+  | `maxwidth` | Ganzzahl | Standard 255, über die API nicht änderbar |
+  | `bereich` | Text (max. 60 Zeichen) | Abschnitt, in dem das Feld steht |
+  | `sortierung` | Ganzzahl | Reihenfolge |
+  | `system` | Ganzzahl | `1` = Systemfeld (geschützt), sonst `0` |
+  | `kartei_id` | Ganzzahl | zugehörige Kartei |
+  | `inuse` | Ganzzahl | Wie viele ausgefüllte Antworten es zu diesem Feld schon gibt (`0` = unbenutzt) |
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit `{"status":"ERROR","message":"\"kartei_id\" fehlt oder ist keine Zahl."}` – `kartei_id` fehlt, ist keine ganze Zahl oder nicht größer als 0.
+  - **400** mit `{"status":"error","message":"..."}` – Fehler in der Datenbank.
+
+  ### Gut zu wissen
+  - **Keine Fehlermeldung bei unbekannter Kartei:** Gibt es die Kartei nicht (oder hat sie keine Felder), kommt einfach `"data": []`.
+  - **Die Reihenfolge ist fest:** zuerst nach `sortierung`, bei Gleichstand nach `id`. `fields`, `orderby` und `limit` gibt es hier nicht.
+  - **`inuse` warnt vor dem Löschen:** Wird ein Feld gelöscht, gehen alle dazu gespeicherten Antworten mit verloren.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFragebogen.getPropertiesForKartei` in `Shared/DataModuls/DataModulFragebogenClass.pas`
+  - Tabellen: `FORM_PAT_PROPERTY`; `inuse` = Unterabfrage `COUNT(*)` auf `FORM_KARTEI_CONTENT` (`kartei_property_id`)
+  - Antwort über `SerializeQuery`, Sortierung `ORDER BY sortierung, id`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

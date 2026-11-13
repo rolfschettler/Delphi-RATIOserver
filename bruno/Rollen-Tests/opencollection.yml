@@ -28,6 +28,14 @@ request:
       value: /adressen/getkategorien
     - name: verboten_endpunkt
       value: /dispo/demo
+    - name: pw_eingeschraenkt
+      value: ""
+    - name: pw_supervisor
+      value: ""
+    - name: test_password
+      value: "RT-g9NWenyxgoNw"
+    - name: test_pwd2
+      value: "$2y$12$f8Rq4jedjseTZgLKhyWK2uGR25cXIPyNUwH7KE18wdeStNucnJzYO"
 
 docs:
   content: |-
@@ -44,11 +52,13 @@ docs:
       erlaubt_endpunkt     Standard /adressen/getkategorien
       verboten_endpunkt    Standard /touristik/demo
 
-    PASSWOERTER stehen NICHT in dieser Datei, sondern in .env (liegt neben
-    opencollection.yml, ist per .gitignore ausgeschlossen, Vorlage .env.example):
-      PW_EINGESCHRAENKT, PW_SUPERVISOR   Passwoerter der beiden Benutzer
-      TEST_PASSWORD, TEST_PWD2           Testpasswort + bcrypt-Hash fuer den
-                                         Registrierungstest (Ordner 4)
+      pw_eingeschraenkt    Passwort von user_eingeschraenkt
+      pw_supervisor        Passwort von user_supervisor
+      test_password        Testpasswort fuer den Registrierungstest (Ordner 4)
+      test_pwd2            bcrypt-Hash von test_password (Ordner 4)
+
+    Alle Passwoerter stehen bewusst als Collection-Variablen in dieser Datei
+    (keine .env mehr).
 
     VORBEREITUNG:
       - Blaupause @MITARBEITER in REGISTRIERUNG anlegen (gesperrt = 'JA');

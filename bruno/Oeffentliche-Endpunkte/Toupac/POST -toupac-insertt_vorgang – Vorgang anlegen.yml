@@ -33,18 +33,122 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Legt einen neuen Datensatz in T_VORGANG an. Ruft intern `DoInsert('T_VORGANG', ALLOWED)` auf; nur die in ALLOWED gelisteten Felder werden aus dem Body uebernommen, unbekannte Felder werden ignoriert, JSON `null` wird als NULL geschrieben. Die `nr` sollte vorher per `/toupac/gett_vorgangkey` ermittelt werden.
+  **Vorgang anlegen.** Legt einen neuen Eintrag in `T_VORGANG` an.
 
-  **Tabelle:** T_VORGANG
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/toupac/insertt_vorgang` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, agenturnr, buchender, vorgangsnr, erstellt, geaendert, personen, datum_von, datum_bis, endpreis, status, agenturcode, katalogreisenr, reisebezeichnung, optionsdatum, expedient, bemerkung, fibukontokunde, fibukontoagentur, sachkontoreise, buchungsdatum, faelligam, veranstalter, sammelrechnung, nrkreis, rechnungsnr, stand, direktinkasso, anzahlung, anzfaelligam, erstelltvon, geaendertvon, ansprechpartner, entstehung, bereich, zusatzinfo, reisegruppe, zahlungsart, ausreise, kontaktentstehung, reiseart, ziel, filiale, zugeordnetzu, abteilung, hauptkategorie, vgedruckt, bgedruckt, auftrag_erteilt_am, auftrag_erteilt_von, stornogrund, lastmaxstatus, sammelrechnungnr, originalreisedatum, terminnr, terminnr_rueck, knotenhin, knotenrueck, statusinfo, vorgangsstatus, vertretung, lastgeaendert, fibu_archiv_am, stornodatum, aufteilung, abrechnungsart, hotelkategorie, versandart, unterschrift, untertitel, app, festbuchung_am, schnittstelle_sendtime, sprache, aktion, bank, externe_nummer, rechnungsart, stornotermin, vk_waehrung, mandant
+  ### Was du mitschickst
+  Die gewünschten Felder als `"feld": wert`. Nicht mitgeschickte Felder bleiben leer, `null` macht ein Feld ausdrücklich leer.
 
-  **Key-Feld:** `nr` (wird wie ein normales Feld mitgeschrieben)
+  | Feld | Typ | Pflicht laut Datenbank |
+  |---|---|---|
+  | `nr` | Ganzzahl | ja |
+  | `agenturnr` | Ganzzahl |  |
+  | `buchender` | Ganzzahl |  |
+  | `vorgangsnr` | Text (max. 40 Zeichen) |  |
+  | `erstellt` | Datum/Uhrzeit |  |
+  | `geaendert` | Datum/Uhrzeit |  |
+  | `personen` | Ganzzahl |  |
+  | `datum_von` | Datum/Uhrzeit |  |
+  | `datum_bis` | Datum/Uhrzeit |  |
+  | `endpreis` | Kommazahl |  |
+  | `status` | Ganzzahl |  |
+  | `agenturcode` | Text (max. 20 Zeichen) |  |
+  | `katalogreisenr` | Ganzzahl |  |
+  | `reisebezeichnung` | Text (max. 60 Zeichen) |  |
+  | `optionsdatum` | Datum/Uhrzeit |  |
+  | `expedient` | Text (max. 30 Zeichen) |  |
+  | `bemerkung` | Langtext/Datei |  |
+  | `fibukontokunde` | Text (max. 12 Zeichen) |  |
+  | `fibukontoagentur` | Text (max. 12 Zeichen) |  |
+  | `sachkontoreise` | Text (max. 12 Zeichen) |  |
+  | `buchungsdatum` | Datum/Uhrzeit |  |
+  | `faelligam` | Datum/Uhrzeit |  |
+  | `veranstalter` | Text (max. 80 Zeichen) |  |
+  | `sammelrechnung` | Text (max. 4 Zeichen) |  |
+  | `nrkreis` | Ganzzahl |  |
+  | `rechnungsnr` | Ganzzahl |  |
+  | `stand` | Ganzzahl |  |
+  | `direktinkasso` | Text (max. 4 Zeichen) |  |
+  | `anzahlung` | Kommazahl |  |
+  | `anzfaelligam` | Datum/Uhrzeit |  |
+  | `erstelltvon` | Text (max. 20 Zeichen) |  |
+  | `geaendertvon` | Text (max. 20 Zeichen) |  |
+  | `ansprechpartner` | Ganzzahl |  |
+  | `entstehung` | Text (max. 60 Zeichen) |  |
+  | `bereich` | Text (max. 60 Zeichen) |  |
+  | `zusatzinfo` | Text (max. 32000 Zeichen) |  |
+  | `reisegruppe` | Text (max. 60 Zeichen) |  |
+  | `zahlungsart` | Text (max. 120 Zeichen) |  |
+  | `ausreise` | Ganzzahl |  |
+  | `kontaktentstehung` | Text (max. 200 Zeichen) |  |
+  | `reiseart` | Text (max. 120 Zeichen) |  |
+  | `ziel` | Text (max. 60 Zeichen) |  |
+  | `filiale` | Text (max. 10 Zeichen) |  |
+  | `zugeordnetzu` | Ganzzahl |  |
+  | `abteilung` | Text (max. 10 Zeichen) |  |
+  | `hauptkategorie` | Text (max. 60 Zeichen) |  |
+  | `vgedruckt` | Text (max. 4 Zeichen) |  |
+  | `bgedruckt` | Text (max. 4 Zeichen) |  |
+  | `auftrag_erteilt_am` | Datum/Uhrzeit |  |
+  | `auftrag_erteilt_von` | Text (max. 70 Zeichen) |  |
+  | `stornogrund` | Text (max. 400 Zeichen) |  |
+  | `lastmaxstatus` | Ganzzahl |  |
+  | `sammelrechnungnr` | Text (max. 40 Zeichen) |  |
+  | `originalreisedatum` | Datum/Uhrzeit |  |
+  | `terminnr` | Ganzzahl |  |
+  | `terminnr_rueck` | Ganzzahl |  |
+  | `knotenhin` | Ganzzahl |  |
+  | `knotenrueck` | Ganzzahl |  |
+  | `statusinfo` | Text (max. 12 Zeichen) |  |
+  | `vorgangsstatus` | Text (max. 60 Zeichen) |  |
+  | `vertretung` | Text (max. 30 Zeichen) |  |
+  | `lastgeaendert` | Datum/Uhrzeit |  |
+  | `fibu_archiv_am` | Datum/Uhrzeit |  |
+  | `stornodatum` | Datum/Uhrzeit |  |
+  | `aufteilung` | Text (max. 255 Zeichen) |  |
+  | `abrechnungsart` | Text (max. 15 Zeichen) |  |
+  | `hotelkategorie` | Text (max. 200 Zeichen) |  |
+  | `versandart` | Text (max. 30 Zeichen) |  |
+  | `unterschrift` | Langtext/Datei |  |
+  | `untertitel` | Text (max. 200 Zeichen) |  |
+  | `app` | Text (max. 4 Zeichen) |  |
+  | `festbuchung_am` | Datum/Uhrzeit |  |
+  | `schnittstelle_sendtime` | Datum/Uhrzeit |  |
+  | `sprache` | Text (max. 5 Zeichen) |  |
+  | `aktion` | Text (max. 15 Zeichen) |  |
+  | `bank` | Text (max. 60 Zeichen) |  |
+  | `externe_nummer` | Text (max. 60 Zeichen) |  |
+  | `rechnungsart` | Text (max. 15 Zeichen) |  |
+  | `stornotermin` | Datum/Uhrzeit |  |
+  | `vk_waehrung` | Text (max. 10 Zeichen) |  |
+  | `mandant` | Text (max. 30 Zeichen) |  |
 
-  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein gueltiges Feld)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Die Nummer (`nr`) kannst du mitschicken** – eine freie Nummer liefert vorher der passende `…key`-Endpunkt. Lässt du sie weg, vergibt die Datenbank automatisch eine. Die Antwort enthält keine Nummer.
+  - **Unbekannte Felder werden ohne Meldung ignoriert.** Ein Tippfehler im Feldnamen fällt also nicht auf – das Feld bleibt einfach leer.
+  - **Nicht setzbar** sind hier: `logo`, `anrede`, `titel`, `name1`, `name2`, `namenszusatz`, `name3`, `strasse`, `land`, `plz`, `ort`, `telefon`, `email`, `registrierung_nr`, `gastbuchung`.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.insertT_Vorgang` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `T_VORGANG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoInsert` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

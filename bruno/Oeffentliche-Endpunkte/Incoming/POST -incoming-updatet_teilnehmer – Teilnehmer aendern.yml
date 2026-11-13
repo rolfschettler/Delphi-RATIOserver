@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nr": 501,
+        "nr": 42,
         "telefon1": "0170-7654321",
         "status": "storniert"
       }
@@ -26,12 +26,103 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aendert einen bestehenden Datensatz in T_TEILNEHMER anhand des Primaerschluessels (`DoUpdate('T_TEILNEHMER', ALLOWED, 'nr')`). `nr` ist hier NICHT Teil von ALLOWED (nur Schluesselfeld im Body), kann also nicht per Update veraendert werden.
+  **Teilnehmer aendern.** Ändert einen vorhandenen Eintrag in `T_TEILNEHMER`. Gefunden wird er über `nr`.
 
-  **Erlaubte Felder (ALLOWED):** vorgangnr, anrede, name, kennziffer, geburtstag, jahre, shuttle, info1, info2, ref1, ref2, gruppe, sitzfest, hininfo, rueckinfo, ausstiegrueck, profil, status, reservierungsnr, kabinengruppe, infofaehre, zustieghin, ausstieghin, zustiegrueck, ausstieg_rueck, sitzhin, sitzrueck, leistungen, passnummer, ausgestellt_in, ausgestellt_am, gueltig_bis, passinfo, passid, nation, geburtsort, name1, name2, name3, namenszusatz, titel, email, land, ort, ortsteil, plz, region, strasse, telefon1, telefon2, telefon3, xkoord, ykoord, heimatort, pass_name1, pass_name2, zusatzdaten.
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/incoming/updatet_teilnehmer` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Body:** `nr` (Pflicht, Integer, Primaerschluessel) plus beliebige der erlaubten Felder.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Antwort:** `{"status":"OK"}`
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `vorgangnr` | Ganzzahl |
+  | `anrede` | Text (max. 5 Zeichen) |
+  | `name` | Text (max. 90 Zeichen) |
+  | `kennziffer` | Ganzzahl |
+  | `geburtstag` | Datum/Uhrzeit |
+  | `jahre` | Ganzzahl |
+  | `shuttle` | Text (max. 2 Zeichen) |
+  | `info1` | Text (max. 120 Zeichen) |
+  | `info2` | Text (max. 120 Zeichen) |
+  | `ref1` | Text (max. 60 Zeichen) |
+  | `ref2` | Text (max. 60 Zeichen) |
+  | `gruppe` | Ganzzahl |
+  | `sitzfest` | Text (max. 4 Zeichen) |
+  | `hininfo` | Text (max. 60 Zeichen) |
+  | `rueckinfo` | Text (max. 60 Zeichen) |
+  | `ausstiegrueck` | Text (max. 120 Zeichen) |
+  | `profil` | Text (max. 20 Zeichen) |
+  | `status` | Text (max. 10 Zeichen) |
+  | `reservierungsnr` | Text (max. 50 Zeichen) |
+  | `kabinengruppe` | Ganzzahl |
+  | `infofaehre` | Text (max. 250 Zeichen) |
+  | `zustieghin` | Ganzzahl |
+  | `ausstieghin` | Ganzzahl |
+  | `zustiegrueck` | Ganzzahl |
+  | `ausstieg_rueck` | Ganzzahl |
+  | `sitzhin` | Text (max. 20 Zeichen) |
+  | `sitzrueck` | Text (max. 20 Zeichen) |
+  | `leistungen` | Text (max. 3200 Zeichen) |
+  | `passnummer` | Text (max. 40 Zeichen) |
+  | `ausgestellt_in` | Text (max. 40 Zeichen) |
+  | `ausgestellt_am` | Datum/Uhrzeit |
+  | `gueltig_bis` | Datum/Uhrzeit |
+  | `passinfo` | Text (max. 70 Zeichen) |
+  | `passid` | Text (max. 40 Zeichen) |
+  | `nation` | Text (max. 40 Zeichen) |
+  | `geburtsort` | Text (max. 60 Zeichen) |
+  | `name1` | Text (max. 30 Zeichen) |
+  | `name2` | Text (max. 30 Zeichen) |
+  | `name3` | Text (max. 30 Zeichen) |
+  | `namenszusatz` | Text (max. 180 Zeichen) |
+  | `titel` | Text (max. 20 Zeichen) |
+  | `email` | Text (max. 60 Zeichen) |
+  | `land` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 110 Zeichen) |
+  | `ortsteil` | Text (max. 80 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `region` | Text (max. 20 Zeichen) |
+  | `strasse` | Text (max. 110 Zeichen) |
+  | `telefon1` | Text (max. 25 Zeichen) |
+  | `telefon2` | Text (max. 25 Zeichen) |
+  | `telefon3` | Text (max. 25 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `heimatort` | Text (max. 60 Zeichen) |
+  | `pass_name1` | Text (max. 30 Zeichen) |
+  | `pass_name2` | Text (max. 30 Zeichen) |
+  | `zusatzdaten` | Langtext/Datei |
 
-  **Auth:** erforderlich (Bearer Token).
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulIncoming.updateT_Teilnehmer` in `Shared/DataModuls/DataModulIncomingClass.pas`
+  - Tabelle: `T_TEILNEHMER`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

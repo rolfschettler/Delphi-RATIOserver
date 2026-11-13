@@ -25,18 +25,57 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus T_Z_PLANUNG anhand des Primärschlüssels `nr` (generisches `DoSelectOne`).
+  **Planung per Nr.** Liefert genau einen Eintrag aus `T_Z_PLANUNG`, gesucht über `nr`.
 
-  **Tabelle:** T_Z_PLANUNG
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fahrtenplanung/gett_z_planungbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, bezeichnung, datum, planung, art, text, erstellt, erstellt_von, geandert, geandert_von, status, gesperrt, zusatzfeld1, zusatzfeld2
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr`
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `bezeichnung` | Text (max. 200 Zeichen) |
+  | `datum` | Datum/Uhrzeit |
+  | `planung` | Text (max. 10 Zeichen) |
+  | `art` | Text (max. 30 Zeichen) |
+  | `text` | Text (max. 200 Zeichen) |
+  | `erstellt` | Datum/Uhrzeit |
+  | `erstellt_von` | Text (max. 30 Zeichen) |
+  | `geandert` | Datum/Uhrzeit |
+  | `geandert_von` | Text (max. 30 Zeichen) |
+  | `status` | Text (max. 20 Zeichen) |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `zusatzfeld1` | Text (max. 200 Zeichen) |
+  | `zusatzfeld2` | Text (max. 200 Zeichen) |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }` – nr ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "bezeichnung": "Text", "datum": "2026-09-01 08:00:00", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFahrtenplanung.getT_Z_PlanungById` in `Shared/DataModuls/DataModulFahrtenplanungClass.pas`
+  - Tabelle: `T_Z_PLANUNG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

@@ -24,16 +24,40 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Löscht einen Adressdatensatz aus ADRESSEN anhand des Primärschlüssels `kennziffer` (generisches `DoDelete`).
+  **Adresse löschen.** Löscht einen Eintrag aus `ADRESSEN` endgültig.
 
-  **Tabelle:** ADRESSEN
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/adressen/deleteadressen` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Key-Feld:** `kennziffer`
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `kennziffer` | Ganzzahl | **ja** | Welcher Eintrag gelöscht wird. |
 
-  **Body:** `{ "kennziffer": <wert> }` – kennziffer ist Pflicht.
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. weil noch andere Daten auf diesen Eintrag verweisen.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn `kennziffer` fehlt – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Endgültig:** Es gibt keinen Papierkorb und kein Rückgängig.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch dann kommt `{"status": "OK"}`.
+  - **Löschen wird abgelehnt (Fehler 400)**, solange noch Einträge in `SV_EINRICHTUNG`, `SV_TOUR` auf diesen Eintrag verweisen – diese zuerst löschen.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.deleteAdresse` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ADRESSEN`, Schlüssel `kennziffer`
+  - Umsetzung: generische Methode `DoDelete` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

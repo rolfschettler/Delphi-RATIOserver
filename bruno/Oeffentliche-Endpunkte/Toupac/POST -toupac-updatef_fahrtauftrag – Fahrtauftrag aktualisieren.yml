@@ -27,18 +27,67 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Aktualisiert einen bestehenden Datensatz in F_FAHRTAUFTRAG anhand des Primaerschluessels `nr`. Ruft intern `DoUpdate('F_FAHRTAUFTRAG', ALLOWED, 'nr')` auf; geschrieben werden nur die im Body enthaltenen ALLOWED-Felder, `nr` dient nur als WHERE-Schluessel und wird nicht geaendert.
+  **Fahrtauftrag aktualisieren.** Ändert einen vorhandenen Eintrag in `F_FAHRTAUFTRAG`. Gefunden wird er über `nr`.
 
-  **Tabelle:** F_FAHRTAUFTRAG
+  | | |
+  |---|---|
+  | **Aufruf** | `POST {{baseURL}}/toupac/updatef_fahrtauftrag` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED, ohne nr):** fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Welcher Eintrag geändert wird. |
+  | weitere Felder | siehe Liste | mind. eins | Nur die mitgeschickten Felder werden geändert. `null` macht ein Feld leer. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Änderbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `fahrtnr` | Text (max. 20 Zeichen) |
+  | `einsatznr` | Ganzzahl |
+  | `fahrtabrechnungsnr` | Ganzzahl |
+  | `fahrtenbuchnr` | Ganzzahl |
+  | `auftragsart` | Text (max. 40 Zeichen) |
+  | `personenzahl` | Ganzzahl |
+  | `fahrzeugprofil` | Langtext/Datei |
+  | `fahrerprofil` | Langtext/Datei |
+  | `status` | Ganzzahl |
+  | `filiale` | Text (max. 10 Zeichen) |
+  | `gedruckt` | Text (max. 4 Zeichen) |
+  | `erledigt` | Text (max. 4 Zeichen) |
+  | `angelegt_am` | Datum/Uhrzeit |
+  | `geaendert_am` | Datum/Uhrzeit |
+  | `erstelltvon` | Text (max. 20 Zeichen) |
+  | `geaendertvon` | Text (max. 20 Zeichen) |
+  | `zusatzinfo` | Langtext/Datei |
+  | `fahrtenplan` | Langtext/Datei |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
 
-  **Body:** `{ "nr": <wert>, "<feld>": <wert>, ... }` (mindestens ein Feld ausser `nr`)
+  ### Was zurückkommt
+  ```json
+  {"status": "OK"}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank lehnt die Daten ab, z.B. Text zu lang für das Feld oder Buchstaben in einem Zahlenfeld.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`), z.B. wenn kein einziges gültiges Feld mitgeschickt wurde – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nur mitgeschickte Felder werden geändert**, alle anderen bleiben, wie sie sind.
+  - **Keine Meldung, wenn es den Eintrag nicht gibt:** Auch bei einem falschen oder fehlenden `nr` kommt `{"status": "OK"}` – geändert wurde dann aber nichts.
+  - `nr` selbst lässt sich hier nicht ändern.
+  - **Unbekannte Felder werden ohne Meldung ignoriert** – ein Tippfehler im Feldnamen fällt also nicht auf.
+  - **Nicht änderbar** sind hier: `logo`.
 
-  **Antwort:** `{"status":"OK"}`
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.updateF_Fahrtauftrag` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `F_FAHRTAUFTRAG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoUpdate` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

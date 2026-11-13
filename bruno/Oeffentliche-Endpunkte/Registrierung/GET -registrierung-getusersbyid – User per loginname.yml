@@ -25,18 +25,56 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus USERS anhand des Primärschlüssels `loginname` (generisches `DoSelectOne`).
+  **User per loginname.** Liefert genau einen Eintrag aus `USERS`, gesucht über `loginname`.
 
-  **Tabelle:** USERS
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/registrierung/getusersbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** loginname, username, rechte, gruppe, zugruppe, agenturcode, kennziffer, filiale, abteilung, gesperrt, pushid, mandant. Nicht lesbar: `passwort`.
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `loginname` | Text (max. 20 Zeichen) | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `loginname` (CHAR(20), Zeichenkette)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `loginname` | Text (max. 20 Zeichen) |
+  | `username` | Text (max. 30 Zeichen) |
+  | `rechte` | Langtext/Datei |
+  | `gruppe` | Text (max. 4 Zeichen) |
+  | `zugruppe` | Text (max. 20 Zeichen) |
+  | `agenturcode` | Text (max. 8 Zeichen) |
+  | `kennziffer` | Ganzzahl |
+  | `filiale` | Text (max. 10 Zeichen) |
+  | `abteilung` | Text (max. 255 Zeichen) |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `pushid` | Text (max. 255 Zeichen) |
+  | `mandant` | Text (max. 30 Zeichen) |
 
-  **Body:** `{ "loginname": "<wert>", "fields": [...] | "*" }` – loginname ist Pflicht. Der Beispielwert `ADMIN` ist nur ein Platzhalter.
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"loginname": "Text", "username": "Text", "rechte": "Text", ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`loginname` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+  - **Nicht abrufbar** sind hier: `passwort`.
 
-  **Antwort:** `{"header":{"feld":"typ",...},"data":[{...}]}` – `data` enthält genau einen Datensatz bzw. ist leer, wenn zum Schlüssel kein Datensatz existiert.
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulRegistrierung.getUsersById` in `Shared/DataModuls/DataModulRegistrierungClass.pas`
+  - Tabelle: `USERS`, Schlüssel `loginname`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

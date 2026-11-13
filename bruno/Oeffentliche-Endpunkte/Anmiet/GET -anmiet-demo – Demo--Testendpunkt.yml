@@ -32,16 +32,47 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Referenz-/Testendpunkt für die Entwicklung neuer Endpunkte. Demonstriert den sicheren Zugriff auf Parameter aus zwei Quellen: URL-Query (`id` als Zahl, `filter` als String, über `Request.QueryFields`) und JSON-Body (`name` als String, `menge` als Zahl, über `isParamFromBody`/`getParamFromBody`). Fehlende Werte erzeugen keinen Fehler, sondern erscheinen im Ergebnis als `null`.
+  **Demo-/Testendpunkt.** Gibt die Werte, die du mitschickst, unverändert zurück – ohne Datenbankzugriff. Damit kannst du prüfen, ob Anmeldung, URL-Parameter und Body beim Server ankommen. Fachlich macht der Endpunkt nichts.
 
-  **Tabelle:** keine (kein Datenbankzugriff)
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/anmiet/demo?id=42&filter=Mueller` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Query-Parameter (optional):** `id`, `filter`
+  ### Was du mitschickst
+  Alle Angaben sind freiwillig.
 
-  **Body (optional):** `{ "name": "...", "menge": <zahl> }`
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `id` | Ganzzahl | nein | in der URL (`?id=42`). Kommt als ganze Zahl zurück. |
+  | `filter` | Text | nein | in der URL (`&filter=Mueller`). Leerzeichen am Anfang und Ende werden entfernt; ein leerer Wert gilt als „nicht angegeben“. |
+  | `name` | Text | nein | im JSON-Body. Beliebiger Text. |
+  | `menge` | Ganzzahl | nein | im JSON-Body. Kommt als ganze Zahl zurück. |
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Was zurückkommt
+  ```json
+  {"url": {"id": 42, "filter": "Mueller"}, "body": {"name": "Helga", "menge": 5}}
+  ```
+  Unter `url` stehen die Werte aus der URL, unter `body` die aus dem Body. Was du nicht mitschickst, kommt als `null` zurück.
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - Sonst nichts – der Endpunkt selbst meldet keine Fehler.
 
-  **Antwort:** `{"url":{"id":42,"filter":"Mueller"},"body":{"name":"Helga","menge":5}}` (per `SendJson`)
+  ### Gut zu wissen
+  - **Ein fehlender oder ungültiger Body ist kein Fehler.** Alle Werte unter `body` sind dann einfach `null`.
+  - **Keine ganze Zahl bei `id` oder `menge` ergibt `0`, nicht `null`.** Beispiel: `"abc"` oder `5.5` werden zu `0`.
+  - **Zahlen dürfen auch als Text kommen:** `"menge": "5"` funktioniert genauso wie `"menge": 5`.
+  - **Groß-/Kleinschreibung der Feldnamen im Body ist egal:** `"Name"` wird wie `"name"` gelesen.
+  - **Nur zum Testen:** Der Endpunkt dient Entwicklern als Vorlage für neue Endpunkte.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAnmiet.Demo` in `Shared/DataModuls/DataModulAnmietClass.pas`
+  - Tabelle: keine
+  - Referenz-Muster für `isParamFromBody`/`getParamFromBody` (Body), `Request.QueryFields` + `StrToIntDef` (URL), `JsonOrNull` und `SendJson`.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

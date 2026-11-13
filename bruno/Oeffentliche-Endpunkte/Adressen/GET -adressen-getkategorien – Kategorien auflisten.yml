@@ -25,16 +25,79 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Listet Datensätze aus der Tabelle ADRKATS auf (generisches `DoSelect`, kein Filter).
+  **Kategorien auflisten.** Liefert alle Einträge aus `ADRKATS` – auf Wunsch sortiert und seitenweise.
 
-  **Tabelle:** ADRKATS
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/adressen/getkategorien` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** gruppe, kat1–kat12, bezeichnung, debitkredit, symbol, kat13–kat24
+  ### Was du mitschickst
+  Alles ist optional – ein leerer Body `{}` liefert alles.
 
-  **Body (optional):** `{ "fields": [...] | "*", "orderby": "feld", "limit": 10, "offset": 0 }` – ohne `fields` bzw. mit `"*"` werden alle ALLOWED-Felder geliefert; `orderby` muss ein ALLOWED-Feld sein. Ein leerer/fehlender Body ist erlaubt.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Auth:** erforderlich (Bearer Token); zusätzlich Rollenprüfung gegen REGISTRIERUNG.ROLLEN (leer/Supervisor/passende Rolle oder Endpunkt, sonst 403)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `gruppe` | Ganzzahl |
+  | `kat1` | Text (max. 20 Zeichen) |
+  | `kat2` | Text (max. 20 Zeichen) |
+  | `kat3` | Text (max. 20 Zeichen) |
+  | `kat4` | Text (max. 20 Zeichen) |
+  | `kat5` | Text (max. 20 Zeichen) |
+  | `kat6` | Text (max. 20 Zeichen) |
+  | `kat7` | Text (max. 20 Zeichen) |
+  | `kat8` | Text (max. 20 Zeichen) |
+  | `kat9` | Text (max. 20 Zeichen) |
+  | `kat10` | Text (max. 20 Zeichen) |
+  | `kat11` | Text (max. 20 Zeichen) |
+  | `kat12` | Text (max. 20 Zeichen) |
+  | `bezeichnung` | Text (max. 20 Zeichen) |
+  | `debitkredit` | Text (max. 1 Zeichen) |
+  | `symbol` | Ganzzahl |
+  | `kat13` | Text (max. 20 Zeichen) |
+  | `kat14` | Text (max. 20 Zeichen) |
+  | `kat15` | Text (max. 20 Zeichen) |
+  | `kat16` | Text (max. 20 Zeichen) |
+  | `kat17` | Text (max. 20 Zeichen) |
+  | `kat18` | Text (max. 20 Zeichen) |
+  | `kat19` | Text (max. 20 Zeichen) |
+  | `kat20` | Text (max. 20 Zeichen) |
+  | `kat21` | Text (max. 20 Zeichen) |
+  | `kat22` | Text (max. 20 Zeichen) |
+  | `kat23` | Text (max. 20 Zeichen) |
+  | `kat24` | Text (max. 20 Zeichen) |
 
-  **LocalOnly:** nein (auch extern erreichbar)
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"gruppe": 42, "kat1": "Text", "kat2": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
 
-  **Antwort:** ohne `limit` das Ergebnis von `SerializeQuery`: `{"header":{"feld":"typ",...},"data":[{...},...]}`; mit `limit` > 0 `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Ohne `limit` kommt die komplette Tabelle** – bei vielen Einträgen besser seitenweise abrufen.
+  - **Zum Suchen** den passenden `…filtered`-Endpunkt verwenden, für einen einzelnen Eintrag `…byid`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulAdressen.getKategorien` in `Shared/DataModuls/DataModulAdressenClass.pas`
+  - Tabelle: `ADRKATS`, Schlüssel `gruppe`
+  - Umsetzung: generische Methode `DoSelect` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

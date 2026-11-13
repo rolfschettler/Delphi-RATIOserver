@@ -26,12 +26,125 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Implementierung: `DoSelectFilteredDynamic('PERSONALSTAMM', ALLOWED, CONDITIONS, FILTER_PARAMS)`. Trotz der 65 ALLOWED-Felder gibt es nur EINEN Filterparameter: `zeichen` → `zeichen = :zeichen` (optional).
+  **Personalstamm filtern.** Sucht Einträge in `PERSONALSTAMM` – du gibst die Suchkriterien als Felder im Body mit.
 
-  **Erlaubte Felder (ALLOWED, 65):** nr, anrede, name1, name2, zeichen, strasse, land, plz, ort, telefon1, telefon2, fsnummer, pbs_gueltig_bis, verwendung, geburtstag, bemerkung, angestellt_seit, urlaubgesamt, resturlaub, gesperrt, fahrzeug, sortierung, stundenlohn, stundenlohn2, zuschlag, kostenstelle, urlaubsjahr, alterurlaub, altefreietage, freietagegesamt, restfreietage, betrieb, profil, feiertagsberechtigt, zulageberechtigt, mindestregelungsberechtigt, arbeitsvertragsart, urlaubsstunden, krankheitsstunden, durchschnittsstunden, ausgeschieden_am, sprache, versicherungsnummer, zusatzinfo, kennziffer, versuche, zeitsperre, freistunden, pushid, wochenende, abteilung, kostelle1, personalnummer, urlaubsgruppe, vertretung, resturlaub_aktuell, altefreietage2, alterurlaub2, nation, xkoord, ykoord, koords_erfasst_am, pushid_fis, pushid_dispo, pushid_tickets.
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/getpersonalstammfiltered` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Hinweis:** Für PERSONALSTAMM existieren nur `get`/`getFiltered` sowie `update`/`delete` – KEINE `getById`/`insert`/`getKey`-Route.
+  ### Suchkriterien (Filter)
+  **Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.** Hier nicht filterbar: `passwort`, `passwort2`.
 
-  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  So funktioniert die Suche:
+  - Jedes mitgeschickte Feld ist ein Kriterium, z.B. `{"ort": "Berlin"}`.
+  - **Mehrere Kriterien müssen alle zutreffen** (UND): `{"ort": "Berlin", "plz": "10115"}`.
+  - **Der Wert muss genau stimmen** – keine Teilsuche, Groß-/Kleinschreibung zählt („berlin“ findet nicht „Berlin“).
+  - Datum als `"2026-09-01"` oder mit Uhrzeit `"2026-09-01 08:00:00"`. Bei Feldern mit Uhrzeit findet ein reines Datum nur Einträge um 00:00 Uhr.
+  - Ohne Kriterien kommen alle Einträge.
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  ### Weitere Angaben (optional)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","bezeichnung"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
+
+  ### Verfügbare Felder (für `fields` und `orderby`)
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `anrede` | Text (max. 20 Zeichen) |
+  | `name1` | Text (max. 30 Zeichen) |
+  | `name2` | Text (max. 30 Zeichen) |
+  | `zeichen` | Text (max. 15 Zeichen) |
+  | `strasse` | Text (max. 30 Zeichen) |
+  | `land` | Text (max. 15 Zeichen) |
+  | `plz` | Text (max. 15 Zeichen) |
+  | `ort` | Text (max. 30 Zeichen) |
+  | `telefon1` | Text (max. 25 Zeichen) |
+  | `telefon2` | Text (max. 25 Zeichen) |
+  | `fsnummer` | Text (max. 25 Zeichen) |
+  | `pbs_gueltig_bis` | Datum/Uhrzeit |
+  | `verwendung` | Text (max. 25 Zeichen) |
+  | `geburtstag` | Datum/Uhrzeit |
+  | `bemerkung` | Text (max. 1200 Zeichen) |
+  | `angestellt_seit` | Datum/Uhrzeit |
+  | `urlaubgesamt` | Ganzzahl |
+  | `resturlaub` | Ganzzahl |
+  | `gesperrt` | Text (max. 4 Zeichen) |
+  | `fahrzeug` | Text (max. 15 Zeichen) |
+  | `sortierung` | Ganzzahl |
+  | `stundenlohn` | Kommazahl |
+  | `stundenlohn2` | Kommazahl |
+  | `zuschlag` | Kommazahl |
+  | `kostenstelle` | Ganzzahl |
+  | `urlaubsjahr` | Ganzzahl |
+  | `alterurlaub` | Ganzzahl |
+  | `altefreietage` | Ganzzahl |
+  | `freietagegesamt` | Ganzzahl |
+  | `restfreietage` | Ganzzahl |
+  | `betrieb` | Text (max. 8 Zeichen) |
+  | `profil` | Text (max. 40 Zeichen) |
+  | `feiertagsberechtigt` | Text (max. 4 Zeichen) |
+  | `zulageberechtigt` | Text (max. 4 Zeichen) |
+  | `mindestregelungsberechtigt` | Text (max. 4 Zeichen) |
+  | `arbeitsvertragsart` | Text (max. 40 Zeichen) |
+  | `urlaubsstunden` | Kommazahl |
+  | `krankheitsstunden` | Kommazahl |
+  | `durchschnittsstunden` | Kommazahl |
+  | `ausgeschieden_am` | Datum/Uhrzeit |
+  | `sprache` | Text (max. 30 Zeichen) |
+  | `versicherungsnummer` | Text (max. 60 Zeichen) |
+  | `zusatzinfo` | Text (max. 60 Zeichen) |
+  | `kennziffer` | Ganzzahl |
+  | `versuche` | Ganzzahl |
+  | `zeitsperre` | Datum/Uhrzeit |
+  | `freistunden` | Kommazahl |
+  | `pushid` | Text (max. 255 Zeichen) |
+  | `wochenende` | Text (max. 4 Zeichen) |
+  | `abteilung` | Text (max. 255 Zeichen) |
+  | `kostelle1` | Text (max. 12 Zeichen) |
+  | `personalnummer` | Text (max. 100 Zeichen) |
+  | `urlaubsgruppe` | Text (max. 255 Zeichen) |
+  | `vertretung` | Text (max. 15 Zeichen) |
+  | `resturlaub_aktuell` | Kommazahl |
+  | `altefreietage2` | Kommazahl |
+  | `alterurlaub2` | Kommazahl |
+  | `nation` | Text (max. 30 Zeichen) |
+  | `xkoord` | Text (max. 20 Zeichen) |
+  | `ykoord` | Text (max. 20 Zeichen) |
+  | `koords_erfasst_am` | Datum/Uhrzeit |
+  | `pushid_fis` | Text (max. 255 Zeichen) |
+  | `pushid_dispo` | Text (max. 255 Zeichen) |
+  | `pushid_tickets` | Text (max. 255 Zeichen) |
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", ...},
+    "data": [ {"nr": 42, "anrede": "Text", "name1": "Text", ...} ]
+  }
+  ```
+  `data` enthält die Datensätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
+
+  ### Gut zu wissen
+  - **Achtung bei Tippfehlern:** Ein falsch geschriebener Feldname wird einfach ignoriert – dann kommen *alle* Einträge statt der gesuchten.
+  - Der Body muss mindestens `{}` sein, sonst kommt ein Fehler.
+  - **Nicht abrufbar** (aber teils filterbar): `passwort`, `passwort2`, `apikey`, `betrag1`, `betrag2`, `betrag3`, `betrag4`, `betrag5`, `betrag6`, `betrag7`, `betrag8`, `betrag9`, `betrag10`, `text1`, `text2`, `text3`, `text4`, `text5`, `text6`, `text7`, `text8`, `text9`, `text10`.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getpersonalstammfiltered` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `PERSONALSTAMM`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectFilteredDynamic` der Basisklasse `TDataModulTableBase`; Filter über `CONDITIONS`/`FILTER_PARAMS`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

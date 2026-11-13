@@ -25,18 +25,65 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Liefert genau einen Datensatz aus F_FAHRTAUFTRAG anhand des Primaerschluessels `nr`. Ruft intern `DoSelectOne('F_FAHRTAUFTRAG', ALLOWED, 'nr')` auf.
+  **Fahrtauftrag per nr.** Liefert genau einen Eintrag aus `F_FAHRTAUFTRAG`, gesucht über `nr`.
 
-  **Tabelle:** F_FAHRTAUFTRAG
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/toupac/getf_fahrtauftragbyid` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Erlaubte Felder (ALLOWED):** nr, fahrtnr, einsatznr, fahrtabrechnungsnr, fahrtenbuchnr, auftragsart, personenzahl, fahrzeugprofil, fahrerprofil, status, filiale, gedruckt, erledigt, angelegt_am, geaendert_am, erstelltvon, geaendertvon, zusatzinfo, fahrtenplan, reftable, refnr
+  ### Was du mitschickst
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `nr` | Ganzzahl | **ja** | Der gesuchte Eintrag. |
+  | `fields` | `"*"` oder Liste | nein | Welche Felder zurückkommen sollen. Weglassen = alle. |
 
-  **Key-Feld:** `nr` (Pflicht im Body)
+  ### Verfügbare Felder
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `fahrtnr` | Text (max. 20 Zeichen) |
+  | `einsatznr` | Ganzzahl |
+  | `fahrtabrechnungsnr` | Ganzzahl |
+  | `fahrtenbuchnr` | Ganzzahl |
+  | `auftragsart` | Text (max. 40 Zeichen) |
+  | `personenzahl` | Ganzzahl |
+  | `fahrzeugprofil` | Langtext/Datei |
+  | `fahrerprofil` | Langtext/Datei |
+  | `status` | Ganzzahl |
+  | `filiale` | Text (max. 10 Zeichen) |
+  | `gedruckt` | Text (max. 4 Zeichen) |
+  | `erledigt` | Text (max. 4 Zeichen) |
+  | `angelegt_am` | Datum/Uhrzeit |
+  | `geaendert_am` | Datum/Uhrzeit |
+  | `erstelltvon` | Text (max. 20 Zeichen) |
+  | `geaendertvon` | Text (max. 20 Zeichen) |
+  | `zusatzinfo` | Langtext/Datei |
+  | `fahrtenplan` | Langtext/Datei |
+  | `reftable` | Text (max. 80 Zeichen) |
+  | `refnr` | Ganzzahl |
 
-  **Body:** `{ "nr": <wert>, "fields": [...] | "*" }`
+  ### Was zurückkommt
+  ```json
+  {"header": {...}, "data": [ {"nr": 42, "fahrtnr": "Text", "einsatznr": 42, ...} ]}
+  ```
 
-  **Auth:** erforderlich (Bearer Token)
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **Fehlermeldung im Text** (`{"status":"error","message":"..."}`), z.B. wenn ein Feldname in `fields` oder `orderby` nicht erlaubt ist. Achtung: Solche Fehler kommen teilweise mit HTTP-Status 200 – deshalb immer auf `"status": "error"` prüfen.
 
-  **LocalOnly:** nein
+  ### Gut zu wissen
+  - **Nicht gefunden = leere Liste:** Gibt es den Eintrag nicht, kommt kein Fehler, sondern `"data": []`.
+  - **`nr` muss mitgeschickt werden**, sonst kommt eine Fehlermeldung.
+  - **Nicht abrufbar** sind hier: `logo`.
 
-  **Antwort:** `{ "header": { "<feld>": "<typ>", ... }, "data": [ { ...Datensatz... } ] }` (Array mit genau einem Datensatz bzw. leeres `data`-Array, wenn die `nr` nicht existiert).
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulToupac.getF_FahrtauftragById` in `Shared/DataModuls/DataModulToupacClass.pas`
+  - Tabelle: `F_FAHRTAUFTRAG`, Schlüssel `nr`
+  - Umsetzung: generische Methode `DoSelectOne` der Basisklasse `TDataModulTableBase`
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>

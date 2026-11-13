@@ -18,8 +18,35 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  KEINE generische DoSelect-Variante: fuehrt direkt `SELECT GEN_ID(BRUTTOLOHN, 1) AS nr FROM RDB$DATABASE` aus und liefert den naechsten Generatorwert fuer die Primaernummer `nr`. Kein Body erforderlich.
+  **naechste Bruttolohn-Nr ermitteln.** Reserviert die nächste freie Nummer und gibt sie zurück – typischerweise vor dem Anlegen eines neuen Eintrags.
 
-  **Auth:** erforderlich (Bearer Token)
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/fibu/getbruttolohnkey` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  **Antwort:** `{"header":{"nr":"ftinteger"},"data":[{"nr":<naechster_wert>}]}` (SerializeQuery)
+  ### Was du mitschickst
+  Nichts – ein Body wird nicht benötigt.
+
+  ### Was zurückkommt
+  ```json
+  {"header": {"nr": "ftlargeint"}, "data": [ {"nr": 4711} ]}
+  ```
+  Die neue Nummer steht in `data[0].nr`.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+
+  ### Gut zu wissen
+  - **Jeder Aufruf verbraucht eine Nummer** – auch wenn danach nichts angelegt wird. Lücken in der Nummerierung sind deshalb normal.
+  - **Die Nummer gehört dir:** Kein anderer Aufruf bekommt dieselbe Nummer.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulFibu.getBruttolohnKey` in `Shared/DataModuls/DataModulFibuClass.pas`
+  - InterBase-Generator `BRUTTOLOHN` (`GEN_ID(BRUTTOLOHN, 1)`)
+  - Der Server wertet die HTTP-Methode nicht aus.
+
+  </details>

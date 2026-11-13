@@ -32,17 +32,183 @@ settings:
   forwardAuthorizationHeader: false
 
 docs: |-
-  Sonderfall unter den Filtermethoden: KEIN `DoSelectFilteredDynamic`, sondern `DoSelectFiltered('EINSATZ', ALLOWED, Filter, ['von','bis'])` mit manuell gebautem Filterstring, der vom Parameter `timemode` abhängt.
+  **Einsätze nach Zeitraum filtern.** Liefert die Einsätze (Fahrten bzw. Dienste mit Fahrzeug und Fahrern) in einem Zeitraum – auf Wunsch nur für bestimmte Fahrer.
 
-  `timemode` wird zuerst aus dem QueryString (`?timemode=...`), sonst aus dem JSON-Body (`"timemode":"..."`) gelesen. Der Body-Wert wird in Kleinbuchstaben umgewandelt, der QueryString-Wert NICHT (dort muss exakt `overlaps_range` stehen).
+  | | |
+  |---|---|
+  | **Aufruf** | `GET {{baseURL}}/dispo/geteinsatzfiltered` |
+  | **Anmeldung** | nötig – Token aus `/login` (wird in Bruno automatisch mitgeschickt) |
+  | **Berechtigung** | Der Benutzer braucht diesen Endpunkt in seinen Rollen (sonst Fehler 403) |
 
-  - `timemode` = `overlaps_range` → Filter `bis >= :von AND von <= :bis` (liefert alle Einsätze, deren Zeitspanne den Abfragezeitraum überschneidet)
-  - sonst (Default) → Filter `von >= :von AND von <= :bis` (liefert Einsätze, deren Start im Abfragezeitraum liegt)
+  ### Suchkriterien (Filter)
+  **Alle Felder außer Blobfeldern und Passwortfeldern können als Filterparameter verwendet werden.**
+  **Ausnahme in diesem Endpunkt:** Hier gibt es nur den Zeitraum (`von` + `bis`, Art der Suche über `timemode`) und die drei Fahrerfelder `fahrer1`, `fahrer2`, `fahrer3`. Alle anderen Felder kannst du nicht als Suchkriterium verwenden – sie werden ignoriert.
 
-  `von`/`bis` sind faktisch Pflicht: fehlt einer der beiden, wird der Parameter als NULL gebunden und die Abfrage liefert keine Datensätze (kein Fehler). Ein gültiges JSON-Objekt als Body ist Pflicht. Den Query-Parameter `timemode` in Bruno bei Bedarf aktivieren.
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `von` | Datum/Uhrzeit, im Body | ja (siehe Gut zu wissen) | Beginn des Zeitraums, z.B. `"2026-09-01 00:00:00"` |
+  | `bis` | Datum/Uhrzeit, im Body | ja (siehe Gut zu wissen) | Ende des Zeitraums, z.B. `"2026-09-30 23:59:59"` |
+  | `timemode` | Text, in der URL (`?timemode=overlaps_range`) oder im Body | nein | Wie der Zeitraum gesucht wird (siehe unten) |
+  | `fahrer1` | Text (max. 30 Zeichen), im Body | nein | nur Einsätze mit genau diesem ersten Fahrer |
+  | `fahrer2` | Text (max. 30 Zeichen), im Body | nein | nur Einsätze mit genau diesem zweiten Fahrer |
+  | `fahrer3` | Text (max. 30 Zeichen), im Body | nein | nur Einsätze mit genau diesem dritten Fahrer |
 
-  **Erlaubte Felder:** identisch zu `/dispo/geteinsatz` (103 Felder, siehe dort).
+  **So wird der Zeitraum gesucht:**
+  - **Standard** (ohne `timemode`): Einsätze, die im Zeitraum **beginnen**.
+  - **`timemode` = `overlaps_range`:** alle Einsätze, die den Zeitraum ganz oder teilweise **berühren** – auch solche, die vorher beginnen und in den Zeitraum hineinlaufen.
+  - Mitgeschickte Fahrerfilter müssen zusätzlich zutreffen (UND). Der Wert muss genau stimmen – keine Teilsuche, Groß-/Kleinschreibung zählt.
 
-  **Antwort:** ohne `limit` `{"header":{...},"data":[...]}`; mit `limit` `{"total":N,"limit":N,"offset":N,"data":{"header":{...},"data":[...]}}`.
+  ### Weitere Angaben (optional)
+  | Parameter | Wert | Pflicht | Bedeutung |
+  |---|---|---|---|
+  | `fields` | `"*"` oder Liste, z.B. `["nr","von","bis","fahrer1"]` | nein | Welche Felder zurückkommen sollen. `"*"` oder weglassen = alle Felder aus der Liste unten. |
+  | `orderby` | Feldname | nein | Sortierung nach genau einem Feld, aufsteigend. |
+  | `limit` | Zahl | nein | Höchstens so viele Datensätze liefern (zum Blättern). Weglassen = alle. |
+  | `offset` | Zahl | nein | So viele Datensätze überspringen (nur zusammen mit `limit`). Beispiel: `limit` 20 und `offset` 40 = Seite 3. |
 
-  **Auth:** erforderlich (Bearer Token). **LocalOnly:** nein.
+  <details><summary>Verfügbare Felder für fields und orderby (103)</summary>
+
+  | Feld | Typ |
+  |---|---|
+  | `nr` | Ganzzahl |
+  | `von` | Datum/Uhrzeit |
+  | `bis` | Datum/Uhrzeit |
+  | `bezeichnung` | Text (max. 120 Zeichen) |
+  | `typ` | Text (max. 1 Zeichen) |
+  | `hinweis` | Text (max. 40 Zeichen) |
+  | `auftragnr` | Ganzzahl |
+  | `fahrzeug` | Text (max. 30 Zeichen) |
+  | `fahrer1` | Text (max. 30 Zeichen) |
+  | `fahrer2` | Text (max. 30 Zeichen) |
+  | `fahrzeugstatus` | Ganzzahl |
+  | `fahrer1status` | Ganzzahl |
+  | `fahrer2status` | Ganzzahl |
+  | `gruppe` | Text (max. 20 Zeichen) |
+  | `lognr` | Ganzzahl |
+  | `bemerkung` | Text (max. 40 Zeichen) |
+  | `km` | Ganzzahl |
+  | `stunden` | Ganzzahl |
+  | `abfahrtsort` | Text (max. 40 Zeichen) |
+  | `abfahrtszeit` | Text (max. 5 Zeichen) |
+  | `firma` | Text (max. 10 Zeichen) |
+  | `dienstnr` | Text (max. 10 Zeichen) |
+  | `einsatznr` | Text (max. 10 Zeichen) |
+  | `linie` | Text (max. 10 Zeichen) |
+  | `tournr` | Ganzzahl |
+  | `toureinsatznr` | Ganzzahl |
+  | `disponentinfo` | Text (max. 40 Zeichen) |
+  | `geprueft` | Text (max. 4 Zeichen) |
+  | `bereich` | Text (max. 10 Zeichen) |
+  | `liniedienstplannr` | Ganzzahl |
+  | `dienstobjektnr` | Ganzzahl |
+  | `abrechnungstd` | Kommazahl |
+  | `fahrtenplan` | Langtext |
+  | `stationid` | Ganzzahl |
+  | `dispostatus` | Ganzzahl |
+  | `markiert` | Text (max. 4 Zeichen) |
+  | `angemeldet` | Datum/Uhrzeit |
+  | `liniemappenr` | Ganzzahl |
+  | `ausdienst` | Ganzzahl |
+  | `betrieb` | Text (max. 8 Zeichen) |
+  | `fahrzeugprofil` | Text (max. 40 Zeichen) |
+  | `fahrerprofil` | Text (max. 40 Zeichen) |
+  | `standort` | Text (max. 80 Zeichen) |
+  | `betreiber` | Text (max. 80 Zeichen) |
+  | `telematikorderid` | Text (max. 40 Zeichen) |
+  | `telematiksendtime` | Datum/Uhrzeit |
+  | `telematikchangetime` | Datum/Uhrzeit |
+  | `telematikfreigabe` | Ganzzahl |
+  | `durchgefuehrt_von` | Ganzzahl |
+  | `ivuorderid` | Text (max. 40 Zeichen) |
+  | `ivusendtime` | Datum/Uhrzeit |
+  | `ivustatus` | Ganzzahl |
+  | `gsbetrag` | Kommazahl |
+  | `nachauftragnehmer` | Ganzzahl |
+  | `minuten` | Ganzzahl |
+  | `rueckkehrort` | Text (max. 600 Zeichen) |
+  | `maxfislognr` | Ganzzahl |
+  | `angemeldet1` | Datum/Uhrzeit |
+  | `angemeldet2` | Datum/Uhrzeit |
+  | `maxfislog1` | Ganzzahl |
+  | `maxfislog2` | Ganzzahl |
+  | `einsatzstatus` | Text (max. 30 Zeichen) |
+  | `stornogrund` | Text (max. 255 Zeichen) |
+  | `perszahl` | Text (max. 25 Zeichen) |
+  | `personen` | Ganzzahl |
+  | `sv_tournr` | Ganzzahl |
+  | `sv_tournummer` | Text (max. 30 Zeichen) |
+  | `sv_fahrtnummer` | Text (max. 30 Zeichen) |
+  | `sv_fahrtnr` | Ganzzahl |
+  | `sv_fahrtbezeichnung` | Text (max. 120 Zeichen) |
+  | `sv_sammeleinzel_auftragnr` | Ganzzahl |
+  | `sv_gutschrift_auftragnr` | Ganzzahl |
+  | `sv_begleit_auftragnr` | Ganzzahl |
+  | `sv_tourbezeichnung` | Text (max. 120 Zeichen) |
+  | `xkoord_start` | Text (max. 20 Zeichen) |
+  | `ykoord_start` | Text (max. 20 Zeichen) |
+  | `xkoord_ende` | Text (max. 20 Zeichen) |
+  | `ykoord_ende` | Text (max. 20 Zeichen) |
+  | `erledigt_am` | Datum/Uhrzeit |
+  | `storniert_am` | Datum/Uhrzeit |
+  | `umlauf` | Text (max. 30 Zeichen) |
+  | `anhaenger` | Text (max. 30 Zeichen) |
+  | `begleiter` | Text (max. 30 Zeichen) |
+  | `fahrer3` | Text (max. 30 Zeichen) |
+  | `fahrer3status` | Ganzzahl |
+  | `fis_abgelehnt` | Datum/Uhrzeit |
+  | `fis_abgelehnt_fahrer2` | Datum/Uhrzeit |
+  | `fis_abgelehnt_fahrer3` | Datum/Uhrzeit |
+  | `fis_abgeschlossen` | Datum/Uhrzeit |
+  | `fis_abgeschlossen_fahrer2` | Datum/Uhrzeit |
+  | `fis_abgeschlossen_fahrer3` | Datum/Uhrzeit |
+  | `fis_bestaetigt` | Datum/Uhrzeit |
+  | `fis_bestaetigt_fahrer2` | Datum/Uhrzeit |
+  | `fis_bestaetigt_fahrer3` | Datum/Uhrzeit |
+  | `fis_geaendert` | Datum/Uhrzeit |
+  | `fis_geaendert_fahrer2` | Datum/Uhrzeit |
+  | `fis_geaendert_fahrer3` | Datum/Uhrzeit |
+  | `fis_gelesen` | Datum/Uhrzeit |
+  | `fis_gelesen_fahrer2` | Datum/Uhrzeit |
+  | `fis_gelesen_fahrer3` | Datum/Uhrzeit |
+  | `geaendert` | Datum/Uhrzeit |
+  | `geaendertvon` | Text (max. 30 Zeichen) |
+  | `zielort` | Text (max. 100 Zeichen) |
+
+  </details>
+
+  ### Was zurückkommt
+  ```json
+  {
+    "header": {"nr": "ftinteger", "von": "ftdatetime", ...},
+    "data": [ {"nr": 4711, "von": "2026-09-03 07:30:00", "bis": "2026-09-03 16:00:00", "fahrer1": "MU", ...} ]
+  }
+  ```
+  `data` enthält die Einsätze, `header` nennt zu jedem Feld den technischen Typ. **Mit `limit`** sieht die Antwort so aus: `{"total": 123, "limit": 20, "offset": 0, "data": { "header": ..., "data": [...] }}` – `total` ist die Gesamtzahl aller Treffer.
+
+  ### Was schiefgehen kann
+  - **401** – nicht angemeldet oder Token abgelaufen → neu einloggen.
+  - **403** – keine Berechtigung für diesen Endpunkt.
+  - **400** mit Fehlermeldung – die Datenbank kann einen Wert nicht verarbeiten, z.B. ein ungültiges Datum.
+  - **Fehlermeldung mit Status 200** (`{"status":"error","message":"..."}`) – deshalb immer auf `"status": "error"` prüfen:
+    - `Kein gueltiges JSON im Request-Body.` – Body fehlt oder ist kein JSON-Objekt.
+    - `Feld "x" ist nicht erlaubt.` bzw. `Sortierfeld "x" ist nicht erlaubt.` – unbekannter Feldname in `fields` oder `orderby`.
+
+  ### Gut zu wissen
+  - **Ohne `von` und `bis` kommt eine leere Liste** – keine Fehlermeldung. Beide Angaben deshalb immer mitschicken.
+  - **`timemode` in der URL genau so schreiben: `overlaps_range`** (klein). Im Body ist die Schreibweise egal. Steht `timemode` in der URL, gilt dieser Wert und der Body wird dafür nicht mehr gelesen. In Bruno ist der URL-Parameter vorbereitet und muss nur aktiviert werden.
+  - **Fahrer-Feldnamen klein schreiben.** Bei `"Fahrer1"` statt `"fahrer1"` kommt eine leere Liste.
+  - **Nicht abrufbar:** `refnr` und `reftable` gibt es in der Tabelle, sie stehen aber nicht in der Feldliste. `fahrtenplan` (Langtext) kannst du abrufen, aber nicht danach suchen.
+  - **Achtung bei Tippfehlern:** Unbekannte Angaben werden ohne Meldung ignoriert.
+  - **Der Body muss mindestens `{}` sein**, sonst kommt ein Fehler.
+
+  <details><summary>Für Entwickler</summary>
+
+  - Controller: `TDataModulDispo.getEinsatzFiltered` in `Shared/DataModuls/DataModulDispoClass.pas`
+  - Tabelle: `EINSATZ`, Schlüssel `nr`
+  - Umsetzung: `DoSelectFiltered` der Basisklasse `TDataModulTableBase` mit festem Filter: Standard `von >= :von AND von <= :bis`, bei `overlaps_range` `bis >= :von AND von <= :bis`; gesetzte Fahrerfilter werden als `fahrerN = :fahrerN` angehängt.
+  - `timemode`: zuerst `Request.QueryFields`, nur wenn leer aus dem Body (Schlüssel `timemode` case-sensitiv, Wert per `LowerCase`); der URL-Wert wird nicht umgewandelt.
+  - Fehlende `von`/`bis` werden als NULL gebunden → Bedingung nie erfüllt → leeres Ergebnis (anders als bei `getdispofiltered`/`geturlaubsantragfiltered`, die einen Fehler melden).
+  - Auffälligkeit: Ob ein Fahrerfilter angehängt wird, prüft `isParamFromBody` (ohne Beachtung der Groß-/Kleinschreibung); der Wert wird in `DoSelectFiltered` aber über `Body.GetValue` (case-sensitiv) gelesen. Bei `"Fahrer1"` wird die Bedingung also angehängt, der Wert als NULL gebunden → leeres Ergebnis.
+  - Der Server wertet die HTTP-Methode nicht aus – GET und POST funktionieren gleich.
+
+  </details>
