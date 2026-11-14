@@ -104,10 +104,10 @@ docs: |-
 
   - Controller: `TDataModulFibu.updateGutschein` in `Shared/DataModuls/DataModulFibuClass.pas`
   - Tabelle: `GUTSCHEIN`, Schlüssel `nr`
-  - Ablauf in einer Transaktion: `UPDATE GUTSCHEIN SET <Felder> WHERE nr=:nr` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` → Commit, sonst Rollback. Felder per `isKeyInBody` (auch `null` → `Clear`).
+  - Ablauf in einer Transaktion: `UPDATE GUTSCHEIN SET <Felder> WHERE nr=:nr` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr, :buchtext)` → Commit, sonst Rollback. Felder per `isKeyInBody` (auch `null` → `Clear`).
   - `BUILDGSFIBU` → `GEGENBUCHEN(nr,'GS','TODAY',belegtext)`: offene `FIBU`-Zeilen (`ART='GS'`, `RECHNUNGNR=nr`, `GEBUCHT` nicht `JA`) löschen, übertragene gegenbuchen; dann neue `FIBU`-Zeile. Nichts davon, wenn `FIRMENSTAMM.FIBUAKTIV` nicht `JA`.
   - Auffälligkeit: Bei nicht vorhandener `nr` findet `BUILDGSFIBU` keinen Gutschein, fügt aber trotzdem eine `FIBU`-Zeile mit leeren Werten ein (`ART='GS'`, `RECHNUNGNR=nr`) – nur `FIBU.NR` ist Pflicht.
-  - **Auffälligkeit (bitte prüfen):** `BUILDGSFIBU` hat zwei Eingabeparameter (`GSNR`, `BUCHTEXT`), der Server übergibt nur einen – InterBase kennt keine Default-Werte, Fehler „Input parameter mismatch“ zu erwarten (nicht live getestet, da schreibend).
+  - **Optionaler Body-Parameter `buchtext`** (Text, max. 40 Zeichen, länger wird abgeschnitten): wird als 2. Parameter `BUCHTEXT` an `BUILDGSFIBU(GSNR, BUCHTEXT)` übergeben und als `FIBU.TEXT` verwendet. Fehlt er oder ist er leer, nimmt die Prozedur `NAME2` des Kunden (`kennziffer`). Wird nicht in `GUTSCHEIN` gespeichert.
   - Der Server wertet die HTTP-Methode nicht aus.
 
   </details>

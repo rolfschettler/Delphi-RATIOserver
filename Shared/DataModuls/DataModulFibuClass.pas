@@ -507,8 +507,11 @@ begin
     end;
     Query.ExecSQL;
 
-    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr)';
+    // BUILDGSFIBU(GSNR INTEGER, BUCHTEXT VARCHAR(40)): leerer BUCHTEXT ->
+    // Prozedur verwendet NAME2 des Kunden als Buchungstext.
+    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr, :buchtext)';
     Query.ParamByName('nr').AsInteger := NewNr;
+    Query.ParamByName('buchtext').AsString := Copy(getParamFromBody('buchtext', ''), 1, 40);
     Query.ExecSQL;
 
     Connection.Commit;
@@ -581,8 +584,11 @@ begin
     end;
     Query.ExecSQL;
 
-    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr)';
+    // BUILDGSFIBU(GSNR INTEGER, BUCHTEXT VARCHAR(40)): leerer BUCHTEXT ->
+    // Prozedur verwendet NAME2 des Kunden als Buchungstext.
+    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr, :buchtext)';
     Query.ParamByName('nr').AsInteger := NewNr;
+    Query.ParamByName('buchtext').AsString := Copy(getParamFromBody('buchtext', ''), 1, 40);
     Query.ExecSQL;
 
     Connection.Commit;
@@ -620,8 +626,11 @@ begin
     Query.ParamByName('nr').AsInteger := NewNr;
     Query.ExecSQL;
 
-    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr)';
+    // BUILDGSFIBU(GSNR INTEGER, BUCHTEXT VARCHAR(40)): leerer BUCHTEXT ->
+    // Prozedur verwendet NAME2 des Kunden als Buchungstext.
+    Query.SQL.Text := 'EXECUTE PROCEDURE BUILDGSFIBU(:nr, :buchtext)';
     Query.ParamByName('nr').AsInteger := NewNr;
+    Query.ParamByName('buchtext').AsString := Copy(getParamFromBody('buchtext', ''), 1, 40);
     Query.ExecSQL;
 
     Connection.Commit;

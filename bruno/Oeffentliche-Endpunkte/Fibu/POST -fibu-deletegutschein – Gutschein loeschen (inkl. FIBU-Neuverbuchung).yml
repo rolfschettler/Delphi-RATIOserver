@@ -61,10 +61,10 @@ docs: |-
 
   - Controller: `TDataModulFibu.deleteGutschein` in `Shared/DataModuls/DataModulFibuClass.pas`
   - Tabelle: `GUTSCHEIN`, Schlüssel `nr`
-  - Ablauf in einer Transaktion: `DELETE FROM GUTSCHEIN WHERE nr=:nr` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` → Commit, sonst Rollback.
+  - Ablauf in einer Transaktion: `DELETE FROM GUTSCHEIN WHERE nr=:nr` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr, :buchtext)` → Commit, sonst Rollback.
   - `BUILDGSFIBU` → `GEGENBUCHEN(nr,'GS',...)`: offene `FIBU`-Zeilen (`ART='GS'`, `RECHNUNGNR=nr`, `GEBUCHT` nicht `JA`) löschen, übertragene gegenbuchen. Nichts davon, wenn `FIRMENSTAMM.FIBUAKTIV` nicht `JA`.
   - Auffälligkeit: Nach dem DELETE findet `BUILDGSFIBU` den Gutschein nicht mehr, fügt aber trotzdem eine neue `FIBU`-Zeile mit leeren Werten ein (`BETRAG`/Konten NULL, `ART='GS'`, `RECHNUNGNR=nr`) – nur `FIBU.NR` ist Pflicht, die Datenbank lehnt das also nicht ab.
-  - **Auffälligkeit (bitte prüfen):** `BUILDGSFIBU` hat zwei Eingabeparameter (`GSNR`, `BUCHTEXT`), der Server übergibt nur einen – InterBase kennt keine Default-Werte, Fehler „Input parameter mismatch“ zu erwarten (nicht live getestet, da schreibend).
+  - **Optionaler Body-Parameter `buchtext`** (Text, max. 40 Zeichen, länger wird abgeschnitten): wird als 2. Parameter `BUCHTEXT` an `BUILDGSFIBU(GSNR, BUCHTEXT)` übergeben und als `FIBU.TEXT` verwendet. Fehlt er oder ist er leer, nimmt die Prozedur `NAME2` des Kunden (`kennziffer`). Wird nicht in `GUTSCHEIN` gespeichert.
   - Der Server wertet die HTTP-Methode nicht aus.
 
   </details>

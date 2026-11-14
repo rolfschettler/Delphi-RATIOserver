@@ -13,8 +13,8 @@ http:
         "bearbeiter": "SUPERVISOR",
         "erfasst": "2026-08-31",
         "betrag": 50.00,
-        "kennziffer": 42,
-        "gutscheinkonto": "1590",
+        "kennziffer": 10003,
+        "gutscheinkonto": "8410",
         "kurzbemerkung": "Gutschein Neuanlage",
         "nrkreis": 0
       }
@@ -101,10 +101,10 @@ docs: |-
 
   - Controller: `TDataModulFibu.insertGutschein` in `Shared/DataModuls/DataModulFibuClass.pas`
   - Tabelle: `GUTSCHEIN`, Schlüssel `nr`; Generatoren `GUTSCHEIN_NR_GEN` (wie `/fibu/getgutscheinkey`), `GUTSCHEIN_VORGANG_GEN`, `GS_NRKREIS<n>` (Existenz über `RDB$GENERATORS` geprüft)
-  - Ablauf in einer Transaktion: `nr` per Generator → Vorgangsnummer → `INSERT` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr)` → Commit, sonst Rollback (Generatorwerte bleiben verbraucht).
+  - Ablauf in einer Transaktion: `nr` per Generator → Vorgangsnummer → `INSERT` → `EXECUTE PROCEDURE BUILDGSFIBU(:nr, :buchtext)` → Commit, sonst Rollback (Generatorwerte bleiben verbraucht).
   - `BUILDGSFIBU` (DB): Abbruch ohne Buchung, wenn `FIRMENSTAMM.FIBUAKTIV` nicht `JA`; sonst `GEGENBUCHEN(nr,'GS',...)` (offene FIBU-Zeilen mit `ART='GS'`/`RECHNUNGNR=nr` löschen, bereits übertragene gegenbuchen) und neue `FIBU`-Zeile (`SOLL` = `fibukto`/`ADRESSEN.DATEVKTO`, `HABEN` = `gutscheinkonto`, bei `KULANZ='JA'` getauscht und negativ).
   - Auffälligkeit: Code-Kommentar nennt Fallback auf `GS_NRKREIS1`, tatsächlich wird eine Exception geworfen.
-  - **Auffälligkeit (bitte prüfen):** `BUILDGSFIBU` hat laut `RDB$PROCEDURE_PARAMETERS` zwei Eingabeparameter (`GSNR`, `BUCHTEXT`), der Server übergibt nur einen. InterBase kennt keine Default-Werte für Prozedur-Parameter – das dürfte mit „Input parameter mismatch“ scheitern (nicht live getestet, da schreibend).
+  - **Optionaler Body-Parameter `buchtext`** (Text, max. 40 Zeichen, länger wird abgeschnitten): wird als 2. Parameter `BUCHTEXT` an `BUILDGSFIBU(GSNR, BUCHTEXT)` übergeben und als `FIBU.TEXT` verwendet. Fehlt er oder ist er leer, nimmt die Prozedur `NAME2` des Kunden (`kennziffer`). Wird nicht in `GUTSCHEIN` gespeichert.
   - Der Server wertet die HTTP-Methode nicht aus.
 
   </details>
