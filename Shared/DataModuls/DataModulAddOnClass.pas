@@ -867,14 +867,17 @@ begin
     QCheck.Close;
 
     QGen.Connection := Connection;
-    QGen.SQL.Text := 'SELECT GEN_ID(' + GeneratorName + ', CAST(:increment AS INTEGER)) AS val FROM RDB$DATABASE';
-    QGen.ParamByName('increment').AsInteger := Increment;
+    // Inkrement als Literal (kein Bind-Parameter): InterBase WI-V14.3 kann den
+    // Typ eines Parameters in GEN_ID nicht ableiten -> -804 "Data type unknown".
+    // Increment ist bereits ein Integer (StrToIntDef) -> keine Injection moeglich.
+    QGen.SQL.Text := 'SELECT GEN_ID(' + GeneratorName + ', ' + IntToStr(Increment) +
+      ') AS VAL FROM RDB$DATABASE';
     QGen.Open;
 
     Response.ContentType := 'application/json';
     Response.StatusCode  := 200;
     Response.Content     := Format('{"generator":"%s","value":%d}',
-      [GeneratorName, QGen.FieldByName('val').AsInteger]);
+      [GeneratorName, QGen.FieldByName('VAL').AsLargeInt]);
   finally
     QCheck.Free;
     QGen.Free;

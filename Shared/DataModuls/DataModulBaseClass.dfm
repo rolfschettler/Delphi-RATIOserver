@@ -27,7 +27,8 @@ object DataModulBaseClass: TDataModulBaseClass
     Params.Strings = (
       'DriverID=IB'
       'Port=0'
-      'Password=masterkey')
+      'Password=masterkey'
+      'SQLDialect=1')
     FetchOptions.AssignedValues = [evRowsetSize]
     FetchOptions.RowsetSize = 100
     ResourceOptions.AssignedValues = [rvCmdExecTimeout, rvDirectExecute, rvAutoConnect, rvSilentMode, rvKeepConnection]
