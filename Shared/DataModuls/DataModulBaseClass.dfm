@@ -25,10 +25,10 @@ object DataModulBaseClass: TDataModulBaseClass
   end
   object Connection: TFDConnection
     Params.Strings = (
-      'DriverID=IB'
       'Port=0'
       'Password=masterkey'
-      'SQLDialect=1')
+      'SQLDialect=1'
+      'DriverID=IB')
     FetchOptions.AssignedValues = [evRowsetSize]
     FetchOptions.RowsetSize = 100
     ResourceOptions.AssignedValues = [rvCmdExecTimeout, rvDirectExecute, rvAutoConnect, rvSilentMode, rvKeepConnection]
